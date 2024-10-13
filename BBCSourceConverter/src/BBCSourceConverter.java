@@ -157,10 +157,6 @@ public class BBCSourceConverter {
 
     private int convertInstruction(BBCLine bbcLine, List<TMS9900Line> tms9900Lines) {
         Instruction instruction = new Instruction(bbcLine.getInstruction());
-        if (bbcLine.getInstruction().equals("LDA tek")) {
-            System.out.println();
-        }
-
         String opcode = instruction.getOpcode();
         Operand operand = instruction.getOperand();
         TMS9900Line tms9900Line = new TMS9900Line(TMS9900Line.Type.Instruction, bbcLine.getComment());
@@ -179,6 +175,9 @@ public class BBCSourceConverter {
                     } else {
                         switch (operand.getType()) {
                             case XIndexedIndirect:
+                                tms9900Line.setInstruction("movb @" + zeroPage + "(" + regX + "),@" + regTmpLowByte);
+                                additionalLines.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "movb @" + zeroPage+1 + "(" + regX + ")," + regTmp));
+                                additionalLines.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "movb *" + regTmp + "," + regA));
                                 break;
                             case IndirectYIndexed:
                                 tms9900Line.setInstruction("movb @" + zeroPage + "+" + convertExpression(operand.getExpression()) + ",@" + regTmpLowByte);
@@ -246,7 +245,6 @@ public class BBCSourceConverter {
                 if (token.matches(Operand.symbolRegEx)) {
                     token = convertSymbol(token);
                 } else {
-                    System.out.println(token);
                     Matcher loMatcher = loFunctionPattern.matcher(token);
                     if (loMatcher.find()) {
                         token = "(" + loMatcher.group(1) + ")%256";
