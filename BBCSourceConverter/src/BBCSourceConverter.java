@@ -1,15 +1,20 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BBCSourceConverter {
 
     private static final String zeroPage = "ZERO_PAGE";
-    private static final String regA = "r0";
-    private static final String regX = "r1";
-    private static final String regY = "r2";
-    private static final String regTmp = "r3";
+    private static final String regA = "A";
+    private static final String regX = "X";
+    private static final String regY = "Y";
+    private static final String regTmp = "TMP";
     private static final String regTmpLowByte = "R3LB";
+    Pattern loFunctionPattern = Pattern.compile("LO\\((" + Operand.expressionRegEx + ")\\)");
+    Pattern hiFunctionPattern = Pattern.compile("HI\\((" + Operand.expressionRegEx + ")\\)");
 
     private final boolean hexOutput;
 
@@ -27,49 +32,46 @@ public class BBCSourceConverter {
 
     private List<TMS9900Line> convert(List<BBCLine> bbcLines) {
         List<TMS9900Line> tms9900Lines = new ArrayList<>();
+        createRegEquate(tms9900Lines, regA, "0", null);
+        createRegEquate(tms9900Lines, regX, "1", null);
+        createRegEquate(tms9900Lines, regY, "2", null);
+        createRegEquate(tms9900Lines, regTmp, "3", null);
         createEquate(tms9900Lines, "_MAX_COMMANDER", "0", null);
         createEquate(tms9900Lines, zeroPage, ">8300", null);
         createEquate(tms9900Lines, regTmpLowByte, ">8307", null);
-        TMS9900Line line;
         boolean insideMacro = false;
         boolean insideFor = false;
         int i = 0;
         while (i < bbcLines.size()) {
             BBCLine bbcLine = bbcLines.get(i);
             switch (bbcLine.getType()) {
+                case Empty:
+                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Empty));
+                    break;
                 case MacroStart:
-                    line = new TMS9900Line(TMS9900Line.Type.Directive);
-                    line.setDirective(".defm " + bbcLine.getDirective().split(" ")[0]);
-                    tms9900Lines.add(line);
+                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), ".defm " + bbcLine.getDirective().split(" ")[0]));
                     insideMacro = true;
                     break;
                 case MacroEnd:
-                    line = new TMS9900Line(TMS9900Line.Type.Directive);
-                    line.setDirective(".endm");
-                    tms9900Lines.add(line);
+                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), ".endm"));
                     insideMacro = false;
                     break;
                 case ForStart:
-                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment()));
+                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "; " + bbcLine.getDirective()));
                     insideFor = true;
                     break;
                 case ForEnd:
-                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment()));
+                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "; " + bbcLine.getDirective()));
                     insideFor = false;
                     break;
                 default:
                     if (!insideMacro && !insideFor) {
                         switch (bbcLine.getType()) {
-                            case Empty:
-                                tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Empty));
-                                break;
                             case Directive:
                                 i += convertDirective(bbcLine, tms9900Lines);
                                 break;
                             case Label:
-                                line = new TMS9900Line(TMS9900Line.Type.Label, bbcLine.getComment());
-                                line.setLabel(convertSymbol(bbcLine.getLabel()));
-                                tms9900Lines.add(line);
+                                tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Label, bbcLine.getComment(), convertSymbol(bbcLine.getLabel())));
                                 break;
                             case Comment:
                                 tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Comment, bbcLine.getComment()));
@@ -106,20 +108,18 @@ public class BBCSourceConverter {
     }
 
     private void createEquate(List<TMS9900Line> tms9900Lines, String symbol, String value, String comment) {
-        TMS9900Line line;
-        line = new TMS9900Line(TMS9900Line.Type.Label, comment);
-        line.setLabel(convertSymbol(symbol));
-        tms9900Lines.add(line);
-        line = new TMS9900Line(TMS9900Line.Type.Directive);
-        line.setDirective(" equ " + convertExpression(value));
-        tms9900Lines.add(line);
+        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Label, comment, convertSymbol(symbol)));
+        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, null, " equ " + convertExpression(value)));
+    }
+
+    private void createRegEquate(List<TMS9900Line> tms9900Lines, String symbol, String value, String comment) {
+        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Label, comment, convertSymbol(symbol)));
+        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, null, " requ " + convertExpression(value)));
     }
 
     private int convertDirective(BBCLine bbcLine, List<TMS9900Line> tms9900Lines) {
         if (bbcLine.getDirective().startsWith("SKIP")) {
-            TMS9900Line line = new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment());
-            line.setDirective("bss " + bbcLine.getDirective().substring(5));
-            tms9900Lines.add(line);
+            tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "bss " + convertExpression(bbcLine.getDirective().substring(5))));
         }
         return 0;
     }
@@ -239,20 +239,32 @@ public class BBCSourceConverter {
             if (expression.startsWith("%")) {
                 expression = expression.replaceFirst("%", ":");
             }
-            String[] tokens = expression.split(" ");
-            for (int i = 0; i < tokens.length; i++) {
-                String token = tokens[i];
+            StringBuilder result = new StringBuilder();
+            StringTokenizer tokenizer = new StringTokenizer(expression, " +-*/", true);
+            while (tokenizer.hasMoreTokens()) {
+                String token = tokenizer.nextToken();
                 if (token.matches(Operand.symbolRegEx)) {
-                    tokens[i] = convertSymbol(token);
+                    token = convertSymbol(token);
+                } else {
+                    System.out.println(token);
+                    Matcher loMatcher = loFunctionPattern.matcher(token);
+                    if (loMatcher.find()) {
+                        token = "(" + loMatcher.group(1) + ")%256";
+                    }
+                    Matcher hiMatcher = hiFunctionPattern.matcher(token);
+                    if (hiMatcher.find()) {
+                        token = "(" + hiMatcher.group(1) + ")/256";
+                    }
                 }
+                result.append(token);
             }
-            expression = String.join(" ", tokens);
+            expression = result.toString();
         }
         return expression;
     }
 
     private String convertSymbol(String symbol) {
-        if (symbol.matches(Operand.lowerCaseSymbolRegEx) && !symbol.matches(Operand.numberRegEx)) {
+        if (symbol.matches(Operand.lowerCaseSymbolRegEx) && !symbol.matches(Operand.numberRegEx) || symbol.equals("zZ")) {
             symbol += "_";
         }
         return symbol.replace("%", ".");

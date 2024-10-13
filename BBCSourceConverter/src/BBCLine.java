@@ -30,6 +30,7 @@ public class BBCLine {
     }
 
     private void parseLine(String line) {
+        line = line.trim();
         if (line.isEmpty()) {
             type = Type.Empty;
         } else {
@@ -44,6 +45,7 @@ public class BBCLine {
                 directive = line.substring(6);
                 type = Type.MacroStart;
             } else if (line.startsWith("ENDMACRO")) {
+                directive = line;
                 type = Type.MacroEnd;
             } else if (line.startsWith("FOR")) {
                 directive = line;

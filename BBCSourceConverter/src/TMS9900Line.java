@@ -27,10 +27,16 @@ public class TMS9900Line {
         this.comment = comment;
     }
 
-    public TMS9900Line(Type type, String comment, String instruction) {
+    public TMS9900Line(Type type, String comment, String value) {
         this.type = type;
         this.comment = comment;
-        this.instruction = instruction;
+        if (type == Type.Directive) {
+            this.directive = value;
+        } else if (type == Type.Label) {
+            this.label = value;
+        } else {
+            this.instruction = value;
+        }
     }
 
     public Type getType() {
