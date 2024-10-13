@@ -262,7 +262,7 @@ public class BBCSourceConverter {
     }
 
     private String convertSymbol(String symbol) {
-        if (symbol.matches(Operand.lowerCaseSymbolRegEx) && !symbol.matches(Operand.numberRegEx) || symbol.equals("zZ")) {
+        if (symbol.matches(Operand.lowerCaseSymbolRegEx) && !symbol.matches(Operand.numberRegEx)) {
             symbol += "_";
         }
         return symbol.replace("%", ".");

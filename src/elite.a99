@@ -2509,25 +2509,26 @@ M.:
 
        ; TYA                           ; TYA               ; Set A to the roll rate but with the sign bit flipped
 
-       ; BPL P%+7                      ; BPL P%+7          ; If the value of A is positive, skip the following
+       ; BPL B01                       ; BPL B01           ; If the value of A is positive, skip the following
 * three instructions
 
        ; EOR #%11111111                ; EOR #%11111111    ; A is negative, so change the sign of A using two's
        ; CLC                           ; CLC               ; complement so that A is now positive and contains
        ; ADC #1                        ; ADC #1            ; the absolute value of the roll rate, i.e. |JSTX|
 
+B01:
        ; LSR A                         ; LSR A             ; Divide the (positive) roll rate in A by 4
        ; LSR A                         ; LSR A             
 
        ; CMP #8                        ; CMP #8            ; If A >= 8, skip the following two instructions
-       ; BCS P%+4                      ; BCS P%+4          
+       ; BCS B02                       ; BCS B02           
 
        ; LSR A                         ; LSR A             ; A < 8, so halve A again
 
        ; CLC                           ; CLC               ; This instruction has no effect, as we only get here
 * if the C flag is clear (if it is set, we skip this
 * instruction)
-
+B02:
        ; STA ALP1                      ; STA ALP1          ; Store A in ALP1, so we now have:
 * 
 * ALP1 = |JSTX| / 8    if |JSTX| < 32
@@ -2565,11 +2566,12 @@ M.:
 
        ; TYA                           ; TYA               ; Set A to the pitch rate but with the sign bit flipped
 
-       ; BPL P%+4                      ; BPL P%+4          ; If the value of A is positive, skip the following
+       ; BPL B03                       ; BPL B03           ; If the value of A is positive, skip the following
 * instruction
 
        ; EOR #%11111111                ; EOR #%11111111    ; A is negative, so flip the bits
 
+B03:
        ; ADC #4                        ; ADC #4            ; Add 4 to the (positive) pitch rate, so the maximum
 * value is now up to 131 (rather than 127)
 
@@ -2579,10 +2581,11 @@ M.:
        ; LSR A                         ; LSR A             
 
        ; CMP #3                        ; CMP #3            ; If A >= 3, skip the following instruction
-       ; BCS P%+3                      ; BCS P%+3          
+       ; BCS B04                       ; BCS B04           
 
        ; LSR A                         ; LSR A             ; A < 3, so halve A again
 
+B04:
        ; STA BET1                      ; STA BET1          ; Store A in BET1, so we now have:
 * 
 * BET1 = |JSTY| / 32    if |JSTY| < 48
@@ -2734,18 +2737,20 @@ MA76:
 
        movb @KY13,A                    ; LDA KY13          ; If ESCAPE is being pressed and we have an escape pod
        ; AND ESCP                      ; AND ESCP          ; fitted, keep going, otherwise skip the next
-       jeq  $+5                        ; BEQ P%+5          ; instruction
+       jeq  B05                        ; BEQ B05           ; instruction
 
        ; JMP ESCAPE                    ; JMP ESCAPE        ; The button is being pressed to launch an escape pod
 * and we have an escape pod fitted, so jump to ESCAPE to
 * launch it, and exit the main flight loop using a tail
 * call
 
+B05:
        movb @KY18,A                    ; LDA KY18          ; If "J" is being pressed, keep going, otherwise skip
-       jeq  $+5                        ; BEQ P%+5          ; the next instruction
+       jeq  B06                        ; BEQ B06           ; the next instruction
 
        ; JSR WARP                      ; JSR WARP          ; Call the WARP routine to do an in-system jump
 
+B06:
        movb @KY17,A                    ; LDA KY17          ; If "E" is being pressed and we have an E.C.M. fitted,
        ; AND ECM                       ; AND ECM           ; keep going, otherwise jump down to MA64 to skip the
        jeq  MA64                       ; BEQ MA64          ; following
@@ -2896,11 +2901,12 @@ MAL1:
        ; STX XSAV                      ; STX XSAV          ; Store the current slot number in XSAV
 
        movb @FRIN(X),A                 ; LDA FRIN,X        ; Fetch the contents of this slot into A. If it is 0
-       jne  $+5                        ; BNE P%+5          ; then this slot is empty and we have no more ships to
+       jne  B07                        ; BNE B07           ; then this slot is empty and we have no more ships to
        ; JMP MA18                      ; JMP MA18          ; process, so jump to MA18 below, otherwise A contains
 * the type of ship that's in this slot, so skip over the
 * JMP MA18 instruction and keep going
 
+B07:
        ; STA TYPE                      ; STA TYPE          ; Store the ship type in TYPE
 
        ; JSR GINF                      ; JSR GINF          ; Call GINF to fetch the address of the ship data block
@@ -3095,10 +3101,11 @@ MAL3:
 * checks in the TACTICS routine
 
        ; CPX #OIL                      ; CPX #OIL          ; If ship type >= OIL (i.e. it's a cargo canister,
-       ; BCS P%+5                      ; BCS P%+5          ; Thargon or escape pod), skip the JMP instruction and
+       ; BCS B08                       ; BCS B08           ; Thargon or escape pod), skip the JMP instruction and
        ; JMP MA58                      ; JMP MA58          ; continue on, otherwise jump to MA58 to process a
 * potential collision
 
+B08:
        movb @BST,A                     ; LDA BST           ; If we have fuel scoops fitted then BST will be &FF,
 * otherwise it will be 0
 
@@ -3673,7 +3680,7 @@ b_:
        movb @ENGY,A                    ; LDA ENGY          ; level goes up by 2 if we have an energy unit fitted,
        ; ADC ENERGY                    ; ADC ENERGY        ; otherwise it goes up by 1
 
-       ; BCS P%+5                      ; BCS P%+5          ; If the value of A did not overflow (the maximum
+       ; BCS B09                       ; BCS B09           ; If the value of A did not overflow (the maximum
        ; STA ENERGY                    ; STA ENERGY        ; energy level is &FF), then store A in ENERGY
 
 * ******************************************************************************
@@ -3697,6 +3704,7 @@ b_:
 * 
 * ******************************************************************************
 
+B09:
        movb @MJ,A                      ; LDA MJ            ; If we are in witchspace, jump down to MA23S to skip
        jne  MA23S                      ; BNE MA23S         ; the following, as there are no space stations in
 * witchspace
@@ -3805,13 +3813,14 @@ MAL4:
 * enough to the planet to bump into a space station)
 
        movb @QQ11,A                    ; LDA QQ11          ; If the current view is not a space view, skip the
-       jne  $+5                        ; BNE P%+5          ; following instruction (so we only remove the sun from
+       jne  B10                        ; BNE B10           ; following instruction (so we only remove the sun from
 * the screen if we are potentially looking at it)
 
        ; JSR WPLS                      ; JSR WPLS          ; Call WPLS to remove the sun from the screen, as we
 * can't have both the sun and the space station at the
 * same time
 
+B10:
        ; JSR NWSPS                     ; JSR NWSPS         ; Add a new space station to our local bubble of
 * universe
 
@@ -3862,11 +3871,12 @@ MA93:
 
        li   A,>32*256                  ; LDA #50           ; If our energy bank status in ENERGY is >= 50, skip
        ; CMP ENERGY                    ; CMP ENERGY        ; printing the following message (so the message is
-       ; BCC P%+6                      ; BCC P%+6          ; only shown if our energy is low)
+       ; BCC B11                       ; BCC B11           ; only shown if our energy is low)
 
        ; ASL A                         ; ASL A             ; Print recursive token 100 ("ENERGY LOW{beep}") as an
        ; JSR MESS                      ; JSR MESS          ; in-flight message
 
+B11:
        ; LDY #&FF                      ; LDY #&FF          ; Set our altitude in ALTIT to &FF, the maximum
        ; STY ALTIT                     ; STY ALTIT         
 
@@ -4007,9 +4017,10 @@ MA29:
        ; ADC QQ14                      ; ADC QQ14          ; Set A = A + the current fuel level * 10 (from QQ14)
 
        ; CMP #70                       ; CMP #70           ; If A > 70 then set A = 70 (as 70 is the maximum fuel
-       ; BCC P%+4                      ; BCC P%+4          ; level, or 7.0 light years)
+       ; BCC B12                       ; BCC B12           ; level, or 7.0 light years)
        li   A,>46*256                  ; LDA #70           
 
+B12:
        ; STA QQ14                      ; STA QQ14          ; Store the updated fuel level in QQ14
 
        li   A,>a0*256                  ; LDA #160          ; Print recursive token 0 ("FUEL SCOOPS ON") as an
@@ -4304,13 +4315,14 @@ MAS3:
        ; ADC R                         ; ADC R             ; Add A (high byte of third result) to R, so R now
 * contains the sum of x_hi^2 + y_hi^2 + z_hi^2
 
-       ; BCC P%+4                      ; BCC P%+4          ; If there is no carry, skip the following instruction
+       ; BCC B13                       ; BCC B13           ; If there is no carry, skip the following instruction
 * to return straight from the subroutine
 
 MA30:
 
        li   A,>ff*256                  ; LDA #&FF          ; The calculation has overflowed, so set A = &FF
 
+B13:
        ; RTS                           ; RTS               ; Return from the subroutine
 
 * ******************************************************************************
@@ -4395,7 +4407,7 @@ MVEIT:
 MV3:
 
        ; LDX TYPE                      ; LDX TYPE          ; If the type of the ship we are moving is positive,
-       ; BPL P%+5                      ; BPL P%+5          ; i.e. it is not a planet (types 128 and 130) or sun
+       ; BPL B14                       ; BPL B14           ; i.e. it is not a planet (types 128 and 130) or sun
 * (type 129), then skip the following instruction
 
        ; JMP MV40                      ; JMP MV40          ; This item is the planet or sun, so jump to MV40 to
@@ -4403,6 +4415,7 @@ MV3:
 * at MV45 (after all the rotation, tactics and scanner
 * code, which we don't need to apply to planets or suns)
 
+B14:
        movb @INWK+32,A                 ; LDA INWK+32       ; Fetch the ship's byte #32 (AI flag) into A
 
        ; BPL MV30                      ; BPL MV30          ; If bit 7 of the AI flag is clear, then if this is a
@@ -4543,22 +4556,24 @@ MV30:
        ; CLC                           ; CLC               ; acceleration in byte #28
        ; ADC INWK+28                   ; ADC INWK+28       
 
-       ; BPL P%+4                      ; BPL P%+4          ; If the result is positive, skip the following
+       ; BPL B15                       ; BPL B15           ; If the result is positive, skip the following
 * instruction
 
        li   A,>00*256                  ; LDA #0            ; Set A to 0 to stop the speed from going negative
 
+B15:
        ; LDY #15                       ; LDY #15           ; We now fetch byte #15 from the ship's blueprint, which
 * contains the ship's maximum speed, so set Y = 15 to
 * use as an index
 
        ; CMP (XX0),Y                   ; CMP (XX0),Y       ; If A < the ship's maximum speed, skip the following
-       ; BCC P%+4                      ; BCC P%+4          ; instruction
+       ; BCC B16                       ; BCC B16           ; instruction
 
        movb @ZERO_PAGE+XX0,@R3LB       ; LDA (XX0),Y       ; Set A to the ship's maximum speed
        movb @ZERO_PAGE+XX0+1,TMP       ;                   
        movb *TMP,A                     ;                   
 
+B16:
        ; STA INWK+27                   ; STA INWK+27       ; We have now calculated the new ship's speed after
 * accelerating and keeping the speed within the ship's
 * limits, so store the updated speed in byte #27
@@ -4820,7 +4835,7 @@ MV45:
        movb @TYPE,A                    ; LDA TYPE          ; If the ship type is not the sun (129) then skip the
        ; AND #%10000001                ; AND #%10000001    ; next instruction, otherwise return from the subroutine
        ; CMP #129                      ; CMP #129          ; as we don't need to rotate the sun around its origin.
-       jne  $+3                        ; BNE P%+3          ; Having both the AND and the CMP is a little odd, as
+       jne  B17                        ; BNE B17           ; Having both the AND and the CMP is a little odd, as
 * the sun is the only ship type with bits 0 and 7 set,
 * so the AND has no effect and could be removed
 
@@ -4850,6 +4865,7 @@ MV45:
 * 
 * ******************************************************************************
 
+B17:
        ; LDY #9                        ; LDY #9            ; Apply our pitch and roll rotations to the current
        ; JSR MVS4                      ; JSR MVS4          ; ship's nosev vector
 
@@ -8328,12 +8344,13 @@ STC1:
        ; DEY                           ; DEY               ; Decrement the loop counter to point to the next
 * stardust particle
 
-       jeq  $+5                        ; BEQ P%+5          ; If we have just done the last particle, skip the next
+       jeq  B18                        ; BEQ B18           ; If we have just done the last particle, skip the next
 * instruction to return from the subroutine
 
        ; JMP STL1                      ; JMP STL1          ; We have more stardust to process, so jump back up to
 * STL1 for the next particle
 
+B18:
        ; RTS                           ; RTS               ; Return from the subroutine
 
 KILL1:
@@ -8962,26 +8979,29 @@ st3_:
 
        movb @CRGO,A                    ; LDA CRGO          ; If our ship's cargo capacity is < 26 (i.e. we do not
        ; CMP #26                       ; CMP #26           ; have a cargo bay extension), skip the following two
-       ; BCC P%+7                      ; BCC P%+7          ; instructions
+       ; BCC B19                       ; BCC B19           ; instructions
 
        li   A,>6b*256                  ; LDA #107          ; We do have a cargo bay extension, so print recursive
        ; JSR plf2                      ; JSR plf2          ; token 107 ("LARGE CARGO{sentence case} BAY"), followed
 * by a newline and an indent of 6 characters
 
+B19:
        movb @BST,A                     ; LDA BST           ; If we don't have fuel scoops fitted, skip the
-       jeq  $+7                        ; BEQ P%+7          ; following two instructions
+       jeq  B20                        ; BEQ B20           ; following two instructions
 
        li   A,>6f*256                  ; LDA #111          ; We do have fuel scoops fitted, so print recursive
        ; JSR plf2                      ; JSR plf2          ; token 111 ("FUEL SCOOPS"), followed by a newline and
 * an indent of 6 characters
 
+B20:
        movb @ECM,A                     ; LDA ECM           ; If we don't have an E.C.M. fitted, skip the following
-       jeq  $+7                        ; BEQ P%+7          ; two instructions
+       jeq  B21                        ; BEQ B21           ; two instructions
 
        li   A,>6c*256                  ; LDA #108          ; We do have an E.C.M. fitted, so print recursive token
        ; JSR plf2                      ; JSR plf2          ; 108 ("E.C.M.SYSTEM"), followed by a newline and an
 * indent of 6 characters
 
+B21:
        li   A,>71*256                  ; LDA #113          ; We now cover the four pieces of equipment whose flags
        ; STA XX4                       ; STA XX4           ; are stored in BOMB through BOMB+3, and whose names
 * correspond with text tokens 113 through 116:
@@ -9000,13 +9020,14 @@ stqv_:
        ; TAY                           ; TAY               ; Fetch byte BOMB+0 through BOMB+4 for values of XX4
        ; LDX BOMB-113,Y                ; LDX BOMB-113,Y    ; from 113 through 117
 
-       jeq  $+5                        ; BEQ P%+5          ; If it is zero then we do not own that piece of
+       jeq  B22                        ; BEQ B22           ; If it is zero then we do not own that piece of
 * equipment, so skip the next instruction
 
        ; JSR plf2                      ; JSR plf2          ; Print the recursive token in A from 113 ("ENERGY
 * BOMB") through 116 ("GALACTIC HYPERSPACE "), followed
 * by a newline and an indent of 6 characters
 
+B22:
        ; INC XX4                       ; INC XX4           ; Increment the counter (and A as well)
        movb @XX4,A                     ; LDA XX4           
 
@@ -9034,10 +9055,11 @@ st_:
 
        ; LDX CNT                       ; LDX CNT           ; If the laser power for view X has bit 7 clear, then it
        ; LDY LASER,X                   ; LDY LASER,X       ; is a pulse laser, so skip the following instruction
-       ; BPL P%+4                      ; BPL P%+4          
+       ; BPL B23                       ; BPL B23           
 
        li   A,>68*256                  ; LDA #104          ; Set A to token 104 ("BEAM LASER")
 
+B23:
        ; JSR plf2                      ; JSR plf2          ; Print the text token in A (which contains the laser
 * type) followed by a newline and an indent of 6
 * characters
@@ -9489,9 +9511,10 @@ tt34_:
 TT34:
 
        ; DEC T                         ; DEC T             ; Decrement T but keep T >= 0 (by incrementing it
-       ; BPL P%+4                      ; BPL P%+4          ; again if the above decrement made T negative)
+       ; BPL B24                       ; BPL B24           ; again if the above decrement made T negative)
        ; INC T                         ; INC T             
 
+B24:
        ; DEC XX17                      ; DEC XX17          ; Decrement the total number of characters left to
 * print, which we stored in XX17
 
@@ -9500,7 +9523,7 @@ TT34:
 * contains an ORA #&60 instruction, so RR3+1 is &60,
 * which is the opcode for an RTS)
 
-       jne  $+10                       ; BNE P%+10         ; If the result is positive (> 0) then we still have
+       jne  B25                        ; BNE B25           ; If the result is positive (> 0) then we still have
 * characters left to print, so loop back to TT35 (via
 * the JMP TT35 instruction below) to print the next
 * digit
@@ -9509,13 +9532,14 @@ TT34:
 * of digits that we wanted to, so restore the C flag
 * that we stored at the start of the routine
 
-       ; BCC P%+7                      ; BCC P%+7          ; If the C flag is clear, we don't want a decimal point,
+       ; BCC B25                       ; BCC B25           ; If the C flag is clear, we don't want a decimal point,
 * so loop back to TT35 (via the JMP TT35 instruction
 * below) to print the next digit
 
        li   A,('.')*256                ; LDA #'.'          ; Otherwise the C flag is set, so print the decimal
        ; JSR TT26                      ; JSR TT26          ; point
 
+B25:
        ; JMP TT35                      ; JMP TT35          ; Loop back to TT35 to print the next digit
 
 * ******************************************************************************
@@ -9614,7 +9638,7 @@ TT26:
 * the registers and returns from the subroutine
 
        ; CMP #7                        ; CMP #7            ; If this is a beep character (A = 7), jump to R5,
-       jeq  R5                         ; BEQ R5            ; which will emit the beep, restore the registers and
+       jeq  R5_                        ; BEQ R5_           ; which will emit the beep, restore the registers and
 * return from the subroutine
 
        ; CMP #32                       ; CMP #32           ; If this is an ASCII character (A >= 32), jump to RR1
@@ -9724,12 +9748,13 @@ RR1:
 
        ; ASL A                         ; ASL A             ; If bit 6 of the character is clear (A is 32-63)
        ; ASL A                         ; ASL A             ; then skip the following instruction
-       ; BCC P%+4                      ; BCC P%+4          
+       ; BCC B26                       ; BCC B26           
 
        ; LDX #&C1                      ; LDX #&C1          ; A is 64-126, so set X to point to page &C1
 
+B26:
        ; ASL A                         ; ASL A             ; If bit 5 of the character is clear (A is 64-95)
-       ; BCC P%+3                      ; BCC P%+3          ; then skip the following instruction
+       ; BCC B27                       ; BCC B27           ; then skip the following instruction
 
        ; INX                           ; INX               ; Increment X
 * 
@@ -9758,6 +9783,7 @@ RR1:
 * want, while A contains the low byte (the offset into
 * the page) of the address
 
+B27:
        ; STA P+1                       ; STA P+1           ; Store the address of this character's definition in
        ; STX P+2                       ; STX P+2           ; P(2 1)
 
@@ -9926,7 +9952,7 @@ rT9:
 
        ; RTS                           ; RTS               ; Return from the subroutine
 
-R5:
+R5_:
 
        ; JSR BEEP                      ; JSR BEEP          ; Call the BEEP subroutine to make a short, high beep
 
@@ -10028,7 +10054,7 @@ DIALS:
 * +8
 
        ; LDX BET1                      ; LDX BET1          ; Fetch the magnitude of the pitch angle beta, and if it
-       jeq  $+4                        ; BEQ P%+4          ; is 0 (i.e. we are not pitching), skip the next
+       jeq  B28                        ; BEQ B28           ; is 0 (i.e. we are not pitching), skip the next
 * instruction
 
        ; SBC #1                        ; SBC #1            ; The pitch angle beta is non-zero, so set A = A - 1
@@ -10038,6 +10064,7 @@ DIALS:
 * numbers with sign bits, rather than two's complement
 * numbers
 
+B28:
        ; JSR ADD                       ; JSR ADD           ; We now add A to S to give us a value in the range 1 to
 * 15, which we can pass to DIL2 to draw the vertical
 * bar on the indicator at this position (see the JSR ADD
@@ -10286,7 +10313,7 @@ PZW:
 
        ; AND FLH                       ; AND FLH           ; A will be zeroed if flashing colours are disabled
 
-       jeq  $+4                        ; BEQ P%+4          ; If A is zero, skip to the LDA instruction below
+       jeq  B29                        ; BEQ B29           ; If A is zero, skip to the LDA instruction below
 
        ; TXA                           ; TXA               ; Otherwise flashing colours are enabled and it's the
 * main loop iteration where we flash them, so set A to
@@ -10297,6 +10324,7 @@ PZW:
 * &2C &A9 &0F, or BIT &0FA9, which does nothing apart
 * from affect the flags
 
+B29:
        li   A,>0f*256                  ; LDA #&0F          ; Set A to dashboard colour 1 (red)
 
        ; RTS                           ; RTS               ; Return from the subroutine
@@ -10756,9 +10784,10 @@ VNT3:
 * palette bytes
 
        movb @LASCT,A                   ; LDA LASCT         ; Decrement the value of LASCT, but if we go too far
-       jeq  $+5                        ; BEQ P%+5          ; and it becomes negative, bump it back up again (this
+       jeq  B30                        ; BEQ B30           ; and it becomes negative, bump it back up again (this
        ; DEC LASCT                     ; DEC LASCT         ; controls the pulsing of pulse lasers)
 
+B30:
        movb @SVN,A                     ; LDA SVN           ; If SVN is non-zero, we are in the process of saving
        jne  jvec_                      ; BNE jvec          ; the commander file, so jump to jvec to pass control
 * to the next interrupt handler, so we don't break file
@@ -10812,13 +10841,14 @@ IRQ1:
        jne  VNT1                       ; BNE VNT1          ; mode 5 palette differently (so the dashboard is a
 * different colour if we have an escape pod)
 
+B31:
        movb @TVT1(Y),A                 ; LDA TVT1,Y        ; Copy the Y-th palette byte from TVT1 to SHEILA &21
        ; STA VIA+&21                   ; STA VIA+&21       ; to map logical to actual colours for the bottom part
 * of the screen (i.e. the dashboard)
 
        ; DEY                           ; DEY               ; Decrement the palette byte counter
 
-       ; BPL P%-7                      ; BPL P%-7          ; Loop back to the LDA TVT1,Y instruction until we have
+       ; BPL B31                       ; BPL B31           ; Loop back to the LDA TVT1,Y instruction until we have
 * copied all the palette bytes
 
 jvec_:
@@ -10904,13 +10934,14 @@ ESL1:
        ; JSR RESET                     ; JSR RESET         ; Call RESET to reset our ship and various controls
 
        ; PLA                           ; PLA               ; Restore the witchspace flag from before the escape pod
-       jeq  $+5                        ; BEQ P%+5          ; launch, and if we were in normal space, skip the
+       jeq  B32                        ; BEQ B32           ; launch, and if we were in normal space, skip the
 * following instruction
 
        ; JMP DEATH                     ; JMP DEATH         ; Launching an escape pod in witchspace is fatal, so
 * jump to DEATH to begin the funeral and return from the
 * subroutine using a tail call
 
+B32:
        ; LDX #16                       ; LDX #16           ; We lose all our cargo when using our escape pod, so
 * up a counter in X so we can zero the 17 cargo slots
 * in QQ20
@@ -11001,9 +11032,10 @@ TA34:
        li   A,>00*256                  ; LDA #0            ; Set A to x_hi OR y_hi OR z_hi
        ; JSR MAS4                      ; JSR MAS4          
 
-       jeq  $+5                        ; BEQ P%+5          ; If A = 0 then the missile is very close to our ship,
+       jeq  B33                        ; BEQ B33           ; If A = 0 then the missile is very close to our ship,
 * so skip the following instruction
 
+B33:
        ; JMP TA21                      ; JMP TA21          ; Jump down to part 3 to set up the vectors and skip
 * straight to aggressive manoeuvring
 
@@ -11184,13 +11216,14 @@ TACTICS:
        jeq  TA18                       ; BEQ TA18          ; missile tactics
 
        ; CPX #ESC                      ; CPX #ESC          ; If this is not an escape pod, skip the following two
-       jne  $+8                        ; BNE P%+8          ; instructions
+       jne  B34                        ; BNE B34           ; instructions
 
        ; JSR SPS1                      ; JSR SPS1          ; This is an escape pod, so call SPS1 to calculate the
 * vector to the planet and store it in XX15
 
        ; JMP TA15                      ; JMP TA15          ; Jump down to TA15
 
+B34:
        ; CPX #SST                      ; CPX #SST          ; If this is not the space station, jump down to TA13
        jne  TA13                       ; BNE TA13          
 
@@ -11345,11 +11378,12 @@ TA19:
 
        movb @TYPE,A                    ; LDA TYPE          ; If this is not a missile, skip the following
        ; CMP #MSL                      ; CMP #MSL          ; instruction
-       jne  $+5                        ; BNE P%+5          
+       jne  B35                        ; BNE B35           
 
        ; JMP TA20                      ; JMP TA20          ; This is a missile, so jump down to TA20 to get
 * straight into some aggressive manoeuvring
 
+B35:
        ; JSR DORND                     ; JSR DORND         ; Set A and X to random numbers
 
        ; CMP #250                      ; CMP #250          ; If A < 250 (97.5% chance), jump down to TA7 to skip
@@ -11720,11 +11754,12 @@ TA9:
 
        ; LDX TYPE                      ; LDX TYPE          ; If this is not a missile then skip the ASL instruction
        ; CPX #MSL                      ; CPX #MSL          
-       jne  $+3                        ; BNE P%+3          
+       jne  B36                        ; BNE B36           
 
        ; ASL A                         ; ASL A             ; This is a missile, so set A = -2, as missiles are more
 * nimble and can brake more quickly
 
+B36:
        ; STA INWK+28                   ; STA INWK+28       ; Set the ship's acceleration to A
 
 TA10:
@@ -12095,10 +12130,11 @@ ANGRY:
 * contains an RTS)
 
        ; CMP #CYL                      ; CMP #CYL          ; If this is not a Cobra Mk III trader, skip the
-       jne  $+5                        ; BNE P%+5          ; following instruction
+       jne  B37                        ; BNE B37           ; following instruction
 
        ; JSR AN2                       ; JSR AN2           ; Call AN2 to make the space station hostile
 
+B37:
        ; LDY #32                       ; LDY #32           ; Fetch the ship's byte #32 (AI flag)
        movb @ZERO_PAGE+INF,@R3LB       ; LDA (INF),Y       
        movb @ZERO_PAGE+INF+1,TMP       ;                   
@@ -13082,13 +13118,14 @@ MULT3:
 
 MUL2:
 
-       ; BCC P%+4                      ; BCC P%+4          ; If C (i.e. the next bit from K) is set, do the
+       ; BCC B38                       ; BCC B38           ; If C (i.e. the next bit from K) is set, do the
        ; ADC T                         ; ADC T             ; addition for this bit of K:
 * 
 * A = A + T + C
 * = A + |Q| - 1 + 1
 * = A + |Q|
 
+B38:
        ; ROR A                         ; ROR A             ; Shift A right by one place to catch the next digit
        ; ROR K+2                       ; ROR K+2           ; next digit of our result in the left end of K(2 1 0),
        ; ROR K+1                       ; ROR K+1           ; while also shifting K(2 1 0) right to fetch the next
@@ -13224,13 +13261,14 @@ MULTS:
 * keeping the running total in A, but instead of using a
 * loop like MU11, we just unroll it, starting with bit 0
 
-       ; BCC P%+4                      ; BCC P%+4          ; If C (i.e. the next bit from P) is set, do the
+       ; BCC B39                       ; BCC B39           ; If C (i.e. the next bit from P) is set, do the
        ; ADC T1                        ; ADC T1            ; addition for this bit of P:
 * 
 * A = A + T1 + C
 * = A + X - 1 + 1
 * = A + X
 
+B39:
        ; ROR A                         ; ROR A             ; Shift A right to catch the next digit of our result,
 * which the next ROR sticks into the left end of P while
 * also extracting the next bit of P
@@ -13239,23 +13277,27 @@ MULTS:
 * the start of P, and shift P right to fetch the next
 * bit for the calculation into the C flag
 
-       ; BCC P%+4                      ; BCC P%+4          ; Repeat the shift-and-add loop for bit 1
+       ; BCC B40                       ; BCC B40           ; Repeat the shift-and-add loop for bit 1
        ; ADC T1                        ; ADC T1            
+B40:
        ; ROR A                         ; ROR A             
        ; ROR P                         ; ROR P             
 
-       ; BCC P%+4                      ; BCC P%+4          ; Repeat the shift-and-add loop for bit 2
+       ; BCC B41                       ; BCC B41           ; Repeat the shift-and-add loop for bit 2
        ; ADC T1                        ; ADC T1            
+B41:
        ; ROR A                         ; ROR A             
        ; ROR P                         ; ROR P             
 
-       ; BCC P%+4                      ; BCC P%+4          ; Repeat the shift-and-add loop for bit 3
+       ; BCC B42                       ; BCC B42           ; Repeat the shift-and-add loop for bit 3
        ; ADC T1                        ; ADC T1            
+B42:
        ; ROR A                         ; ROR A             
        ; ROR P                         ; ROR P             
 
-       ; BCC P%+4                      ; BCC P%+4          ; Repeat the shift-and-add loop for bit 4
+       ; BCC B43                       ; BCC B43           ; Repeat the shift-and-add loop for bit 4
        ; ADC T1                        ; ADC T1            
+B43:
        ; ROR A                         ; ROR A             
        ; ROR P                         ; ROR P             
 
@@ -13459,13 +13501,14 @@ MU11:
 
 MUL6:
 
-       ; BCC P%+4                      ; BCC P%+4          ; If C (i.e. the next bit from P) is set, do the
+       ; BCC B44                       ; BCC B44           ; If C (i.e. the next bit from P) is set, do the
        ; ADC T                         ; ADC T             ; addition for this bit of P:
 * 
 * A = A + T + C
 * = A + X - 1 + 1
 * = A + X
 
+B44:
        ; ROR A                         ; ROR A             ; Shift A right to catch the next digit of our result,
 * which the next ROR sticks into the left end of P while
 * also extracting the next bit of P
@@ -13645,25 +13688,26 @@ MU7:
 * 
 * ******************************************************************************
 
-       ; {                             ; {                 
-       ; LDX Q                         ; LDX Q             
-       jeq  MU1                        ; BEQ MU1           
-       ; DEX                           ; DEX               
-       ; STX T                         ; STX T             
-       li   A,>00*256                  ; LDA #0            
-       ; LDX #8                        ; LDX #8            
-       ; LSR P                         ; LSR P             
-
-MUL6:
-
-       ; BCC P%+4                      ; BCC P%+4          
-       ; ADC T                         ; ADC T             
-       ; ROR A                         ; ROR A             
-       ; ROR P                         ; ROR P             
-       ; DEX                           ; DEX               
-       jne  MUL6                       ; BNE MUL6          
-       ; RTS                           ; RTS               
-       ; }                             ; }                 
+* {
+* LDX Q
+* BEQ MU1
+* DEX
+* STX T
+* LDA #0
+* LDX #8
+* LSR P
+* 
+* .MUL6
+* 
+* BCC B45
+* ADC T
+* .B45
+* ROR A
+* ROR P
+* DEX
+* BNE MUL6
+* RTS
+* }
 
 * ******************************************************************************
 * 
@@ -13889,13 +13933,14 @@ MULT1:
 
 MUL4:
 
-       ; BCC P%+4                      ; BCC P%+4          ; If C (i.e. the next bit from P) is set, do the
+       ; BCC B46                       ; BCC B46           ; If C (i.e. the next bit from P) is set, do the
        ; ADC T1                        ; ADC T1            ; addition for this bit of P:
 * 
 * A = A + T1 + C
 * = A + |Q| - 1 + 1
 * = A + |Q|
 
+B46:
        ; ROR A                         ; ROR A             ; As mentioned above, this ROR shifts A right and
 * catches bit 0 in C - giving another digit for our
 * result - and the next ROR sticks that bit into the
@@ -16014,10 +16059,11 @@ SCAN:
 * ellipse and took this code out for release
 
        ; CMP #MSL                      ; CMP #MSL          ; If this is not a missile, skip the following
-       jne  $+4                        ; BNE P%+4          ; instruction
+       jne  B47                        ; BNE B47           ; instruction
 
        ; LDX #&F0                      ; LDX #&F0          ; This is a missile, so set X to colour 2 (yellow/white)
 
+B47:
 * CMP #AST               \ These instructions are commented out in the original
 * BCC P%+4               \ source. See above for an explanation of what they do
 * LDX #&0F
@@ -16145,16 +16191,18 @@ SCD6:
 * and minimum below, but it might save a few cycles)
 
        ; CMP #194                      ; CMP #194          ; If A >= 194, skip the following instruction, as 194 is
-       ; BCS P%+4                      ; BCS P%+4          ; the minimum allowed value of A
+       ; BCS B48                       ; BCS B48           ; the minimum allowed value of A
 
        li   A,>c2*256                  ; LDA #194          ; A < 194, so set A to 194, the minimum allowed value
 * for the y-coordinate of our ship's dot
 
+B48:
        ; CMP #247                      ; CMP #247          ; If A < 247, skip the following instruction, as 246 is
-       ; BCC P%+4                      ; BCC P%+4          ; the maximum allowed value of A
+       ; BCC B49                       ; BCC B49           ; the maximum allowed value of A
 
 ld246_:
 
+B49:
        li   A,>f6*256                  ; LDA #246          ; A >= 247, so set A to 246, the maximum allowed value
 * for the y-coordinate of our ship's dot
 
@@ -16286,7 +16334,7 @@ RTS:
 * right pixel that the call to CPIX4 finished on)
 
        ; CPY #8                        ; CPY #8            ; If the row number in Y is less than 8, then it
-       jne  $+6                        ; BNE P%+6          ; correctly points at the next line down, so jump to
+       jne  VLL2                       ; BNE VLL2          ; correctly points at the next line down, so jump to
 * VLL2 to skip the following
 
        ; LDY #0                        ; LDY #0            ; We just incremented Y down through the bottom of the
@@ -16351,8 +16399,9 @@ WSCAN:
        li   A,>00*256                  ; LDA #0            ; Set DL to 0
        ; STA DL                        ; STA DL            
 
+B50:
        movb @DL,A                      ; LDA DL            ; Loop round these two instructions until DL is no
-       jeq  $-2                        ; BEQ P%-2          ; longer 0 (DL gets set to 30 in the LINSCN routine,
+       jeq  B50                        ; BEQ B50           ; longer 0 (DL gets set to 30 in the LINSCN routine,
 * which is run when vertical sync has occurred on the
 * video system, so DL will change to a non-zero value
 * at the start of each screen refresh)
@@ -16516,14 +16565,15 @@ kg_:
 
 TT20:
 
-       ; JSR P%+3                      ; JSR P%+3          ; This line calls the line below as a subroutine, which
+       ; JSR B51                       ; JSR B51           ; This line calls the line below as a subroutine, which
 * does two twists before returning here, and then we
 * fall through to the line below for another two
 * twists, so the net effect of these two consecutive
 * JSR calls is four twists, not counting the ones
 * inside your head as you try to follow this process
 
-       ; JSR P%+3                      ; JSR P%+3          ; This line calls TT54 as a subroutine to do a twist,
+B51:
+       ; JSR TT54                      ; JSR TT54          ; This line calls TT54 as a subroutine to do a twist,
 * and then falls through into TT54 to do another twist
 * before returning from the subroutine
 
@@ -17309,12 +17359,13 @@ TT15:
 * distance from the top-left corner of the screen)
 
        ; LDX QQ11                      ; LDX QQ11          ; If the current view is not the Short-range Chart,
-       ; BPL P%+4                      ; BPL P%+4          ; which is the only view with bit 7 set, then skip the
+       ; BPL B52                       ; BPL B52           ; which is the only view with bit 7 set, then skip the
 * following instruction
 
        li   A,>00*256                  ; LDA #0            ; This is the Short-range Chart, so set A to 0, so the
 * crosshairs can go right up against the screen edges
 
+B52:
        ; STA QQ19+5                    ; STA QQ19+5        ; Set QQ19+5 to A, which now contains the correct indent
 * for this view
 
@@ -17351,7 +17402,7 @@ TT84:
        ; CLC                           ; CLC               ; to get the x-coordinate of the right edge of the
        ; ADC QQ19+2                    ; ADC QQ19+2        ; crosshairs
 
-       ; BCC P%+4                      ; BCC P%+4          ; If the above addition didn't overflow, then A is
+       ; BCC B53                       ; BCC B53           ; If the above addition didn't overflow, then A is
 * correct, so skip the next instruction
 
        li   A,>ff*256                  ; LDA #255          ; The addition overflowed, so set A to 255 so the
@@ -17359,6 +17410,7 @@ TT84:
 * (as 255 is the x-coordinate of the rightmost pixel
 * on-screen)
 
+B53:
        ; STA XX15+2                    ; STA XX15+2        ; Set XX15+2 (X2) = A (the x-coordinate of the right
 * edge of the crosshairs)
 
@@ -18011,14 +18063,15 @@ TT212:
        ; INY                           ; INY               ; Y to point to the next item
 
        ; CPY #17                       ; CPY #17           ; If Y >= 17 then skip the next instruction as we have
-       ; BCS P%+5                      ; BCS P%+5          ; done the last item
+       ; BCS B54                       ; BCS B54           ; done the last item
 
        ; JMP TT211                     ; JMP TT211         ; Otherwise loop back to TT211 to print the next item
 * in the hold
 
+B54:
        movb @QQ11,A                    ; LDA QQ11          ; If the current view type in QQ11 is not 4 (Sell Cargo
        ; CMP #4                        ; CMP #4            ; screen), skip the next two instructions and just
-       jne  $+8                        ; BNE P%+8          ; return from the subroutine
+       jne  B55                        ; BNE B55           ; return from the subroutine
 
        ; JSR dn2                       ; JSR dn2           ; This is the Sell Cargo screen, so call dn2 to make a
 * short, high beep and delay for 1 second
@@ -18026,6 +18079,7 @@ TT212:
        ; JMP BAY2                      ; JMP BAY2          ; And then jump to BAY2 to display the Inventory
 * screen, as we have finished selling cargo
 
+B55:
        ; RTS                           ; RTS               ; Return from the subroutine
 
 * ******************************************************************************
@@ -18059,11 +18113,12 @@ TT213:
 
        movb @CRGO,A                    ; LDA CRGO          ; If our ship's cargo capacity is < 26 (i.e. we do not
        ; CMP #26                       ; CMP #26           ; have a cargo bay extension), skip the following two
-       ; BCC P%+7                      ; BCC P%+7          ; instructions
+       ; BCC B56                       ; BCC B56           ; instructions
 
        li   A,>6b*256                  ; LDA #107          ; We do have a cargo bay extension, so print recursive
        ; JSR TT27                      ; JSR TT27          ; token 107 ("LARGE CARGO{sentence case} BAY")
 
+B56:
        ; JMP TT210                     ; JMP TT210         ; Jump to TT210 to print the contents of our cargo bay
 * and return from the subroutine using a tail call
 
@@ -18343,7 +18398,7 @@ TT179:
        ; SBC QQ1                       ; SBC QQ1           
 
        ; CMP #38                       ; CMP #38           ; If the vertical distance in A is < 38, then the
-       ; BCC P%+6                      ; BCC P%+6          ; crosshairs are close enough to the current system to
+       ; BCC B57                       ; BCC B57           ; crosshairs are close enough to the current system to
 * appear in the Short-range Chart, so skip the next two
 * instructions
 
@@ -18352,6 +18407,7 @@ TT179:
 * appear in the Short-range Chart, so jump to TT180 to
 * return from the subroutine (as TT180 contains an RTS)
 
+B57:
        ; ASL A                         ; ASL A             ; Set QQ19+1 = 90 + A * 2
        ; CLC                           ; CLC               ; 
        ; ADC #90                       ; ADC #90           ; 90 is the y-coordinate of the centre of the chart,
@@ -18989,7 +19045,7 @@ hyp_:
        movb @QQ22+1,A                  ; LDA QQ22+1        ; Fetch QQ22+1, which contains the number that's shown
 * on-screen during hyperspace countdown
 
-       jne  zZ_+1                      ; BNE zZ+1          ; If it is non-zero, return from the subroutine (as zZ+1
+       jne  zZ_+1                      ; BNE zZ_+1         ; If it is non-zero, return from the subroutine (as zZ+1
 * contains an RTS), as there is already a countdown in
 * progress
 
@@ -19003,7 +19059,7 @@ hyp_:
 
        movb @QQ8,A                     ; LDA QQ8           ; If both bytes of the distance to the selected system
        ; ORA QQ8+1                     ; ORA QQ8+1         ; in QQ8 are zero, return from the subroutine (as zZ+1
-       jeq  zZ_+1                      ; BEQ zZ+1          ; contains an RTS), as the selected system is the
+       jeq  zZ_+1                      ; BEQ zZ_+1         ; contains an RTS), as the selected system is the
 * current system
 
        li   A,>07*256                  ; LDA #7            ; Move the text cursor to column 7, row 23 (in the
@@ -20482,9 +20538,10 @@ EQSHP:
        ; ADC #3                        ; ADC #3            ; now set to between 3 and 17)
 
        ; CMP #12                       ; CMP #12           ; If A >= 12 then set A = 12, so A is now set to between
-       ; BCC P%+4                      ; BCC P%+4          ; 3 and 12
+       ; BCC B58                       ; BCC B58           ; 3 and 12
        li   A,>0c*256                  ; LDA #12           
 
+B58:
        ; STA Q                         ; STA Q             ; Set QQ25 = A (so QQ25 is in the range 3-12 and
        ; STA QQ25                      ; STA QQ25          ; represents number of the most advanced item available
        ; INC Q                         ; INC Q             ; in this system, which we can pass to gnum below when
@@ -21177,11 +21234,12 @@ TT53:
 
        ; BIT QQ15                      ; BIT QQ15          ; Check bit 6 of s0_lo, which is stored in QQ15
 
-       ; BVS P%+3                      ; BVS P%+3          ; If bit 6 is set then skip over the next instruction
+       ; BVS B59                       ; BVS B59           ; If bit 6 is set then skip over the next instruction
 
        ; DEY                           ; DEY               ; Bit 6 is clear, so we only want to loop three times,
 * so decrement the loop counter in Y
 
+B59:
        ; STY T                         ; STY T             ; Store the loop counter in T
 
 TT55:
@@ -21189,7 +21247,7 @@ TT55:
        movb @QQ15+5,A                  ; LDA QQ15+5        ; Step 2: Load s2_hi, which is stored in QQ15+5, and
        ; AND #%00011111                ; AND #%00011111    ; extract bits 0-4 by AND'ing with %11111
 
-       jeq  $+7                        ; BEQ P%+7          ; If all those bits are zero, then skip the following
+       jeq  B60                        ; BEQ B60           ; If all those bits are zero, then skip the following
 * two instructions to go to step 3
 
        ; ORA #%10000000                ; ORA #%10000000    ; We now have a number in the range 1-31, which we can
@@ -21199,6 +21257,7 @@ TT55:
 
        ; JSR TT27                      ; JSR TT27          ; Print the two-letter token in A
 
+B60:
        ; JSR TT54                      ; JSR TT54          ; Step 3: twist the seeds in QQ15
 
        ; DEC T                         ; DEC T             ; Decrement the loop counter
@@ -21533,12 +21592,13 @@ TT27:
 * and return from the subroutine using a tail call
 
        ; DEX                           ; DEX               ; If token > 3, skip the following instruction
-       jne  $+5                        ; BNE P%+5          
+       jne  B61                        ; BNE B61           
 
        ; JMP cpl                       ; JMP cpl           ; This token is control code 3 (selected system name)
 * so jump to cpl to print the selected system name
 * and return from the subroutine using a tail call
 
+B61:
        ; DEX                           ; DEX               ; If token = 4, this is control code 4 (commander
        jeq  cmn_                       ; BEQ cmn           ; name), so jump to cmm to print the commander name
 * and return from the subroutine using a tail call
@@ -21548,20 +21608,22 @@ TT27:
 * and return from the subroutine using a tail call
 
        ; DEX                           ; DEX               ; If token > 6, skip the following three instructions
-       jne  $+7                        ; BNE P%+7          
+       jne  B62                        ; BNE B62           
 
        li   A,>80*256                  ; LDA #%10000000    ; This token is control code 6 (switch to Sentence
        ; STA QQ17                      ; STA QQ17          ; Case), so set bit 7 of QQ17 to switch to Sentence Case
        ; RTS                           ; RTS               ; and return from the subroutine as we are done
 
+B62:
        ; DEX                           ; DEX               ; If token > 8, skip the following two instructions
        ; DEX                           ; DEX               
-       jne  $+5                        ; BNE P%+5          
+       jne  B63                        ; BNE B63           
 
        ; STX QQ17                      ; STX QQ17          ; This token is control code 8 (switch to ALL CAPS), so
        ; RTS                           ; RTS               ; set QQ17 to 0 to switch to ALL CAPS and return from
 * the subroutine as we are done
 
+B63:
        ; DEX                           ; DEX               ; If token = 9, this is control code 9 (tab to column
        jeq  crlf_                      ; BEQ crlf          ; 21 and print a colon), so jump to crlf
 
@@ -21573,7 +21635,7 @@ TT27:
 * correct and doesn't need correcting)
 
        ; CMP #14                       ; CMP #14           ; If token < 14, skip the following two instructions
-       ; BCC P%+6                      ; BCC P%+6          
+       ; BCC B64                       ; BCC B64           
 
        ; CMP #32                       ; CMP #32           ; If token < 32, then this means token is in 14-31, so
        ; BCC qw                        ; BCC qw            ; this is a recursive token that needs 114 adding to it
@@ -21584,6 +21646,7 @@ TT27:
 * (line feeds and carriage returns), or in 32-95
 * (ASCII letters, numbers and punctuation)
 
+B64:
        ; LDX QQ17                      ; LDX QQ17          ; Fetch QQ17, which controls letter case, into X
 
        jeq  TT74                       ; BEQ TT74          ; If QQ17 = 0, then ALL CAPS is set, so jump to TT74
@@ -22084,10 +22147,11 @@ TT50:
        ; INY                           ; INY               ; Increment Y to point to the next character in the
 * token we are printing
 
-       jne  $+4                        ; BNE P%+4          ; If Y is zero then we have just crossed into a new
+       jne  B65                        ; BNE B65           ; If Y is zero then we have just crossed into a new
        ; INC V+1                       ; INC V+1           ; page, so increment V+1 so that V points to the start
 * of the new page
 
+B65:
        movb @ZERO_PAGE+V,@R3LB         ; LDA (V),Y         ; Load the next character we want to print into A
        movb @ZERO_PAGE+V+1,TMP         ;                   
        movb *TMP,A                     ;                   
@@ -22123,23 +22187,25 @@ DOEXP:
 
        movb @INWK+31,A                 ; LDA INWK+31       ; If bit 6 of the ship's byte #31 is clear, then the
        ; AND #%01000000                ; AND #%01000000    ; ship is not already exploding so there is no existing
-       jeq  $+5                        ; BEQ P%+5          ; explosion cloud to remove, so skip the following
+       jeq  B66                        ; BEQ B66           ; explosion cloud to remove, so skip the following
 * instruction
 
        ; JSR PTCLS                     ; JSR PTCLS         ; Call PTCLS to remove the existing cloud by drawing it
 * again
 
+B66:
        movb @INWK+6,A                  ; LDA INWK+6        ; Set T = z_lo
        ; STA T                         ; STA T             
 
        movb @INWK+7,A                  ; LDA INWK+7        ; Set A = z_hi, so (A T) = z
 
        ; CMP #32                       ; CMP #32           ; If z_hi < 32, skip the next two instructions
-       ; BCC P%+6                      ; BCC P%+6          
+       ; BCC B67                       ; BCC B67           
 
        li   A,>fe*256                  ; LDA #&FE          ; Set A = 254 and jump to yy (this BNE is effectively a
        jne  yy_                        ; BNE yy            ; JMP, as A is never zero)
 
+B67:
        ; ASL T                         ; ASL T             ; Shift (A T) left twice
        ; ROL A                         ; ROL A             
        ; ASL T                         ; ASL T             
@@ -22186,11 +22252,12 @@ yy_:
 * (A R) = 256 * cloud counter / distance
 
        ; CMP #&1C                      ; CMP #&1C          ; If A < 28, skip the next two instructions
-       ; BCC P%+6                      ; BCC P%+6          
+       ; BCC B68                       ; BCC B68           
 
        li   A,>fe*256                  ; LDA #&FE          ; Set A = 254 and skip the following (this BNE is
        jne  LABEL_1                    ; BNE LABEL_1       ; effectively a JMP as A is never zero)
 
+B68:
        ; ASL R                         ; ASL R             ; Shift (A R) left three times to multiply by 8
        ; ROL A                         ; ROL A             
        ; ASL R                         ; ASL R             
@@ -22268,13 +22335,14 @@ PTCLS:
 * the cloud counter. We are now going to process this
 * into the number of particles in each vertex's cloud
 
-       ; BPL P%+4                      ; BPL P%+4          ; If the cloud counter < 128, then we are in the first
+       ; BPL B69                       ; BPL B69           ; If the cloud counter < 128, then we are in the first
 * half of the cloud's existence, so skip the next
 * instruction
 
        ; EOR #&FF                      ; EOR #&FF          ; Flip the value of A so that in the second half of the
 * cloud's existence, A counts down instead of up
 
+B69:
        ; LSR A                         ; LSR A             ; Divide A by 8 so that is has a maximum value of 15
        ; LSR A                         ; LSR A             
        ; LSR A                         ; LSR A             
@@ -22901,12 +22969,13 @@ DENGY:
 
        ; PHP                           ; PHP               ; Save the flags on the stack
 
-       jne  $+5                        ; BNE P%+5          ; If the energy levels are not yet zero, skip the
+       jne  B70                        ; BNE B70           ; If the energy levels are not yet zero, skip the
 * following instruction
 
        ; INC ENERGY                    ; INC ENERGY        ; The minimum allowed energy level is 1, and we just
 * reached 0, so increment ENERGY back to 1
 
+B70:
        ; PLP                           ; PLP               ; Restore the flags from the stack, so we return with
 * the Z flag from the DEC instruction above
 
@@ -23107,13 +23176,14 @@ SP2:
 * station in the compass is in front of us
 
        ; LDX XX15+2                    ; LDX XX15+2        ; If the z-coordinate of the XX15 vector is positive,
-       ; BPL P%+4                      ; BPL P%+4          ; skip the following instruction
+       ; BPL B71                       ; BPL B71           ; skip the following instruction
 
        li   A,>ff*256                  ; LDA #&FF          ; The z-coordinate of XX15 is negative, so the planet or
 * station is behind us and the compass dot should be in
 * green/cyan, so set A to a 4-pixel mode 5 byte row in
 * colour 3
 
+B71:
        ; STA COMC                      ; STA COMC          ; Store the compass colour in COMC
 
 * Fall through into DOT to draw the dot on the compass
@@ -23393,18 +23463,20 @@ OO3:
 * appear to drain away four times faster than the
 * shields did)
 
-       jeq  $+4                        ; BEQ P%+4          ; If we have just run out of energy, skip the next
+       jeq  B72                        ; BEQ B72           ; If we have just run out of energy, skip the next
 * instruction to jump straight to our death
 
-       ; BCS P%+5                      ; BCS P%+5          ; If the C flag is set, then subtracting the damage from
+       ; BCS B73                       ; BCS B73           ; If the C flag is set, then subtracting the damage from
 * the energy banks didn't underflow, so we had enough
 * energy to survive, and we can skip the next
 * instruction to make a sound and take some damage
 
+B72:
        ; JMP DEATH                     ; JMP DEATH         ; Otherwise our energy levels are either 0 or negative,
 * and in either case that means we jump to our DEATH,
 * returning from the subroutine using a tail call
 
+B73:
        ; JSR EXNO3                     ; JSR EXNO3         ; We didn't die, so call EXNO3 to make the sound of a
 * collision
 
@@ -23783,11 +23855,12 @@ NW2:
 
        ; TAX                           ; TAX               ; Copy the ship type into X
 
-       ; BMI P%+5                      ; BMI P%+5          ; If the ship type is negative (planet or sun), then
+       ; BMI B74                       ; BMI B74           ; If the ship type is negative (planet or sun), then
 * skip the following instruction
 
        ; INC MANY,X                    ; INC MANY,X        ; Increment the total number of ships of type X
 
+B74:
        ; LDY #NI%-1                    ; LDY #NI%-1        ; The final step is to copy the new ship's data block
 * from INWK to INF, so set up a counter for NI% bytes
 * in Y
@@ -24302,7 +24375,7 @@ PL2:
        movb @TYPE,A                    ; LDA TYPE          ; Shift bit 0 of the planet/sun's type into the C flag
        ; LSR A                         ; LSR A             
 
-       ; BCS P%+5                      ; BCS P%+5          ; If the planet/sun's type has bit 0 clear, then it's
+       ; BCS B75                       ; BCS B75           ; If the planet/sun's type has bit 0 clear, then it's
 * either 128 or 130, which is a planet; meanwhile, the
 * sun has type 129, which has bit 0 set. So if this is
 * the sun, skip the following instruction
@@ -24311,6 +24384,7 @@ PL2:
 * screen, returning from the subroutine using a tail
 * call
 
+B75:
        ; JMP WPLS                      ; JMP WPLS          ; This is the sun, so jump to WPLS to remove it from
 * screen, returning from the subroutine using a tail
 * call
@@ -24742,12 +24816,13 @@ PLS1:
 
        ; LDY K+1                       ; LDY K+1           ; Fetch the second byte of the result into Y
 
-       jeq  $+4                        ; BEQ P%+4          ; If the second byte is 0, skip the next instruction
+       jeq  B76                        ; BEQ B76           ; If the second byte is 0, skip the next instruction
 
        li   A,>fe*256                  ; LDA #254          ; The second byte is non-zero, so the result won't fit
 * into one byte, so set A = 254 as our maximum one-byte
 * value to return
 
+B76:
        ; LDY K+3                       ; LDY K+3           ; Fetch the sign of the result from K+3 into Y
 
        ; INX                           ; INX               ; Add 2 to X so the index points to the next coordinate
@@ -25115,9 +25190,10 @@ PL43:
 * the updated value of CNT in A
 
        ; CMP TGT                       ; CMP TGT           ; If CNT > TGT then jump to PL40 to stop drawing the
-       jeq  $+4                        ; BEQ P%+4          ; ellipse (which is how we draw half-ellipses)
+       jeq  B77                        ; BEQ B77           ; ellipse (which is how we draw half-ellipses)
        ; BCS PL40                      ; BCS PL40          
 
+B77:
        movb @CNT2,A                    ; LDA CNT2          ; Set CNT2 = (CNT2 + STP) mod 64
        ; CLC                           ; CLC               
        ; ADC STP                       ; ADC STP           
@@ -25889,10 +25965,11 @@ PL38:
 * CNT by STP, the step size
 
        ; CMP #65                       ; CMP #65           ; If CNT >= 65 then skip the next instruction
-       ; BCS P%+5                      ; BCS P%+5          
+       ; BCS B78                       ; BCS B78           
 
        ; JMP PLL3                      ; JMP PLL3          ; Jump back for the next segment
 
+B78:
        ; CLC                           ; CLC               ; Clear the C flag to indicate success
 
        ; RTS                           ; RTS               ; Return from the subroutine
@@ -26036,13 +26113,14 @@ WPL2:
 * gives us the half-width of the sun's line on this line
 * of the screen
 
-       jeq  $+5                        ; BEQ P%+5          ; If A = 0, skip the following call to HLOIN2 as there
+       jeq  B79                        ; BEQ B79           ; If A = 0, skip the following call to HLOIN2 as there
 * is no sun line on this line of the screen
 
        ; JSR HLOIN2                    ; JSR HLOIN2        ; Call HLOIN2 to draw a horizontal line on pixel line Y,
 * with centre point YY(1 0) and half-width A, and remove
 * the line from the sun line heap once done
 
+B79:
        ; DEY                           ; DEY               ; Decrement the loop counter
 
        jne  WPL2                       ; BNE WPL2          ; Loop back for the next line in the line heap until
@@ -26114,7 +26192,7 @@ EDGES:
        ; BMI ED1                       ; BMI ED1           ; If the addition is negative then the calculation has
 * overflowed, so jump to ED1 to return a failure
 
-       jeq  $+6                        ; BEQ P%+6          ; If the high byte A from the result is 0, skip the
+       jeq  B80                        ; BEQ B80           ; If the high byte A from the result is 0, skip the
 * next two instructions, as the result already fits on
 * the screen
 
@@ -26122,6 +26200,7 @@ EDGES:
        ; STA X2                        ; STA X2            ; past the right edge of the screen, so clip X2 to the
 * x-coordinate of the right edge of the screen
 
+B80:
        movb @YY,A                      ; LDA YY            ; We now calculate:
        ; SEC                           ; SEC               ; 
        ; SBC T                         ; SBC T             ; (A X1) = YY(1 0) - argument A
@@ -26465,7 +26544,7 @@ PLS4:
 * radians)
 
        ; LDX INWK+14                   ; LDX INWK+14       ; If nosev_z_hi is negative, skip the following
-       ; BMI P%+4                      ; BMI P%+4          ; instruction to leave the angle in A as a positive
+       ; BMI B81                       ; BMI B81           ; instruction to leave the angle in A as a positive
 * integer in the range 0 to 128 (so when we calculate
 * CNT2 below, it will be in the right half of the
 * anti-clockwise arc that we describe when drawing
@@ -26481,6 +26560,7 @@ PLS4:
 * circles, i.e. from 12 o'clock, through 9 o'clock and
 * on to 6 o'clock)
 
+B81:
        ; LSR A                         ; LSR A             ; Set CNT2 = A / 4
        ; LSR A                         ; LSR A             
        ; STA CNT2                      ; STA CNT2          
@@ -26733,21 +26813,25 @@ TJ1:
        ; LDY #0                        ; LDY #0            ; which we now increase or decrease appropriately
 
        ; CMP #&19                      ; CMP #&19          ; If left arrow was pressed, set X = X - 1
-       jne  $+3                        ; BNE P%+3          
+       jne  B82                        ; BNE B82           
        ; DEX                           ; DEX               
 
+B82:
        ; CMP #&79                      ; CMP #&79          ; If right arrow was pressed, set X = X + 1
-       jne  $+3                        ; BNE P%+3          
+       jne  B83                        ; BNE B83           
        ; INX                           ; INX               
 
+B83:
        ; CMP #&39                      ; CMP #&39          ; If up arrow was pressed, set Y = Y + 1
-       jne  $+3                        ; BNE P%+3          
+       jne  B84                        ; BNE B84           
        ; INY                           ; INY               
 
+B84:
        ; CMP #&29                      ; CMP #&29          ; If down arrow was pressed, set Y = Y - 1
-       jne  $+3                        ; BNE P%+3          
+       jne  B85                        ; BNE B85           
        ; DEY                           ; DEY               
 
+B85:
        ; RTS                           ; RTS               ; Return from the subroutine
 
 * ******************************************************************************
@@ -27505,10 +27589,11 @@ RES2:
        ; STA ALP1                      ; STA ALP1          ; Reset ALP1 (magnitude of roll angle alpha) to 3
 
        movb @SSPR,A                    ; LDA SSPR          ; Fetch the "space station present" flag, and if we are
-       jeq  $+5                        ; BEQ P%+5          ; not inside the safe zone, skip the next instruction
+       jeq  B86                        ; BEQ B86           ; not inside the safe zone, skip the next instruction
 
        ; JSR SPBLB                     ; JSR SPBLB         ; Light up the space station bulb on the dashboard
 
+B86:
        movb @ECMA,A                    ; LDA ECMA          ; Fetch the E.C.M. status flag, and if E.C.M. is off,
        jeq  yu_                        ; BEQ yu            ; skip the next instruction
 
@@ -27880,7 +27965,7 @@ me3_:
 
        ; DEC MCNT                      ; DEC MCNT          ; Decrement the main loop counter in MCNT
 
-       jeq  $+5                        ; BEQ P%+5          ; If the counter has reached zero, which it will do
+       jeq  B87                        ; BEQ B87           ; If the counter has reached zero, which it will do
 * every 256 main loops, skip the next JMP instruction
 * (or to put it another way, if the counter hasn't
 * reached zero, jump down to MLOOP, skipping all the
@@ -27904,6 +27989,7 @@ ytq_:
 * time it will either be an asteroid (98.5% chance) or,
 * very rarely, a cargo canister (1.5% chance)
 
+B87:
        movb @MJ,A                      ; LDA MJ            ; If we are in witchspace following a mis-jump, skip the
        jne  ytq_                       ; BNE ytq           ; following by jumping down to MLOOP (via ytq above)
 
@@ -27987,10 +28073,11 @@ MTT3:
 
        ; CMP #5                        ; CMP #5            ; Set A to the ship number of an asteroid, and keep
        li   A,(AST)*256                ; LDA #AST          ; this value for 98.5% of the time (i.e. if random
-       ; BCS P%+4                      ; BCS P%+4          ; A >= 5 then skip the following instruction)
+       ; BCS B88                       ; BCS B88           ; A >= 5 then skip the following instruction)
 
        li   A,(OIL)*256                ; LDA #OIL          ; Set A to the ship number of a cargo canister
 
+B88:
        ; JSR NWSHP                     ; JSR NWSHP         ; Add our new asteroid or canister to the universe
 
 * ******************************************************************************
@@ -28026,7 +28113,7 @@ MTT1:
        ; ASL A                         ; ASL A             ; Double A to a maximum of 80 or 140
 
        ; LDX MANY+COPS                 ; LDX MANY+COPS     ; If there are no cops in the local bubble, skip the
-       jeq  $+5                        ; BEQ P%+5          ; next instruction
+       jeq  B89                        ; BEQ B89           ; next instruction
 
        ; ORA FIST                      ; ORA FIST          ; There are cops in the vicinity and we've got a hold
 * full of jail time, so OR the value in A with FIST to
@@ -28034,6 +28121,7 @@ MTT1:
 * values, to reflect the fact that they have almost
 * certainly scanned our ship
 
+B89:
        ; STA T                         ; STA T             ; Store our badness level in T
 
        ; JSR Ze                        ; JSR Ze            ; Call Ze to initialise INWK to a potentially hostile
@@ -28046,7 +28134,7 @@ MTT1:
 * "Fixing ship positions" for details
 
        ; CMP T                         ; CMP T             ; If the random value in A >= our badness level, which
-       ; BCS P%+7                      ; BCS P%+7          ; will be the case unless we have been really, really
+       ; BCS B90                       ; BCS B90           ; will be the case unless we have been really, really
 * bad, then skip the following two instructions (so
 * if we are really bad, there's a higher chance of
 * spawning a cop, otherwise we got away with it, for
@@ -28055,6 +28143,7 @@ MTT1:
        li   A,(COPS)*256               ; LDA #COPS         ; Add a new police ship to the local bubble
        ; JSR NWSHP                     ; JSR NWSHP         
 
+B90:
        movb @MANY+COPS,A               ; LDA MANY+COPS     ; If we now have at least one cop in the local bubble,
        jne  MLOOP                      ; BNE MLOOP         ; jump down to MLOOP, otherwise fall through into the
 * next part to look at spawning something else
@@ -28232,15 +28321,16 @@ EE20:
        ; JSR DIALS                     ; JSR DIALS         ; Call DIALS to update the dashboard
 
        movb @QQ11,A                    ; LDA QQ11          ; If this is a space view, skip the following four
-       jeq  $+11                       ; BEQ P%+11         ; instructions (i.e. jump to JSR TT17 below)
+       jeq  B91                        ; BEQ B91           ; instructions (i.e. jump to JSR TT17 below)
 
        ; AND PATG                      ; AND PATG          ; If PATG = &FF (author names are shown on start-up)
        ; LSR A                         ; LSR A             ; and bit 0 of QQ11 is 1 (the current view is type 1),
-       ; BCS P%+5                      ; BCS P%+5          ; then skip the following instruction
+       ; BCS B91                       ; BCS B91           ; then skip the following instruction
 
        ; JSR DELAY-5                   ; JSR DELAY-5       ; Delay for 8 vertical syncs (8/50 = 0.16 seconds), to
 * slow the main loop down a bit
 
+B91:
        ; JSR TT17                      ; JSR TT17          ; Scan the keyboard for the cursor keys or joystick,
 * returning the cursor's delta values in X and Y and
 * the key pressed in A
@@ -28297,11 +28387,12 @@ tha_:
        ; JSR DORND                     ; JSR DORND         ; Set A and X to random numbers
 
        ; CMP #200                      ; CMP #200          ; If A < 200 (78% chance), skip the next instruction
-       ; BCC P%+5                      ; BCC P%+5          
+       ; BCC B92                       ; BCC B92           
 
        ; JSR GTHG                      ; JSR GTHG          ; Call GTHG to spawn a Thargoid ship and a Thargon
 * companion
 
+B92:
        ; JMP MLOOP                     ; JMP MLOOP         ; Jump back into the main loop at MLOOP, which is just
 * after the ship-spawning section
 
@@ -28344,17 +28435,20 @@ tha_:
 TT102:
 
        ; CMP #f8                       ; CMP #f8           ; If red key f8 was pressed, jump to STATUS to show the
-       jne  $+5                        ; BNE P%+5          ; Status Mode screen, returning from the subroutine
+       jne  B93                        ; BNE B93           ; Status Mode screen, returning from the subroutine
        ; JMP STATUS                    ; JMP STATUS        ; using a tail call
 
+B93:
        ; CMP #f4                       ; CMP #f4           ; If red key f4 was pressed, jump to TT22 to show the
-       jne  $+5                        ; BNE P%+5          ; Long-range Chart, returning from the subroutine using
+       jne  B94                        ; BNE B94           ; Long-range Chart, returning from the subroutine using
        ; JMP TT22                      ; JMP TT22          ; a tail call
 
+B94:
        ; CMP #f5                       ; CMP #f5           ; If red key f5 was pressed, jump to TT23 to show the
-       jne  $+5                        ; BNE P%+5          ; Short-range Chart, returning from the subroutine using
+       jne  B95                        ; BNE B95           ; Short-range Chart, returning from the subroutine using
        ; JMP TT23                      ; JMP TT23          ; a tail call
 
+B95:
        ; CMP #f6                       ; CMP #f6           ; If red key f6 was pressed, call TT111 to select the
        jne  TT92                       ; BNE TT92          ; system nearest to galactic coordinates (QQ9, QQ10)
        ; JSR TT111                     ; JSR TT111         ; (the location of the chart crosshairs) and jump to
@@ -28364,13 +28458,15 @@ TT102:
 TT92:
 
        ; CMP #f9                       ; CMP #f9           ; If red key f9 was pressed, jump to TT213 to show the
-       jne  $+5                        ; BNE P%+5          ; Inventory screen, returning from the subroutine
+       jne  B96                        ; BNE B96           ; Inventory screen, returning from the subroutine
        ; JMP TT213                     ; JMP TT213         ; using a tail call
 
+B96:
        ; CMP #f7                       ; CMP #f7           ; If red key f7 was pressed, jump to TT167 to show the
-       jne  $+5                        ; BNE P%+5          ; Market Price screen, returning from the subroutine
+       jne  B97                        ; BNE B97           ; Market Price screen, returning from the subroutine
        ; JMP TT167                     ; JMP TT167         ; using a tail call
 
+B97:
        ; CMP #f0                       ; CMP #f0           ; If red key f0 was pressed, jump to TT110 to launch our
        jne  fvw_                       ; BNE fvw           ; ship (if docked), returning from the subroutine using
        ; JMP TT110                     ; JMP TT110         ; a tail call
@@ -28382,17 +28478,20 @@ fvw_:
 * for f1-f3 and "@" (save commander file) key presses
 
        ; CMP #f3                       ; CMP #f3           ; If red key f3 was pressed, jump to EQSHP to show the
-       jne  $+5                        ; BNE P%+5          ; Equip Ship screen, returning from the subroutine using
+       jne  B98                        ; BNE B98           ; Equip Ship screen, returning from the subroutine using
        ; JMP EQSHP                     ; JMP EQSHP         ; a tail call
 
+B98:
        ; CMP #f1                       ; CMP #f1           ; If red key f1 was pressed, jump to TT219 to show the
-       jne  $+5                        ; BNE P%+5          ; Buy Cargo screen, returning from the subroutine using
+       jne  B99                        ; BNE B99           ; Buy Cargo screen, returning from the subroutine using
        ; JMP TT219                     ; JMP TT219         ; a tail call
 
+B99:
        ; CMP #&47                      ; CMP #&47          ; If "@" was pressed, jump to SVE to save the commander
-       jne  $+5                        ; BNE P%+5          ; file, returning from the subroutine using a tail call
+       jne  B100                       ; BNE B100          ; file, returning from the subroutine using a tail call
        ; JMP SVE                       ; JMP SVE           
 
+B100:
        ; CMP #f2                       ; CMP #f2           ; If red key f2 was pressed, jump to TT208 to show the
        jne  LABEL_3                    ; BNE LABEL_3       ; Sell Cargo screen, returning from the subroutine using
        ; JMP TT208                     ; JMP TT208         ; a tail call
@@ -28417,9 +28516,10 @@ INSP:
 LABEL_3:
 
        ; CMP #&54                      ; CMP #&54          ; If "H" was pressed, jump to hyp to do a hyperspace
-       jne  $+5                        ; BNE P%+5          ; jump (if we are in space), returning from the
+       jne  B101                       ; BNE B101          ; jump (if we are in space), returning from the
        ; JMP hyp                       ; JMP hyp           ; subroutine using a tail call
 
+B101:
        ; CMP #&32                      ; CMP #&32          ; If "D" was pressed, jump to T95 to print the distance
        jeq  T95                        ; BEQ T95           ; to a system (if we are in one of the chart screens)
 
@@ -28955,6 +29055,7 @@ QUL1:
 * If the commander check below fails, we keep jumping
 * back to here to crash the game with an infinite loop
 
+B102:
        ; JSR CHECK                     ; JSR CHECK         ; Call the CHECK subroutine to calculate the checksum
 * for the current commander block at NA%+8 and put it
 * in A
@@ -28966,7 +29067,7 @@ QUL1:
        ; NOP                           ; NOP               ; of the comparison and fall through into the next part
 
 
-       jne  $-6                        ; BNE P%-6          ; If the calculated checksum does not match CHK, then
+       jne  B102                       ; BNE B102          ; If the calculated checksum does not match CHK, then
 * loop back to repeat the check - in other words, we
 * enter an infinite loop here, as the checksum routine
 * will keep returning the same incorrect value
@@ -30918,13 +31019,15 @@ DKL2:
 * roll rate by if the roll keys are being pressed
 
        ; LDY KL+3                      ; LDY KL+3          ; If the "<" key is being pressed, then call the BUMP2
-       jeq  $+5                        ; BEQ P%+5          ; routine to increase the roll rate in X by A
+       jeq  B103                       ; BEQ B103          ; routine to increase the roll rate in X by A
        ; JSR BUMP2                     ; JSR BUMP2         
 
+B103:
        ; LDY KL+4                      ; LDY KL+4          ; If the ">" key is being pressed, then call the REDU2
-       jeq  $+5                        ; BEQ P%+5          ; routine to decrease the roll rate in X by A, taking
+       jeq  B104                       ; BEQ B104          ; routine to decrease the roll rate in X by A, taking
        ; JSR REDU2                     ; JSR REDU2         ; the keyboard auto re-centre setting into account
 
+B104:
        ; STX JSTX                      ; STX JSTX          ; Store the updated roll rate in JSTX
 
        ; ASL A                         ; ASL A             ; Double the value of A, to 14
@@ -30933,13 +31036,15 @@ DKL2:
 * DC indicator on the dashboard)
 
        ; LDY KL+5                      ; LDY KL+5          ; If the "X" key is being pressed, then call the REDU2
-       jeq  $+5                        ; BEQ P%+5          ; routine to decrease the pitch rate in X by A, taking
+       jeq  B105                       ; BEQ B105          ; routine to decrease the pitch rate in X by A, taking
        ; JSR REDU2                     ; JSR REDU2         ; the keyboard auto re-centre setting into account
 
+B105:
        ; LDY KL+6                      ; LDY KL+6          ; If the "S" key is being pressed, then call the BUMP2
-       jeq  $+5                        ; BEQ P%+5          ; routine to increase the pitch rate in X by A
+       jeq  B106                       ; BEQ B106          ; routine to increase the pitch rate in X by A
        ; JSR BUMP2                     ; JSR BUMP2         
 
+B106:
        ; STX JSTY                      ; STX JSTY          ; Store the updated roll rate in JSTY
 
 * Fall through into DK4 to scan for other keys
@@ -31028,11 +31133,12 @@ DK55:
 DK7:
 
        ; CPX #&70                      ; CPX #&70          ; If ESCAPE is not being pressed, skip over the next
-       jne  $+5                        ; BNE P%+5          ; instruction
+       jne  B107                       ; BNE B107          ; instruction
 
        ; JMP DEATH2                    ; JMP DEATH2        ; ESCAPE is being pressed, so jump to DEATH2 to end
 * the game
 
+B107:
        ; CPX #&59                      ; CPX #&59          ; If DELETE is not being pressed, we are still paused,
        jne  FREEZE                     ; BNE FREEZE        ; so loop back up to keep listening for configuration
 * keys, otherwise fall through into the rest of the
@@ -31731,7 +31837,7 @@ TIL2:
        ; ASL A                         ; ASL A             ; Shift A to the left
 
        ; CMP Q                         ; CMP Q             ; If A < Q skip the following subtraction
-       ; BCC P%+4                      ; BCC P%+4          
+       ; BCC B108                      ; BCC B108          
 
        ; SBC Q                         ; SBC Q             ; A >= Q, so set A = A - Q
 * 
@@ -31740,6 +31846,7 @@ TIL2:
 * know that A >= Q, so the C flag will still be set once
 * we are done
 
+B108:
        ; ROL T                         ; ROL T             ; Rotate the counter in T to the left, and catch the
 * result bit into bit 0 (which will be a 0 if we didn't
 * do the subtraction, or 1 if we did)
@@ -31892,7 +31999,7 @@ DVL2:
        ; ROL A                         ; ROL A             ; Shift A to the left
 
        ; CMP Q                         ; CMP Q             ; If A < Q skip the following subtraction
-       ; BCC P%+4                      ; BCC P%+4          
+       ; BCC B109                      ; BCC B109          
 
        ; SBC Q                         ; SBC Q             ; Set A = A - Q
 * 
@@ -31901,6 +32008,7 @@ DVL2:
 * know that A >= Q, so the C flag will still be set once
 * we are done
 
+B109:
        ; ROL P                         ; ROL P             ; Rotate P(1 0) to the left, and catch the result bit
        ; ROL P+1                       ; ROL P+1           ; into the C flag (which will be a 0 if we didn't
 * do the subtraction, or 1 if we did)
@@ -32196,10 +32304,11 @@ LL31:
 * subtraction
 
        ; CMP Q                         ; CMP Q             ; If A < Q, skip the following subtraction
-       ; BCC P%+4                      ; BCC P%+4          
+       ; BCC B110                      ; BCC B110          
 
        ; SBC Q                         ; SBC Q             ; A >= Q, so set A = A - Q
 
+B110:
        ; ROL R                         ; ROL R             ; Rotate the counter in R to the left, and catch the
 * result bit into bit 0 (which will be a 0 if we didn't
 * do the subtraction, or 1 if we did)
@@ -32272,13 +32381,14 @@ LL39:
        ; SEC                           ; SEC               
        ; SBC Q                         ; SBC Q             
 
-       ; BCC P%+4                      ; BCC P%+4          ; If the subtraction underflowed, skip the next two
+       ; BCC B111                      ; BCC B111          ; If the subtraction underflowed, skip the next two
 * instructions so we can negate the result
 
        ; CLC                           ; CLC               ; Otherwise the result is correct, and S contains the
 * correct sign of the result as R is the dominant side
 * of the subtraction, so clear the C flag
 
+B111:
        ; RTS                           ; RTS               ; And return from the subroutine
 
 * If we get here we need to negate both the result and
@@ -33383,12 +33493,13 @@ LL89:
        ; PLA                           ; PLA               ; Pull the dot product off the stack into A
 
        ; BIT S                         ; BIT S             ; If bit 7 of S is set, i.e. the dot product is
-       ; BMI P%+4                      ; BMI P%+4          ; negative, then this face is visible as its normal is
+       ; BMI B112                      ; BMI B112          ; negative, then this face is visible as its normal is
 * pointing towards us, so skip the following instruction
 
        li   A,>00*256                  ; LDA #0            ; Otherwise the face is not visible, so set A = 0 so we
 * can store this to mean "not visible"
 
+B112:
        ; STA XX2,X                     ; STA XX2,X         ; Store the face's visibility in the X-th byte of XX2
 
        ; INY                           ; INY               ; Above we incremented Y to point to byte #3, so this
@@ -33744,9 +33855,10 @@ LL52:
        ; SBC XX15                      ; SBC XX15          
        ; STA XX15                      ; STA XX15          
 
-       ; BCC P%+4                      ; BCC P%+4          ; If the above subtraction underflowed then we need to
+       ; BCC B113                      ; BCC B113          ; If the above subtraction underflowed then we need to
        ; INC XX15+1                    ; INC XX15+1        ; bump the high byte of the result up by 1
 
+B113:
        movb @XX15+2,A                  ; LDA XX15+2        ; And now we flip the sign of the result to get the
        ; EOR #%10000000                ; EOR #%10000000    ; correct result
        ; STA XX15+2                    ; STA XX15+2        
@@ -34425,13 +34537,14 @@ LL74:
        ; STA XX12                      ; STA XX12          ; the laser beam move around as the ship moves in space
 
        movb @XX1+2,A                   ; LDA XX1+2         ; If the ship's x_sign is positive, skip the next
-       ; BPL P%+4                      ; BPL P%+4          ; instruction
+       ; BPL B114                      ; BPL B114          ; instruction
 
        ; DEC XX15+4                    ; DEC XX15+4        ; The ship's x_sign is negative (i.e. it's on the left
 * side of the screen), so switch the laser beam so it
 * goes to the right edge of the screen by decrementing
 * XX15(5 4) to 255
 
+B114:
        ; JSR LL145                     ; JSR LL145         ; Call LL145 to see if the laser beam needs to be
 * clipped to fit on-screen, returning the clipped line's
 * end-points in (X1, Y1) and (X2, Y2)

@@ -10484,7 +10484,7 @@ ENDIF
                         \ the registers and returns from the subroutine
 
  CMP #7                 \ If this is a beep character (A = 7), jump to R5,
- BEQ R5                 \ which will emit the beep, restore the registers and
+ BEQ R5_                \ which will emit the beep, restore the registers and
                         \ return from the subroutine
 
  CMP #32                \ If this is an ASCII character (A >= 32), jump to RR1
@@ -10796,7 +10796,7 @@ ENDIF
 
  RTS                    \ Return from the subroutine
 
-.R5
+.R5_
 
  JSR BEEP               \ Call the BEEP subroutine to make a short, high beep
 
@@ -14516,26 +14516,26 @@ ENDIF
 \
 \ ******************************************************************************
 
-{
- LDX Q
- BEQ MU1
- DEX
- STX T
- LDA #0
- LDX #8
- LSR P
-
-.MUL6
-
- BCC B45
- ADC T
- .B45
- ROR A
- ROR P
- DEX
- BNE MUL6
- RTS
-}
+\{
+\ LDX Q
+\ BEQ MU1
+\ DEX
+\ STX T
+\ LDA #0
+\ LDX #8
+\ LSR P
+\
+\.MUL6
+\
+\ BCC B45
+\ ADC T
+\ .B45
+\ ROR A
+\ ROR P
+\ DEX
+\ BNE MUL6
+\ RTS
+\}
 
 \ ******************************************************************************
 \
@@ -19891,7 +19891,7 @@ ENDIF
  LDA QQ22+1             \ Fetch QQ22+1, which contains the number that's shown
                         \ on-screen during hyperspace countdown
 
- BNE zZ+1               \ If it is non-zero, return from the subroutine (as zZ+1
+ BNE zZ_+1              \ If it is non-zero, return from the subroutine (as zZ+1
                         \ contains an RTS), as there is already a countdown in
                         \ progress
 
@@ -19905,7 +19905,7 @@ ENDIF
 
  LDA QQ8                \ If both bytes of the distance to the selected system
  ORA QQ8+1              \ in QQ8 are zero, return from the subroutine (as zZ+1
- BEQ zZ+1               \ contains an RTS), as the selected system is the
+ BEQ zZ_+1              \ contains an RTS), as the selected system is the
                         \ current system
 
  LDA #7                 \ Move the text cursor to column 7, row 23 (in the
@@ -20095,7 +20095,7 @@ ENDIF
                         \ perhaps the original plan was to arrive in each new
                         \ galaxy in a random place?
 
-.zZ
+.zZ_
 
  LDA #96                \ Set (QQ9, QQ10) to (96, 96), which is where we always
  STA QQ9                \ arrive in a new galaxy (the selected system will be
