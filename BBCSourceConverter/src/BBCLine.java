@@ -30,7 +30,6 @@ public class BBCLine {
     }
 
     private void parseLine(String line) {
-        line = line.trim();
         if (line.isEmpty()) {
             type = Type.Empty;
         } else {
@@ -47,10 +46,10 @@ public class BBCLine {
             } else if (line.startsWith("ENDMACRO")) {
                 directive = line;
                 type = Type.MacroEnd;
-            } else if (line.startsWith("FOR")) {
+            } else if (line.trim().startsWith("FOR")) {
                 directive = line;
                 type = Type.ForStart;
-            } else if (line.startsWith("NEXT")) {
+            } else if (line.trim().startsWith("NEXT")) {
                 directive = line;
                 type = Type.ForEnd;
             } else {
@@ -74,6 +73,7 @@ public class BBCLine {
                         directive = instruction;
                         type = Type.Directive;
                     } else if (instruction.startsWith("CHAR") || instruction.startsWith("TWOK") || instruction.startsWith("RTOK") || instruction.startsWith("CONT")) {
+                        directive = instruction;
                         type = Type.MacroCall;
                     } else if (instruction.contains("=")) {
                         type = Type.Variable;

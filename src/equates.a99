@@ -1,0 +1,25 @@
+A:
+       requ 0
+X:
+       requ 1
+Y:
+       requ 2
+tmp:
+       requ 3
+tmplb:
+       equ >8307
+zero:
+       requ 4
+one:
+       requ 5
+mone:
+       requ 6
+SP:
+       requ 10
+SPlb:
+       requ >8315
+r11lb:
+       equ  >8317
+
+_MAX_COMMANDER:
+       equ 0

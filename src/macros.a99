@@ -1,0 +1,166 @@
+**
+* Macros
+*
+       .defm jsr
+       li   r11,!
+       movb r11,*SP
+       dec  SP
+       swpb r11
+       movb r11,*SP
+       dec  SP
+       b    #1
+!      equ  $
+       .endm
+
+       .defm rts
+       inc  SP
+       movb *SP+,r11
+       swpb r11
+       movb *SP,11
+       b    *r11
+       .endm
+
+       .defm pha
+       movb A,*SP
+       dec  sp
+       .endm
+
+       .defm pla
+       inc  SP
+       movb *sp,A
+       .endm
+
+       .defm adc
+       jnc  !
+       ab   one,A
+!      ab   #1,A
+       .endm
+
+       .defm adi
+       jnc  !
+       ab   one,A
+!      ai   A,#1
+       .endm
+
+       .defm sbc
+       joc  !
+       sb   one,A
+!      sb   #1,A
+       .endm
+
+       .defm sbi
+       joc  !
+       sb   one,A
+!      ai   A,-#1
+       .endm
+
+       .defm and
+       movb #1,tmp
+       inv  tmp
+       szcb tmp,A
+       .endm
+
+       .defm and_ind_y_idx
+       movb @#1,@tmplb
+       movb @#1+1,tmp
+       a    Y,tmp
+       movb *tmp,tmp
+       inv  tmp
+       szcb tmp,#2
+       .endm
+
+       .defm ld_x_idx_ind
+       movb @#1(X),@tmplb
+       movb @#1+1(X),tmp
+       movb *tmp,#2
+       .endm
+
+       .defm st_x_idx_ind
+       movb @#1(X),@tmplb
+       movb @#1+1(X),tmp
+       movb #2,*tmp
+       .endm
+
+       .defm ld_ind_y_idx
+       movb @#1,@tmplb
+       movb @#1+1,tmp
+       a    Y,tmp
+       movb *tmp,#2
+       .endm
+
+       .defm st_ind_y_idx
+       movb @#1,@tmplb
+       movb @#1+1,tmp
+       a    Y,tmp
+       movb #2,*tmp
+        .endm
+
+       .defm eoi
+       li   tmp,#1
+       xor  tmp,A
+       .endm
+
+       .defm eor
+       movb #1,tmp
+       xor  tmp,A
+       .endm
+
+       .defm lsr
+       movb #1,tmp
+       srl  tmp,1
+       movb tmp,#1
+       .endm
+
+       .defm asla
+       andi A,>ff00
+       sla  A,1
+       .endm
+
+       .defm asl
+       movb #1,tmp
+       andi tmp,>ff00
+       sla  tmp,1
+       movb tmp,#1
+       .endm
+
+       .defm bvs
+       joc  !
+       jmp  #1
+!      equ  $
+       .endm
+
+       .defm sec
+       sla  mone,1
+       .endm
+
+       .defm clc
+       sla  zero,1
+       .endm
+
+       .defm char
+       .ifeq #1, '`'
+       byte 39 ^ #2
+       .else
+       byte #1 ^ #2
+       .endif
+       .endm
+
+       .defm twok
+       .endm
+
+       .defm rtok
+       .endm
+
+       .defm cont
+       .endm
+
+       .defm proc
+       mov  r11,*sp+
+       .endm
+
+       .defm endproc
+       dect sp
+       mov  *sp,r11
+       b    *r11
+       .endm
+

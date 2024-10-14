@@ -48,9 +48,15 @@
 \
 \ ******************************************************************************
 
+ ZERO_PAGE% = &0000
+
+ STACK% = &0100
+
  CODE% = &0F40          \ The address where the code will be run
 
  LOAD% = &1128          \ The address where the code will be loaded
+
+ T% = &0300             \ Current commander data and stardust data blocks
 
  CODE_WORDS% = &0400    \ The address where the text data will be run
 
@@ -143,7 +149,7 @@
 \
 \ ******************************************************************************
 
- ORG &0000
+ ORG ZERO_PAGE%
 
 .ZP
 
@@ -853,6 +859,8 @@
 
  SKIP 4                 \ Temporary storage, used in a number of places
 
+\ RM: At &00B0 = 176
+
  ORG &00D1
 
 .T
@@ -889,7 +897,7 @@
 \
 \ ******************************************************************************
 
- ORG &0100
+ ORG STACK%
 
 .XX3
 
@@ -911,9 +919,7 @@
 \
 \ ******************************************************************************
 
- ORG &0300
-
-.T%
+ ORG T%
 
  SKIP 0                 \ The start of the T% workspace
 

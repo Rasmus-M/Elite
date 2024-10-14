@@ -7,19 +7,20 @@ import java.util.regex.Pattern;
 
 public class BBCSourceConverter {
 
-    private static final String zeroPage = "ZERO_PAGE";
     private static final String regA = "A";
     private static final String regX = "X";
     private static final String regY = "Y";
-    private static final String regTmp = "TMP";
-    private static final String regTmpLowByte = "R3LB";
+    private static final String regSP = "SP";
+    private static final String regSPLowByte = "SPlb";
+    private static final String regTmp = "tmp";
+    private static final String regTmpLowByte = "tmplb";
+    private static final String regOne = "one";
+    private static final String regMone = "mone";
+
     Pattern loFunctionPattern = Pattern.compile("LO\\((" + Operand.expressionRegEx + ")\\)");
     Pattern hiFunctionPattern = Pattern.compile("HI\\((" + Operand.expressionRegEx + ")\\)");
 
-    private final boolean hexOutput;
-
-    public BBCSourceConverter(boolean hexOutput) {
-        this.hexOutput = hexOutput;
+    public BBCSourceConverter() {
     }
 
     public void convert(File bbcFile, File tms9900File) throws IOException  {
@@ -32,13 +33,6 @@ public class BBCSourceConverter {
 
     private List<TMS9900Line> convert(List<BBCLine> bbcLines) {
         List<TMS9900Line> tms9900Lines = new ArrayList<>();
-        createRegEquate(tms9900Lines, regA, "0", null);
-        createRegEquate(tms9900Lines, regX, "1", null);
-        createRegEquate(tms9900Lines, regY, "2", null);
-        createRegEquate(tms9900Lines, regTmp, "3", null);
-        createEquate(tms9900Lines, "_MAX_COMMANDER", "0", null);
-        createEquate(tms9900Lines, zeroPage, ">8300", null);
-        createEquate(tms9900Lines, regTmpLowByte, ">8307", null);
         boolean insideMacro = false;
         boolean insideFor = false;
         int i = 0;
@@ -49,12 +43,16 @@ public class BBCSourceConverter {
                     tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Empty));
                     break;
                 case MacroStart:
-                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), ".defm " + bbcLine.getDirective().split(" ")[0]));
+                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "; " + bbcLine.getDirective()));
                     insideMacro = true;
                     break;
                 case MacroEnd:
-                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), ".endm"));
+                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "; " + bbcLine.getDirective()));
                     insideMacro = false;
+                    break;
+                case MacroCall:
+                    String[] parts = bbcLine.getDirective().split(" ", 1);
+                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "." + parts[0].toLowerCase() + (parts.length > 1 ? " " + parts[1] : "")));
                     break;
                 case ForStart:
                     tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "; " + bbcLine.getDirective()));
@@ -109,16 +107,18 @@ public class BBCSourceConverter {
 
     private void createEquate(List<TMS9900Line> tms9900Lines, String symbol, String value, String comment) {
         tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Label, comment, convertSymbol(symbol)));
-        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, null, " equ " + convertExpression(value)));
+        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, null, "equ " + convertExpression(value)));
     }
 
     private void createRegEquate(List<TMS9900Line> tms9900Lines, String symbol, String value, String comment) {
         tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Label, comment, convertSymbol(symbol)));
-        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, null, " requ " + convertExpression(value)));
+        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, null, "requ " + convertExpression(value)));
     }
 
     private int convertDirective(BBCLine bbcLine, List<TMS9900Line> tms9900Lines) {
-        if (bbcLine.getDirective().startsWith("SKIP")) {
+        if (bbcLine.getDirective().startsWith("ORG")) {
+            tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "aorg " + convertExpression(bbcLine.getDirective().substring(4))));
+        } else if (bbcLine.getDirective().startsWith("SKIP")) {
             tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "bss " + convertExpression(bbcLine.getDirective().substring(5))));
         }
         return 0;
@@ -163,11 +163,155 @@ public class BBCSourceConverter {
         tms9900Line.setBbcInstruction(bbcLine.getInstruction());
         List<TMS9900Line> additionalLines = new ArrayList<>();
         switch (opcode) {
+            case "ADC":
+                if (operand.getType() == Operand.Type.Immediate) {
+                    tms9900Line.setInstruction(".adi (" + convertOperand(operand) + ")");
+                } else {
+                    switch (operand.getType()) {
+                        case XIndexedIndirect:
+                            tms9900Line.setInstruction(".adc_x_idx_ind " + convertOperand(operand) + "," + regA);
+                            break;
+                        case IndirectYIndexed:
+                            tms9900Line.setInstruction(".adc_ind_y_idx " + convertOperand(operand) + "," + regA);
+                            break;
+                        default:
+                            tms9900Line.setInstruction(".adc " + convertOperand(operand) + "," + regA);
+                            break;
+                    }
+                }
+                break;
+            case "AND":
+                if (operand.getType() == Operand.Type.Immediate) {
+                    tms9900Line.setInstruction("andi " + regA + "," + convertOperand(operand));
+                } else {
+                    switch (operand.getType()) {
+                        case XIndexedIndirect:
+                            tms9900Line.setInstruction(".and_x_idx_ind " + convertOperand(operand) + "," + regA);
+                            break;
+                        case IndirectYIndexed:
+                            tms9900Line.setInstruction(".and_ind_y_idx " + convertOperand(operand) + "," + regA);
+                            break;
+                        default:
+                            tms9900Line.setInstruction(".and " + convertOperand(operand));
+                            break;
+                    }
+                }
+                break;
+            case "ASL":
+                if (operand.getType() == Operand.Type.Accumulator) {
+                    tms9900Line.setInstruction(".asla");
+                } else {
+                    tms9900Line.setInstruction(".asl (" + convertExpression(operand.getExpression()) + ")");
+                }
+                break;
+            case "BCC":
+                tms9900Line.setInstruction("jnc  " + convertExpression(operand.getExpression()));
+                break;
+            case "BCS":
+                tms9900Line.setInstruction("joc  " + convertExpression(operand.getExpression()));
+                break;
             case "BEQ":
                 tms9900Line.setInstruction("jeq  " + convertExpression(operand.getExpression()));
                 break;
+            case "BMI":
+                tms9900Line.setInstruction("jlt  " + convertExpression(operand.getExpression()));
+                break;
             case "BNE":
                 tms9900Line.setInstruction("jne  " + convertExpression(operand.getExpression()));
+                break;
+            case "BPL":
+                tms9900Line.setInstruction("jgt  " + convertExpression(operand.getExpression()));
+                break;
+            case "BVC":
+                tms9900Line.setInstruction("jno  " + convertExpression(operand.getExpression()));
+                break;
+            case "BVS":
+                tms9900Line.setInstruction(".bvs " + convertExpression(operand.getExpression()));
+                break;
+            case "CLC":
+                tms9900Line.setInstruction(".clc");
+                break;
+            case "CMP":
+                if (operand.getType() == Operand.Type.Immediate) {
+                    tms9900Line.setInstruction("ci   " + regA + "," + convertOperand(operand));
+                } else {
+                    switch (operand.getType()) {
+                        case XIndexedIndirect:
+                            tms9900Line.setInstruction(".cmp_x_idx_ind " + convertOperand(operand) + "," + regA);
+                            break;
+                        case IndirectYIndexed:
+                            tms9900Line.setInstruction(".cmp_ind_y_idx " + convertOperand(operand) + "," + regA);
+                            break;
+                        default:
+                            tms9900Line.setInstruction("cb   " + convertOperand(operand) + "," + regA);
+                            break;
+                    }
+                }
+                break;
+            case "CPX":
+                if (operand.getType() == Operand.Type.Immediate) {
+                    tms9900Line.setInstruction("ci   " + regX + "," + convertOperand(operand));
+                } else {
+                    switch (operand.getType()) {
+                        case XIndexedIndirect:
+                            tms9900Line.setInstruction(".cmp_x_idx_ind " + convertOperand(operand) + "," + regX);
+                            break;
+                        case IndirectYIndexed:
+                            tms9900Line.setInstruction(".cmp_ind_y_idx " + convertOperand(operand) + "," + regX);
+                            break;
+                        default:
+                            tms9900Line.setInstruction("cb   " + convertOperand(operand) + "," + regX);
+                            break;
+                    }
+                }
+                break;
+            case "CPY":
+                if (operand.getType() == Operand.Type.Immediate) {
+                    tms9900Line.setInstruction("ci   " + regY + "," + convertOperand(operand));
+                } else {
+                    switch (operand.getType()) {
+                        case XIndexedIndirect:
+                            tms9900Line.setInstruction(".cmp_x_idx_ind " + convertOperand(operand) + "," + regY);
+                            break;
+                        case IndirectYIndexed:
+                            tms9900Line.setInstruction(".cmp_ind_y_idx " + convertOperand(operand) + "," + regY);
+                            break;
+                        default:
+                            tms9900Line.setInstruction("cb   " + convertOperand(operand) + "," + regY);
+                            break;
+                    }
+                }
+                break;
+            case "DEC":
+                tms9900Line.setInstruction("sb   one," + regA);
+                break;
+            case "DEX":
+                tms9900Line.setInstruction("sb   one," + regX);
+                break;
+            case "DEY":
+                tms9900Line.setInstruction("sb   one," + regY);
+                break;
+            case "EOR":
+                if (operand.getType() == Operand.Type.Immediate) {
+                    tms9900Line.setInstruction(".eoi " + convertExpression(operand.getExpression()));
+                } else {
+                    tms9900Line.setInstruction(".eor (" + convertExpression(operand.getExpression()) + ")");
+                }
+                break;
+            case "INC":
+                tms9900Line.setInstruction("ab   one," + regA);
+                break;
+            case "INX":
+                tms9900Line.setInstruction("ab   one," + regX);
+                break;
+            case "INY":
+                tms9900Line.setInstruction("ab   one," + regY);
+                break;
+            case "JMP":
+                tms9900Line.setInstruction("b    @" + convertExpression(operand.getExpression()));
+                break;
+            case "JSR":
+                tms9900Line.setInstruction(".jsr @" + convertExpression(operand.getExpression()));
                 break;
             case "LDA":
                     if (operand.getType() == Operand.Type.Immediate) {
@@ -175,20 +319,123 @@ public class BBCSourceConverter {
                     } else {
                         switch (operand.getType()) {
                             case XIndexedIndirect:
-                                tms9900Line.setInstruction("movb @" + zeroPage + "(" + regX + "),@" + regTmpLowByte);
-                                additionalLines.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "movb @" + zeroPage+1 + "(" + regX + ")," + regTmp));
-                                additionalLines.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "movb *" + regTmp + "," + regA));
+                                tms9900Line.setInstruction(".ld_x_idx_ind " + convertOperand(operand) + "," + regA);
                                 break;
                             case IndirectYIndexed:
-                                tms9900Line.setInstruction("movb @" + zeroPage + "+" + convertExpression(operand.getExpression()) + ",@" + regTmpLowByte);
-                                additionalLines.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "movb @" + zeroPage + "+" + convertExpression(operand.getExpression()) + "+1," + regTmp));
-                                additionalLines.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "movb *" + regTmp + "," + regA));
+                                tms9900Line.setInstruction(".ld_ind_y_idx " + convertOperand(operand) + "," + regA);
                                 break;
                             default:
                                 tms9900Line.setInstruction("movb " + convertOperand(operand) + "," + regA);
                                 break;
                         }
                     }
+                break;
+            case "LDX":
+                if (operand.getType() == Operand.Type.Immediate) {
+                    tms9900Line.setInstruction("li   " + regX + "," + convertOperand(operand));
+                } else {
+                    tms9900Line.setInstruction("movb " + convertOperand(operand) + "," + regX);
+                }
+                break;
+            case "LDY":
+                if (operand.getType() == Operand.Type.Immediate) {
+                    tms9900Line.setInstruction("li   " + regY + "," + convertOperand(operand));
+                } else {
+                    tms9900Line.setInstruction("movb " + convertOperand(operand) + "," + regY);
+                }
+                break;
+            case "LSR":
+                if (operand.getType() == Operand.Type.Accumulator) {
+                    tms9900Line.setInstruction("srl  " + regA + ",1");
+                } else {
+                    tms9900Line.setInstruction(".lsr " + convertOperand(operand));
+                }
+                break;
+            case "NOP":
+                tms9900Line.setInstruction("nop");
+                break;
+            case "ORA":
+                if (operand.getType() == Operand.Type.Immediate) {
+                    tms9900Line.setInstruction("ori  " + regA + "," + convertOperand(operand));
+                } else {
+                    switch (operand.getType()) {
+                        case XIndexedIndirect:
+                            tms9900Line.setInstruction(".or_x_idx_ind " + convertOperand(operand) + "," + regA);
+                            break;
+                        case IndirectYIndexed:
+                            tms9900Line.setInstruction(".or_ind_y_idx " + convertOperand(operand) + "," + regA);
+                            break;
+                        default:
+                            tms9900Line.setInstruction("socb " + convertOperand(operand) + "," + regA);
+                            break;
+                    }
+                }
+                break;
+            case "PLA":
+                tms9900Line.setInstruction(".pla");
+                break;
+            case "PHA":
+                tms9900Line.setInstruction(".pha");
+                break;
+            case "RTS":
+                tms9900Line.setInstruction(".rts");
+                break;
+            case "SBC":
+                if (operand.getType() == Operand.Type.Immediate) {
+                    tms9900Line.setInstruction(".adi " + regA + ",-" + convertOperand(operand));
+                } else {
+                    switch (operand.getType()) {
+                        case XIndexedIndirect:
+                            tms9900Line.setInstruction(".sbc_x_idx_ind " + convertOperand(operand) + "," + regA);
+                            break;
+                        case IndirectYIndexed:
+                            tms9900Line.setInstruction(".sbc_ind_y_idx " + convertOperand(operand) + "," + regA);
+                            break;
+                        default:
+                            tms9900Line.setInstruction(".sbc " + convertOperand(operand) + "," + regA);
+                            break;
+                    }
+                }
+                break;
+            case "SEC":
+                tms9900Line.setInstruction(".sec");
+                break;
+            case "STA":
+                switch (operand.getType()) {
+                    case XIndexedIndirect:
+                        tms9900Line.setInstruction(".st_x_idx_ind " + convertOperand(operand) + "," + regA);
+                        break;
+                    case IndirectYIndexed:
+                        tms9900Line.setInstruction(".st_ind_y_idx " + convertOperand(operand) + "," + regA);
+                        break;
+                    default:
+                        tms9900Line.setInstruction("movb " + regA + "," + convertOperand(operand));
+                        break;
+                }
+                break;
+            case "STX":
+                tms9900Line.setInstruction("movb " + regX + "," + convertOperand(operand));
+                break;
+            case "STY":
+                tms9900Line.setInstruction("movb " + regY + "," + convertOperand(operand));
+                break;
+            case "TAX":
+                tms9900Line.setInstruction("movb " + regA + "," + regX);
+                break;
+            case "TAY":
+                tms9900Line.setInstruction("movb " + regA + "," + regY);
+                break;
+            case "TSX":
+                tms9900Line.setInstruction("movb @" + regSPLowByte + "," + regX);
+                break;
+            case "TXA":
+                tms9900Line.setInstruction("movb " + regX + "," + regA);
+                break;
+            case "TYA":
+                tms9900Line.setInstruction("movb " + regY + "," + regA);
+                break;
+            case "TXS":
+                tms9900Line.setInstruction("movb " + regX + ",@" + regSPLowByte);
                 break;
             default:
                 tms9900Line.setInstruction("; " + instruction);
@@ -216,15 +463,15 @@ public class BBCSourceConverter {
             case Indirect:
                 return "*" + convertExpression(operand.getExpression());
             case XIndexedIndirect:
-                return "";
+                return "(" + convertExpression(operand.getExpression()) + ")";
             case IndirectYIndexed:
-                return "";
+                return "(" + convertExpression(operand.getExpression()) + ")";
             case Relative:
                 return convertExpression(operand.getExpression());
             case ZeroPageXIndexed:
-                return "@" + zeroPage + "(" + regX + ")";
+                return "*" + regX;
             case ZeroPageYIndexed:
-                return "@" + zeroPage + "(" + regY + ")";
+                return "*" + regY;
             case Other:
             default:
                 return operand.getValue();
