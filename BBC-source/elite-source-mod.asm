@@ -14113,25 +14113,25 @@ ENDIF
 
  BCC B40                \ Repeat the shift-and-add loop for bit 1
  ADC T1
- .B40
+.B40
  ROR A
  ROR P
 
  BCC B41                \ Repeat the shift-and-add loop for bit 2
  ADC T1
- .B41
+.B41
  ROR A
  ROR P
 
  BCC B42                \ Repeat the shift-and-add loop for bit 3
  ADC T1
- .B42
+.B42
  ROR A
  ROR P
 
  BCC B43                \ Repeat the shift-and-add loop for bit 4
  ADC T1
- .B43
+.B43
  ROR A
  ROR P
 

@@ -1,19 +1,25 @@
 A:
        requ 0
+Alb:
+       equ  >8301
 X:
        requ 1
 Y:
        requ 2
-tmp:
-       requ 3
-tmplb:
-       equ >8307
 zero:
-       requ 4
+       requ 3
 one:
-       requ 5
+       requ 4
 mone:
+       requ 5
+tmp:
        requ 6
+tmplb:
+       equ >830d
+tmp2:
+       requ 7
+tmp2lb:
+       equ >830f
 SP:
        requ 10
 SPlb:

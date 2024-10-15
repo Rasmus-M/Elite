@@ -111,6 +111,47 @@
        movb tmp,#1
        .endm
 
+       .defm rola
+       jnc  !
+       ori  a,>0080
+!      jmp  !
+       andi a,>ff7f
+!      sla  a,1
+       .endm
+
+       .defm rol
+       movb #1,tmp
+       jnc  !
+       ori  tmp,>0080
+!      jmp  !
+       andi tmp,>ff7f
+!      sla  tmp,1
+       mov  tmp,#1
+       .endm
+
+       .defm rora
+       jnc  !
+       ori  a,>0001
+!      jmp  !
+       andi a,>fffe
+!      src  a,1
+       andi a,>0080
+       mov  a,tmp
+       sla  tmp,9
+       .endm
+
+       .defm ror
+       movb #1,tmp
+       jnc  !
+       ori  tmp,>0001
+!      jmp  !
+       andi tmp,>fffe
+!      src  tmp,1
+       movb tmp,#1
+       andi tmp,>0080
+       sla  tmp,9
+       .endm
+
        .defm asla
        andi A,>ff00
        sla  A,1

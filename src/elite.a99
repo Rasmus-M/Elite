@@ -14124,25 +14124,25 @@ B39:
 
        jnc  B40                        ; BCC B40           ; Repeat the shift-and-add loop for bit 1
        .adc @T1,A                      ; ADC T1            
-       ; .B40                          ; .B40              
+B40:
        ; ROR A                         ; ROR A             
        ; ROR P                         ; ROR P             
 
        jnc  B41                        ; BCC B41           ; Repeat the shift-and-add loop for bit 2
        .adc @T1,A                      ; ADC T1            
-       ; .B41                          ; .B41              
+B41:
        ; ROR A                         ; ROR A             
        ; ROR P                         ; ROR P             
 
        jnc  B42                        ; BCC B42           ; Repeat the shift-and-add loop for bit 3
        .adc @T1,A                      ; ADC T1            
-       ; .B42                          ; .B42              
+B42:
        ; ROR A                         ; ROR A             
        ; ROR P                         ; ROR P             
 
        jnc  B43                        ; BCC B43           ; Repeat the shift-and-add loop for bit 4
        .adc @T1,A                      ; ADC T1            
-       ; .B43                          ; .B43              
+B43:
        ; ROR A                         ; ROR A             
        ; ROR P                         ; ROR P             
 
