@@ -213,6 +213,9 @@ public class BBCSourceConverter {
             case "BEQ":
                 tms9900Line.setInstruction("jeq  " + convertExpression(operand.getExpression()));
                 break;
+            case "BIT":
+                tms9900Line.setInstruction(".bit (" + convertExpression(operand.getExpression()) + ")");
+                break;
             case "BMI":
                 tms9900Line.setInstruction("jlt  " + convertExpression(operand.getExpression()));
                 break;
@@ -230,6 +233,9 @@ public class BBCSourceConverter {
                 break;
             case "CLC":
                 tms9900Line.setInstruction(".clc");
+                break;
+            case "CLI":
+                tms9900Line.setInstruction("limi 2");
                 break;
             case "CMP":
                 if (operand.getType() == Operand.Type.Immediate) {
@@ -374,8 +380,28 @@ public class BBCSourceConverter {
             case "PLA":
                 tms9900Line.setInstruction(".pla");
                 break;
+            case "PLP":
+                tms9900Line.setInstruction(".plp");
+                break;
             case "PHA":
                 tms9900Line.setInstruction(".pha");
+                break;
+            case "PHP":
+                tms9900Line.setInstruction(".php");
+                break;
+            case "ROL":
+                if (operand.getType() == Operand.Type.Accumulator) {
+                    tms9900Line.setInstruction(".rola");
+                } else {
+                    tms9900Line.setInstruction(".rol " + convertOperand(operand));
+                }
+                break;
+            case "ROR":
+                if (operand.getType() == Operand.Type.Accumulator) {
+                    tms9900Line.setInstruction(".rora");
+                } else {
+                    tms9900Line.setInstruction(".ror " + convertOperand(operand));
+                }
                 break;
             case "RTS":
                 tms9900Line.setInstruction(".rts");
@@ -399,6 +425,9 @@ public class BBCSourceConverter {
                 break;
             case "SEC":
                 tms9900Line.setInstruction(".sec");
+                break;
+            case "SEI":
+                tms9900Line.setInstruction("limi 0");
                 break;
             case "STA":
                 switch (operand.getType()) {
@@ -439,6 +468,7 @@ public class BBCSourceConverter {
                 break;
             default:
                 tms9900Line.setInstruction("; " + instruction);
+                System.out.println("Unhandled " + instruction);
                 break;
         }
         tms9900Lines.add(tms9900Line);

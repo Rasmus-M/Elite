@@ -22,12 +22,24 @@
 
        .defm pha
        movb A,*SP
-       dec  sp
+       dec  SP
        .endm
 
        .defm pla
        inc  SP
-       movb *sp,A
+       movb *SP,A
+       .endm
+
+       .defm php
+       stst tmp
+       movb tmp,*SP
+       dec  SP
+       .endm
+
+       .defm plp
+       INC  SP
+       movb *SP,tmp
+       ; todo: restore status
        .endm
 
        .defm adc
@@ -67,6 +79,14 @@
        movb *tmp,tmp
        inv  tmp
        szcb tmp,#2
+       .endm
+
+       .defm bit
+       movb #1,tmp
+       inv  tmp
+       movb one,tmp2
+       szcb tmp2,tmp
+       ; todo: bit 6 and 7
        .endm
 
        .defm ld_x_idx_ind

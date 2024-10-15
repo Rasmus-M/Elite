@@ -3676,9 +3676,9 @@ MA68:
        movb A,@DELT4                   ; STA DELT4         ; Take the 16-bit value (DELTA 0) - i.e. a two-byte
        movb @DELTA,A                   ; LDA DELTA         ; number with DELTA as the high byte and 0 as the low
        srl  A,1                        ; LSR A             ; byte - and divide it by 4, storing the 16-bit result
-       ; ROR DELT4                     ; ROR DELT4         ; in DELT4(1 0). This has the effect of storing the
+       .ror @DELT4                     ; ROR DELT4         ; in DELT4(1 0). This has the effect of storing the
        srl  A,1                        ; LSR A             ; current speed * 64 in the 16-bit location DELT4(1 0)
-       ; ROR DELT4                     ; ROR DELT4         
+       .ror @DELT4                     ; ROR DELT4         
        movb A,@DELT4+1                 ; STA DELT4+1       
 
        movb @LASCT,A                   ; LDA LASCT         ; If LASCT is zero, keep going, otherwise the laser is
@@ -4205,7 +4205,7 @@ MA60:
 
        .asl (INWK+31)                  ; ASL INWK+31       ; Set bit 7 of the scooped or destroyed item, to denote
        .sec                            ; SEC               ; that it has been killed and should be removed from
-       ; ROR INWK+31                   ; ROR INWK+31       ; the local bubble
+       .ror @INWK+31                   ; ROR INWK+31       ; the local bubble
 
 MA61:
 
@@ -4232,12 +4232,12 @@ MA58:
 
        .asl (INWK+31)                  ; ASL INWK+31       ; Set bit 7 of the ship we just collided with, to
        .sec                            ; SEC               ; denote that it has been killed and should be removed
-       ; ROR INWK+31                   ; ROR INWK+31       ; from the local bubble
+       .ror @INWK+31                   ; ROR INWK+31       ; from the local bubble
 
        movb @INWK+35,A                 ; LDA INWK+35       ; Load A with the energy level of the ship we just hit
 
        .sec                            ; SEC               ; Set the amount of damage in A to 128 + A / 2, so
-       ; ROR A                         ; ROR A             ; this is quite a big dent, and colliding with higher
+       .rora                           ; ROR A             ; this is quite a big dent, and colliding with higher
                                                            ; energy ships will cause more damage
 
 MA63:
@@ -5045,11 +5045,11 @@ MAS1:
        .asla                           ; ASL A             
        movb A,@K+1                     ; STA K+1           
        movb @INWK+1(Y),A               ; LDA INWK+1,Y      
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
        movb A,@K+2                     ; STA K+2           
 
        li   A,>00*256                  ; LDA #0            ; Set K+3 bit 7 to the C flag, so the sign bit of the
-       ; ROR A                         ; ROR A             ; above result goes into K+3
+       .rora                           ; ROR A             ; above result goes into K+3
        movb A,@K+3                     ; STA K+3           
 
        .jsr @MVT3                      ; JSR MVT3          ; Add (x_sign x_hi x_lo) to K(3 2 1)
@@ -5930,7 +5930,7 @@ MVT1:
                                                            ; This also clears bit 0 of S
 
        li   A,>00*256                  ; LDA #0            ; Set T = just the sign bit of delta (in bit 7)
-       ; ROR A                         ; ROR A             
+       .rora                           ; ROR A             
        movb A,@T                       ; STA T             
 
        .lsr @S                         ; LSR S             ; Set S = delta_hi >> 1
@@ -6376,13 +6376,13 @@ MVS5:
        andi A,>7f*256                  ; AND #%01111111    ; A = |nosev_x_hi|
 
        srl  A,1                        ; LSR A             ; Set (A P) = (A P) / 16
-       ; ROR P                         ; ROR P             ; = |nosev_x_hi nosev_x_lo| / 16
+       .ror @P                         ; ROR P             ; = |nosev_x_hi nosev_x_lo| / 16
        srl  A,1                        ; LSR A             ; = |nosev_x| / 16
-       ; ROR P                         ; ROR P             
+       .ror @P                         ; ROR P             
        srl  A,1                        ; LSR A             
-       ; ROR P                         ; ROR P             
+       .ror @P                         ; ROR P             
        srl  A,1                        ; LSR A             
-       ; ROR P                         ; ROR P             
+       .ror @P                         ; ROR P             
 
        socb @T,A                       ; ORA T             ; Set the sign of A to the sign in T (i.e. the sign of
                                                            ; the original nosev_x), so now:
@@ -6431,13 +6431,13 @@ MVS5:
        andi A,>7f*256                  ; AND #%01111111    ; A = |roofv_x_hi|
 
        srl  A,1                        ; LSR A             ; Set (A P) = (A P) / 16
-       ; ROR P                         ; ROR P             ; = |roofv_x_hi roofv_x_lo| / 16
+       .ror @P                         ; ROR P             ; = |roofv_x_hi roofv_x_lo| / 16
        srl  A,1                        ; LSR A             ; = |roofv_x| / 16
-       ; ROR P                         ; ROR P             
+       .ror @P                         ; ROR P             
        srl  A,1                        ; LSR A             
-       ; ROR P                         ; ROR P             
+       .ror @P                         ; ROR P             
        srl  A,1                        ; LSR A             
-       ; ROR P                         ; ROR P             
+       .ror @P                         ; ROR P             
 
        socb @T,A                       ; ORA T             ; Set the sign of A to the opposite sign to T (i.e. the
        .eoi :10000000                  ; EOR #%10000000    ; sign of the original -roofv_x), so now:
@@ -7371,7 +7371,7 @@ LI4:
 
 LI5:
 
-       ; ROL Q                         ; ROL Q             ; Rotate the counter in Q to the left, and catch the
+       .rol @Q                         ; ROL Q             ; Rotate the counter in Q to the left, and catch the
                                                            ; result bit into bit 0 (which will be a 0 if we didn't
                                                            ; do the subtraction, or 1 if we did)
 
@@ -7459,7 +7459,7 @@ LI6:
        jnc  LI7                        ; BCC LI7           ; If the pixel didn't fall out of the right end of R
                                                            ; into the C flag, then jump to LI7
 
-       ; ROR R                         ; ROR R             ; Otherwise we need to move over to the next character
+       .ror @R                         ; ROR R             ; Otherwise we need to move over to the next character
                                                            ; block, so first rotate R right so the set C flag goes
                                                            ; back into the left end, giving %10000000
 
@@ -7547,7 +7547,7 @@ LI9:
        jnc  LI10                       ; BCC LI10          ; If the pixel didn't fall out of the right end of R
                                                            ; into the C flag, then jump to LI10
 
-       ; ROR R                         ; ROR R             ; Otherwise we need to move over to the next character
+       .ror @R                         ; ROR R             ; Otherwise we need to move over to the next character
                                                            ; block, so first rotate R right so the set C flag goes
                                                            ; back into the left end, giving %10000000
 
@@ -7705,7 +7705,7 @@ LI13:
 
 LI14:
 
-       ; ROL P                         ; ROL P             ; Rotate the counter in P to the left, and catch the
+       .rol @P                         ; ROL P             ; Rotate the counter in P to the left, and catch the
                                                            ; result bit into bit 0 (which will be a 0 if we didn't
                                                            ; do the subtraction, or 1 if we did)
 
@@ -7799,7 +7799,7 @@ LI16:
        jnc  LIC5                       ; BCC LIC5          ; If the pixel didn't fall out of the right end of R
                                                            ; into the C flag, then jump to LIC5
 
-       ; ROR R                         ; ROR R             ; Otherwise we need to move over to the next character
+       .ror @R                         ; ROR R             ; Otherwise we need to move over to the next character
                                                            ; block, so first rotate R right so the set C flag goes
                                                            ; back into the left end, giving %10000000
 
@@ -7888,7 +7888,7 @@ LI19:
        jnc  LIC6                       ; BCC LIC6          ; If the pixel didn't fall out of the left end of R
                                                            ; into the C flag, then jump to LIC6
 
-       ; ROL R                         ; ROL R             ; Otherwise we need to move over to the next character
+       .rol @R                         ; ROL R             ; Otherwise we need to move over to the next character
                                                            ; block, so first rotate R left so the set C flag goes
                                                            ; back into the right end, giving %0000001
 
@@ -8961,9 +8961,9 @@ STL1:
                                                            ; (P A) = 256 * speed / z_hi
 
        .lsr @P                         ; LSR P             ; Rotate (P A) right by 2 places, which sets P = 0 (as P
-       ; ROR A                         ; ROR A             ; has a maximum value of 2) and leaves:
+       .rora                           ; ROR A             ; has a maximum value of 2) and leaves:
        .lsr @P                         ; LSR P             ; 
-       ; ROR A                         ; ROR A             ; A = 64 * speed / z_hi
+       .rora                           ; ROR A             ; A = 64 * speed / z_hi
 
        ori  A,>01*256                  ; ORA #1            ; Make sure A is at least 1, and store it in Q, so we
        movb A,@Q                       ; STA Q             ; now have result 1 above:
@@ -9119,13 +9119,13 @@ STL1:
                                                            ; = (beta * y / 256) ^ 2
 
        .asl (P)                        ; ASL P             ; Double (A P), store the top byte in A and set the C
-       ; ROL A                         ; ROL A             ; flag to bit 7 of the original A, so this does:
+       .rola                           ; ROL A             ; flag to bit 7 of the original A, so this does:
        movb A,@T                       ; STA T             ; 
                                                            ; (T P) = (A P) << 1
                                                            ; = 2 * (beta * y / 256) ^ 2
 
        li   A,>00*256                  ; LDA #0            ; Set bit 7 in A to the sign bit from the A in the
-       ; ROR A                         ; ROR A             ; calculation above and apply it to T, so we now have:
+       .rora                           ; ROR A             ; calculation above and apply it to T, so we now have:
        socb @T,A                       ; ORA T             ; 
                                                            ; (A P) = (A P) * 2
                                                            ; = 2 * (beta * y / 256) ^ 2
@@ -9307,9 +9307,9 @@ STL6:
                                                            ; (P A) = 256 * speed / z_hi
 
        .lsr @P                         ; LSR P             ; Rotate (P A) right by 2 places, which sets P = 0 (as P
-       ; ROR A                         ; ROR A             ; has a maximum value of 2) and leaves:
+       .rora                           ; ROR A             ; has a maximum value of 2) and leaves:
        .lsr @P                         ; LSR P             ; 
-       ; ROR A                         ; ROR A             ; A = 64 * speed / z_hi
+       .rora                           ; ROR A             ; A = 64 * speed / z_hi
 
        ori  A,>01*256                  ; ORA #1            ; Make sure A is at least 1, and store it in Q, so we
        movb A,@Q                       ; STA Q             ; now have result 1 above:
@@ -9466,13 +9466,13 @@ STL6:
                                                            ; = (-beta * y / 256) ^ 2
 
        .asl (P)                        ; ASL P             ; Double (A P), store the top byte in A and set the C
-       ; ROL A                         ; ROL A             ; flag to bit 7 of the original A, so this does:
+       .rola                           ; ROL A             ; flag to bit 7 of the original A, so this does:
        movb A,@T                       ; STA T             ; 
                                                            ; (T P) = (A P) << 1
                                                            ; = 2 * (-beta * y / 256) ^ 2
 
        li   A,>00*256                  ; LDA #0            ; Set bit 7 in A to the sign bit from the A in the
-       ; ROR A                         ; ROR A             ; calculation above and apply it to T, so we now have:
+       .rora                           ; ROR A             ; calculation above and apply it to T, so we now have:
        socb @T,A                       ; ORA T             ; 
                                                            ; (A P) = -2 * (beta * y / 256) ^ 2
                                                            ; 
@@ -9581,7 +9581,7 @@ KILL6:
        srl  A,1                        ; LSR A             ; Randomly set the C flag again
 
        li   A,>fc*256                  ; LDA #252          ; Set A to either +126 or -126 (252 >> 1) depending on
-       ; ROR A                         ; ROR A             ; the C flag, as this is a sign-magnitude number with
+       .rora                           ; ROR A             ; the C flag, as this is a sign-magnitude number with
                                                            ; the C flag rotated into its sign bit
 
        movb A,@X1                      ; STA X1            ; Set x_hi and X1 to A, so this particle starts on
@@ -9604,7 +9604,7 @@ ST4:
        srl  A,1                        ; LSR A             ; Randomly set the C flag
 
        li   A,>e6*256                  ; LDA #230          ; Set A to either +115 or -115 (230 >> 1) depending on
-       ; ROR A                         ; ROR A             ; the C flag, as this is a sign-magnitude number with
+       .rora                           ; ROR A             ; the C flag, as this is a sign-magnitude number with
                                                            ; the C flag rotated into its sign bit
 
        movb A,@Y1                      ; STA Y1            ; Set y_hi and Y1 to A, so the particle starts anywhere
@@ -10132,7 +10132,7 @@ BPRNT:
                                                            ; billion). We will use this as a flag when printing
                                                            ; characters in TT37 below
 
-       ; PHP                           ; PHP               ; Make a copy of the status register (in particular
+       .php                            ; PHP               ; Make a copy of the status register (in particular
                                                            ; the C flag) so we can retrieve it later
 
        jnc  TT30                       ; BCC TT30          ; If the C flag is clear, we do not want to print a
@@ -10177,10 +10177,10 @@ TT35:
                                                            ; that K * 10 = (K * 2) + (K * 2 * 2 * 2)
 
        .asl (K+3)                      ; ASL K+3           ; Set K(S 0 1 2 3) = K(S 0 1 2 3) * 2 by rotating left
-       ; ROL K+2                       ; ROL K+2           
-       ; ROL K+1                       ; ROL K+1           
-       ; ROL K                         ; ROL K             
-       ; ROL S                         ; ROL S             
+       .rol @K+2                       ; ROL K+2           
+       .rol @K+1                       ; ROL K+1           
+       .rol @K                         ; ROL K             
+       .rol @S                         ; ROL S             
 
        li   X,>03*256                  ; LDX #3            ; Now we want to make a copy of the newly doubled K in
                                                            ; XX15, so we can use it for the first (K * 2) in the
@@ -10205,16 +10205,16 @@ tt35_:
                                                            ; want to use in our calculation
 
        .asl (K+3)                      ; ASL K+3           ; Now to calculate the (K * 2 * 2 * 2) part. We still
-       ; ROL K+2                       ; ROL K+2           ; have (K * 2) in K(S 0 1 2 3), so we just need to shift
-       ; ROL K+1                       ; ROL K+1           ; it twice. This is the first one, so we do this:
-       ; ROL K                         ; ROL K             ; 
-       ; ROL S                         ; ROL S             ; K(S 0 1 2 3) = K(S 0 1 2 3) * 2 = K * 4
+       .rol @K+2                       ; ROL K+2           ; have (K * 2) in K(S 0 1 2 3), so we just need to shift
+       .rol @K+1                       ; ROL K+1           ; it twice. This is the first one, so we do this:
+       .rol @K                         ; ROL K             ; 
+       .rol @S                         ; ROL S             ; K(S 0 1 2 3) = K(S 0 1 2 3) * 2 = K * 4
 
        .asl (K+3)                      ; ASL K+3           ; And then we do it again, so that means:
-       ; ROL K+2                       ; ROL K+2           ; 
-       ; ROL K+1                       ; ROL K+1           ; K(S 0 1 2 3) = K(S 0 1 2 3) * 2 = K * 8
-       ; ROL K                         ; ROL K             
-       ; ROL S                         ; ROL S             
+       .rol @K+2                       ; ROL K+2           ; 
+       .rol @K+1                       ; ROL K+1           ; K(S 0 1 2 3) = K(S 0 1 2 3) * 2 = K * 8
+       .rol @K                         ; ROL K             
+       .rol @S                         ; ROL S             
 
        .clc                            ; CLC               ; Clear the C flag so we can do addition without the
                                                            ; C flag affecting the result
@@ -10397,7 +10397,7 @@ B24:
                                                            ; the JMP TT35 instruction below) to print the next
                                                            ; digit
 
-       ; PLP                           ; PLP               ; If we get here then we have printed the exact number
+       .plp                            ; PLP               ; If we get here then we have printed the exact number
                                                            ; of digits that we wanted to, so restore the C flag
                                                            ; that we stored at the start of the routine
 
@@ -11682,7 +11682,7 @@ IRQ1:
                                                            ; the dashboard palette below
 
        li   A,>02*256                  ; LDA #%00000010    ; Read the 6522 System VIA status byte bit 1 (SHEILA
-       ; BIT VIA+&4D                   ; BIT VIA+&4D       ; &4D), which is set if vertical sync has occurred on
+       .bit (VIA+>4D)                  ; BIT VIA+&4D       ; &4D), which is set if vertical sync has occurred on
                                                            ; the video system
 
        jne  LINSCN                     ; BNE LINSCN        ; If we are on the vertical sync pulse, jump to LINSCN
@@ -11974,7 +11974,7 @@ TA18:
        li   Y,>1f*256                  ; LDY #31           ; Fetch byte #31 (the exploding flag) of the target ship
        .ld_ind_y_idx (V),A             ; LDA (V),Y         ; into A
 
-       ; BIT M32+1                     ; BIT M32+1         ; M32 contains an LDY #32 instruction, so M32+1 contains
+       .bit (M32+1)                    ; BIT M32+1         ; M32 contains an LDY #32 instruction, so M32+1 contains
                                                            ; 32, so this instruction tests A with %00100000, which
                                                            ; checks bit 5 of A (the "already exploding?" bit)
 
@@ -12006,7 +12006,7 @@ TA87:
 
        .asl (INWK+31)                  ; ASL INWK+31       ; Set bit 7 of the missile's byte #31 flag to mark it as
        .sec                            ; SEC               ; having been killed, so it explodes
-       ; ROR INWK+31                   ; ROR INWK+31       
+       .ror @INWK+31                   ; ROR INWK+31       
 
 TA1:
 
@@ -12895,7 +12895,7 @@ fq1_:
                                                            ; sidev)
 
        movb @DELTA,A                   ; LDA DELTA         ; Set byte #27 (speed) to 2 * DELTA, so the launched
-       ; ROL A                         ; ROL A             ; ship flies off at twice our speed
+       .rola                           ; ROL A             ; ship flies off at twice our speed
        movb A,@INWK+27                 ; STA INWK+27       
 
        movb X,A                        ; TXA               ; Add a new ship of type X to our local bubble of
@@ -13008,7 +13008,7 @@ AN2:
 
        .asl (K.+NI.+32)                ; ASL K%+NI%+32     ; Fetch the AI counter (byte #32) of the second ship
        .sec                            ; SEC               ; in the ship data workspace at K%, which is reserved
-       ; ROR K%+NI%+32                 ; ROR K%+NI%+32     ; for the sun or the space station (in this case it's
+       .ror @K.+NI.+32                 ; ROR K%+NI%+32     ; for the sun or the space station (in this case it's
                                                            ; the latter), and set bit 7 to make it hostile
 
        .clc                            ; CLC               ; Clear the C flag, which isn't used by calls to this
@@ -13219,7 +13219,7 @@ rx_:
        movb A,@INWK+27                 ; STA INWK+27       
 
        li   A,>ff*256                  ; LDA #&FF          ; Set the child's byte #29 (roll counter) to a full
-       ; ROR A                         ; ROR A             ; roll with no damping (as bits 0 to 6 are set), so the
+       .rora                           ; ROR A             ; roll with no damping (as bits 0 to 6 are set), so the
        movb A,@INWK+29                 ; STA INWK+29       ; canister tumbles through space, with the direction in
                                                            ; bit 7 set randomly, depending on the C flag from above
 
@@ -13294,7 +13294,7 @@ SFS2:
        movb A,@R                       ; STA R             
 
        li   A,>00*256                  ; LDA #0            ; Set bit 7 of A to the C flag, i.e. the sign bit from
-       ; ROR A                         ; ROR A             ; the original argument in A
+       .rora                           ; ROR A             ; the original argument in A
 
        b    @MVT1                      ; JMP MVT1          ; Add the delta R with sign A to (x_lo, x_hi, x_sign)
                                                            ; (or y or z, depending on the value in X) and return
@@ -13509,7 +13509,7 @@ STARS2:
 
        ci   X,>02*256                  ; CPX #2            ; If X >= 2 then the C flag is set
 
-       ; ROR A                         ; ROR A             ; Roll the C flag into the sign bit of A and store in
+       .rora                           ; ROR A             ; Roll the C flag into the sign bit of A and store in
        movb A,@RAT                     ; STA RAT           ; RAT, so:
                                                            ; 
                                                            ; * Left view, C is clear so RAT = 0 (positive)
@@ -13945,11 +13945,11 @@ MULT3:
 
        .lsr @K+2                       ; LSR K+2           ; Shift the high byte in K+2 to the right
 
-       ; ROR A                         ; ROR A             ; Shift the middle byte in A to the right and store in
+       .rora                           ; ROR A             ; Shift the middle byte in A to the right and store in
        movb A,@K+1                     ; STA K+1           ; K+1 (so K+1 contains P+1 shifted right)
 
        movb @P,A                       ; LDA P             ; Shift the middle byte in P to the right and store in
-       ; ROR A                         ; ROR A             ; K, so K(2 1 0) now contains (|A| P+1 P) shifted right
+       .rora                           ; ROR A             ; K, so K(2 1 0) now contains (|A| P+1 P) shifted right
        movb A,@K                       ; STA K             
 
                                                            ; We now use the same shift-and-add algorithm as MULT1
@@ -13971,10 +13971,10 @@ MUL2:
                                                            ; = A + |Q|
 
 B38:
-       ; ROR A                         ; ROR A             ; Shift A right by one place to catch the next digit
-       ; ROR K+2                       ; ROR K+2           ; next digit of our result in the left end of K(2 1 0),
-       ; ROR K+1                       ; ROR K+1           ; while also shifting K(2 1 0) right to fetch the next
-       ; ROR K                         ; ROR K             ; bit for the calculation into the C flag
+       .rora                           ; ROR A             ; Shift A right by one place to catch the next digit
+       .ror @K+2                       ; ROR K+2           ; next digit of our result in the left end of K(2 1 0),
+       .ror @K+1                       ; ROR K+1           ; while also shifting K(2 1 0) right to fetch the next
+       .ror @K                         ; ROR K             ; bit for the calculation into the C flag
                                                            ; 
                                                            ; On the last iteration of this loop, the bit falling
                                                            ; off the end of K will be bit 0 of the original A, as
@@ -14114,46 +14114,46 @@ MULTS:
                                                            ; = A + X
 
 B39:
-       ; ROR A                         ; ROR A             ; Shift A right to catch the next digit of our result,
+       .rora                           ; ROR A             ; Shift A right to catch the next digit of our result,
                                                            ; which the next ROR sticks into the left end of P while
                                                            ; also extracting the next bit of P
 
-       ; ROR P                         ; ROR P             ; Add the overspill from shifting A to the right onto
+       .ror @P                         ; ROR P             ; Add the overspill from shifting A to the right onto
                                                            ; the start of P, and shift P right to fetch the next
                                                            ; bit for the calculation into the C flag
 
        jnc  B40                        ; BCC B40           ; Repeat the shift-and-add loop for bit 1
        .adc @T1,A                      ; ADC T1            
 B40:
-       ; ROR A                         ; ROR A             
-       ; ROR P                         ; ROR P             
+       .rora                           ; ROR A             
+       .ror @P                         ; ROR P             
 
        jnc  B41                        ; BCC B41           ; Repeat the shift-and-add loop for bit 2
        .adc @T1,A                      ; ADC T1            
 B41:
-       ; ROR A                         ; ROR A             
-       ; ROR P                         ; ROR P             
+       .rora                           ; ROR A             
+       .ror @P                         ; ROR P             
 
        jnc  B42                        ; BCC B42           ; Repeat the shift-and-add loop for bit 3
        .adc @T1,A                      ; ADC T1            
 B42:
-       ; ROR A                         ; ROR A             
-       ; ROR P                         ; ROR P             
+       .rora                           ; ROR A             
+       .ror @P                         ; ROR P             
 
        jnc  B43                        ; BCC B43           ; Repeat the shift-and-add loop for bit 4
        .adc @T1,A                      ; ADC T1            
 B43:
-       ; ROR A                         ; ROR A             
-       ; ROR P                         ; ROR P             
+       .rora                           ; ROR A             
+       .ror @P                         ; ROR P             
 
        srl  A,1                        ; LSR A             ; Just do the "shift" part for bit 5
-       ; ROR P                         ; ROR P             
+       .ror @P                         ; ROR P             
 
        srl  A,1                        ; LSR A             ; Just do the "shift" part for bit 6
-       ; ROR P                         ; ROR P             
+       .ror @P                         ; ROR P             
 
        srl  A,1                        ; LSR A             ; Just do the "shift" part for bit 7
-       ; ROR P                         ; ROR P             
+       .ror @P                         ; ROR P             
 
        socb @T,A                       ; ORA T             ; Give A the sign bit of the original argument A that
                                                            ; we put into T above
@@ -14354,11 +14354,11 @@ MUL6:
                                                            ; = A + X
 
 B44:
-       ; ROR A                         ; ROR A             ; Shift A right to catch the next digit of our result,
+       .rora                           ; ROR A             ; Shift A right to catch the next digit of our result,
                                                            ; which the next ROR sticks into the left end of P while
                                                            ; also extracting the next bit of P
 
-       ; ROR P                         ; ROR P             ; Add the overspill from shifting A to the right onto
+       .ror @P                         ; ROR P             ; Add the overspill from shifting A to the right onto
                                                            ; the start of P, and shift P right to fetch the next
                                                            ; bit for the calculation into the C flag
 
@@ -14464,7 +14464,7 @@ FMLTU:
 
        .eoi :11111111                  ; EOR #%11111111    ; Flip the bits in A, set the C flag and rotate right,
        .sec                            ; SEC               ; so the C flag now contains bit 0 of A inverted, and P
-       ; ROR A                         ; ROR A             ; contains A inverted and shifted right by one, with bit
+       .rora                           ; ROR A             ; contains A inverted and shifted right by one, with bit
        movb A,@P                       ; STA P             ; 7 set to a 1. We can now use P as our source of bits
                                                            ; to shift right, just as in MU11, just with the logic
                                                            ; reversed
@@ -14482,7 +14482,7 @@ MUL3:
                                                            ; A = A + Q + C
                                                            ; = A + Q
 
-       ; ROR A                         ; ROR A             ; Shift A right to catch the next digit of our result.
+       .rora                           ; ROR A             ; Shift A right to catch the next digit of our result.
                                                            ; If we were interested in the low byte of the result we
                                                            ; would want to save the bit that falls off the end, but
                                                            ; we aren't, so we can ignore it
@@ -14611,7 +14611,7 @@ MLTU2:
 
        li   X,>10*256                  ; LDX #16           ; Set up a counter in X to count the 16 bits in (P+1 P)
 
-       ; ROR P                         ; ROR P             ; Set P = P >> 1 with bit 7 = bit 0 of A
+       .ror @P                         ; ROR P             ; Set P = P >> 1 with bit 7 = bit 0 of A
                                                            ; and C flag = bit 0 of P
 
 MUL7:
@@ -14625,9 +14625,9 @@ MUL7:
                                                            ; A = A + Q + C
                                                            ; = A + Q
 
-       ; ROR A                         ; ROR A             ; Rotate (A P+1 P) to the right, so we capture the next
-       ; ROR P+1                       ; ROR P+1           ; digit of the result in P+1, and extract the next digit
-       ; ROR P                         ; ROR P             ; of (P+1 P) in the C flag
+       .rora                           ; ROR A             ; Rotate (A P+1 P) to the right, so we capture the next
+       .ror @P+1                       ; ROR P+1           ; digit of the result in P+1, and extract the next digit
+       .ror @P                         ; ROR P             ; of (P+1 P) in the C flag
 
        sb   one,X                      ; DEX               ; Decrement the loop counter
 
@@ -14639,8 +14639,8 @@ MUL7:
 MU21:
 
        srl  A,1                        ; LSR A             ; Shift (A P+1 P) to the right, so we capture the next
-       ; ROR P+1                       ; ROR P+1           ; digit of the result in P+1, and extract the next digit
-       ; ROR P                         ; ROR P             ; of (P+1 P) in the C flag
+       .ror @P+1                       ; ROR P+1           ; digit of the result in P+1, and extract the next digit
+       .ror @P                         ; ROR P             ; of (P+1 P) in the C flag
 
        sb   one,X                      ; DEX               ; Decrement the loop counter
 
@@ -14786,13 +14786,13 @@ MUL4:
                                                            ; = A + |Q|
 
 B46:
-       ; ROR A                         ; ROR A             ; As mentioned above, this ROR shifts A right and
+       .rora                           ; ROR A             ; As mentioned above, this ROR shifts A right and
                                                            ; catches bit 0 in C - giving another digit for our
                                                            ; result - and the next ROR sticks that bit into the
                                                            ; left end of P while also extracting the next bit of P
                                                            ; for the next addition
 
-       ; ROR P                         ; ROR P             ; Add the overspill from shifting A to the right onto
+       .ror @P                         ; ROR P             ; Add the overspill from shifting A to the right onto
                                                            ; the start of P, and shift P right to fetch the next
                                                            ; bit for the calculation
 
@@ -14802,7 +14802,7 @@ B46:
                                                            ; all the way
 
        srl  A,1                        ; LSR A             ; Rotate (A P) once more to get the final result, as
-       ; ROR P                         ; ROR P             ; we only pushed 7 bits through the above process
+       .ror @P                         ; ROR P             ; we only pushed 7 bits through the above process
 
        socb @T,A                       ; ORA T             ; Set the sign bit of the result that we stored in T
 
@@ -15115,7 +15115,7 @@ DVL3:
 
 DV4:
 
-       ; ROL T1                        ; ROL T1            ; Rotate the counter in T1 to the left, and catch the
+       .rol @T1                        ; ROL T1            ; Rotate the counter in T1 to the left, and catch the
                                                            ; result bit into bit 0 (which will be a 0 if we didn't
                                                            ; do the subtraction, or 1 if we did)
 
@@ -15260,7 +15260,7 @@ DVID4:
 
 DVL4:
 
-       ; ROL A                         ; ROL A             ; Shift A to the left
+       .rola                           ; ROL A             ; Shift A to the left
 
        joc  DV8                        ; BCS DV8           ; If the C flag is set (i.e. bit 7 of A was set) then
                                                            ; skip straight to the subtraction
@@ -15276,7 +15276,7 @@ DV8:
 
 DV5:
 
-       ; ROL P                         ; ROL P             ; Shift P to the left, pulling the C flag into bit 0
+       .rol @P                         ; ROL P             ; Shift P to the left, pulling the C flag into bit 0
 
        sb   one,X                      ; DEX               ; Decrement the loop counter
 
@@ -15376,8 +15376,8 @@ DVL9:
        joc  DV14                       ; BCS DV14          
 
        .asl (P)                        ; ASL P             ; Shift (A P+1 P) to the left
-       ; ROL P+1                       ; ROL P+1           
-       ; ROL A                         ; ROL A             
+       .rol @P+1                       ; ROL P+1           
+       .rola                           ; ROL A             
 
        ab   one,Y                      ; INY               ; Increment the scale factor in Y
 
@@ -15418,8 +15418,8 @@ DVL6:
        sb   one,Y                      ; DEY               ; Decrement the scale factor in Y
 
        .asl (Q)                        ; ASL Q             ; Shift (A R Q) to the left
-       ; ROL R                         ; ROL R             
-       ; ROL A                         ; ROL A             
+       .rol @R                         ; ROL R             
+       .rola                           ; ROL A             
 
        jgt  DVL6                       ; BPL DVL6          ; Loop up to DVL6 to do another shift, until bit 7 of A
                                                            ; is set and we can't shift left any further
@@ -15464,9 +15464,9 @@ DV9:
 DVL8:
 
        .asla                           ; ASL A             ; Shift (K+3 K+2 K+1 A) left
-       ; ROL K+1                       ; ROL K+1           
-       ; ROL K+2                       ; ROL K+2           
-       ; ROL K+3                       ; ROL K+3           
+       .rol @K+1                       ; ROL K+1           
+       .rol @K+2                       ; ROL K+2           
+       .rol @K+3                       ; ROL K+3           
 
        ab   one,Y                      ; INY               ; Increment the scale factor in Y
 
@@ -16302,7 +16302,7 @@ PU2:
 
        li   A,>00*256                  ; LDA #0            ; Set RAT2 = 0 (left view) or -1 (right view)
        ci   X,>02*256                  ; CPX #2            
-       ; ROR A                         ; ROR A             
+       .rora                           ; ROR A             
        movb A,@RAT2                    ; STA RAT2          
 
        .eoi :10000000                  ; EOR #%10000000    ; Set RAT = -1 (left view) or 0 (right view)
@@ -17080,7 +17080,7 @@ B49:
                                                            ; 
                                                            ; and we can get on with drawing the dot and stick
 
-       ; PHP                           ; PHP               ; Store the flags (specifically the C flag) from the
+       .php                            ; PHP               ; Store the flags (specifically the C flag) from the
                                                            ; above subtraction
 
 * BCS SC48               \ These instructions are commented out in the original
@@ -17116,7 +17116,7 @@ SC48:
 
        .pla                            ; PLA               ; Restore the stick height from the stack into A
 
-       ; PLP                           ; PLP               ; Restore the flags from above, so the C flag once again
+       .plp                            ; PLP               ; Restore the flags from above, so the C flag once again
                                                            ; reflects the sign of the stick height
 
        movb A,X                        ; TAX               ; Copy the stick height into X
@@ -18066,11 +18066,11 @@ TT77:
                                                            ; (A P) = P * population
 
        .asl (P)                        ; ASL P             ; Next we multiply the result by 8, as a 16-bit number,
-       ; ROL A                         ; ROL A             ; so we shift both bytes to the left three times, using
+       .rola                           ; ROL A             ; so we shift both bytes to the left three times, using
        .asl (P)                        ; ASL P             ; the C flag to carry bits from bit 7 of the low byte
-       ; ROL A                         ; ROL A             ; into bit 0 of the high byte
+       .rola                           ; ROL A             ; into bit 0 of the high byte
        .asl (P)                        ; ASL P             
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
 
        movb A,@QQ7+1                   ; STA QQ7+1         ; Finally, we store the productivity in two bytes, with
        movb @P,A                       ; LDA P             ; the low byte in QQ7 and the high byte in QQ7+1
@@ -19811,10 +19811,10 @@ TT141:
 
        li   X,>00*256                  ; LDX #0            ; Now we set the high byte in QQ8+1 to 0 and rotate
        movb X,@QQ8+1                   ; STX QQ8+1         ; the C flag into bit 0 of QQ8+1
-       ; ROL QQ8+1                     ; ROL QQ8+1         
+       .rol @QQ8+1                     ; ROL QQ8+1         
 
        .asla                           ; ASL A             ; And then we repeat the shift left of (QQ8+1 A)
-       ; ROL QQ8+1                     ; ROL QQ8+1         
+       .rol @QQ8+1                     ; ROL QQ8+1         
 
        movb A,@QQ8                     ; STA QQ8           ; And store A in the low byte, QQ8, so QQ8(1 0) now
                                                            ; contains Q * 4. Given that the width of the galaxy is
@@ -20077,7 +20077,7 @@ G1:
 
        .asla                           ; ASL A             ; Set the C flag to bit 7 of the seed
 
-       ; ROL QQ21,X                    ; ROL QQ21,X        ; Rotate the seed in memory, which will add bit 7 back
+       .rol @QQ21(X)                   ; ROL QQ21,X        ; Rotate the seed in memory, which will add bit 7 back
                                                            ; in as bit 0, so this rolls the seed around on itself
 
        sb   one,X                      ; DEX               ; Decrement the counter
@@ -20942,7 +20942,7 @@ ptg_:
 
        .lsr @COK                       ; LSR COK           ; Set bit 0 of the competition flags in COK, so that the
        .sec                            ; SEC               ; competition code will include the fact that we have
-       ; ROL COK                       ; ROL COK           ; manually forced a mis-jump into witchspace
+       .rol @COK                       ; ROL COK           ; manually forced a mis-jump into witchspace
 
 MJP:
 
@@ -21320,9 +21320,9 @@ GCASH:
 GC2:
 
        .asl (P)                        ; ASL P             ; Set (A P) = (A P) * 4
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
        .asl (P)                        ; ASL P             
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
 
        movb A,Y                        ; TAY               ; Set (Y X) = (A P)
        movb @P,X                       ; LDX P             
@@ -22077,7 +22077,7 @@ TT53:
                                                            ; need to loop three or four times, so for now set
                                                            ; up a counter in Y to loop four times
 
-       ; BIT QQ15                      ; BIT QQ15          ; Check bit 6 of s0_lo, which is stored in QQ15
+       .bit (QQ15)                     ; BIT QQ15          ; Check bit 6 of s0_lo, which is stored in QQ15
 
        .bvs B59                        ; BVS B59           ; If bit 6 is set then skip over the next instruction
 
@@ -22502,7 +22502,7 @@ B64:
                                                            ; character in upper or lower case, depending on
                                                            ; whether this is the first letter in a word
 
-       ; BIT QQ17                      ; BIT QQ17          ; If we get here, QQ17 is not 0 and bit 7 is clear, so
+       .bit (QQ17)                     ; BIT QQ17          ; If we get here, QQ17 is not 0 and bit 7 is clear, so
        .bvs TT46                       ; BVS TT46          ; either it is bit 6 that is set, or some other flag in
                                                            ; QQ17 is set (bits 0-5). So check whether bit 6 is set.
                                                            ; If it is, then ALL CAPS has been set (as bit 7 is
@@ -22612,7 +22612,7 @@ TT41:
                                                            ; If we get here, then QQ17 has bit 7 set, so we are in
                                                            ; Sentence Case
 
-       ; BIT QQ17                      ; BIT QQ17          ; If QQ17 also has bit 6 set, jump to TT45 to print
+       .bit (QQ17)                     ; BIT QQ17          ; If QQ17 also has bit 6 set, jump to TT45 to print
        .bvs TT45                       ; BVS TT45          ; this character in lower case
 
                                                            ; If we get here, then QQ17 has bit 6 clear and bit 7
@@ -23046,12 +23046,12 @@ B66:
 
 B67:
        .asl (T)                        ; ASL T             ; Shift (A T) left twice
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
        .asl (T)                        ; ASL T             
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
 
        .sec                            ; SEC               ; And then shift A left once more, inserting a 1 into
-       ; ROL A                         ; ROL A             ; bit 0
+       .rola                           ; ROL A             ; bit 0
 
                                                            ; Overall, the above multiplies A by 8 and makes sure it
                                                            ; is at least 1, to leave a one-byte distance in A. We
@@ -23096,11 +23096,11 @@ yy_:
 
 B68:
        .asl (R)                        ; ASL R             ; Shift (A R) left three times to multiply by 8
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
        .asl (R)                        ; ASL R             
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
        .asl (R)                        ; ASL R             
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
 
                                                            ; Overall, the above multiplies (A R) by 8 to leave a
                                                            ; one-byte cloud size in A, given by the following:
@@ -23354,7 +23354,7 @@ EXS1:
        .jsr @DORND2                    ; JSR DORND2        ; Set A and X to random numbers, making sure the C flag
                                                            ; doesn't affect the outcome
 
-       ; ROL A                         ; ROL A             ; Set A = A * 2
+       .rola                           ; ROL A             ; Set A = A * 2
 
        joc  EX5                        ; BCS EX5           ; If bit 7 of A was set (50% chance), jump to EX5
 
@@ -23454,7 +23454,7 @@ SOLAR:
 
        movb A,@INWK+8                  ; STA INWK+8        ; Store the result in z_sign in byte #6
 
-       ; ROR A                         ; ROR A             ; Halve A, rotating in the C flag, which was previously
+       .rora                           ; ROR A             ; Halve A, rotating in the C flag, which was previously
        movb A,@INWK+2                  ; STA INWK+2        ; bit 0 of s0_hi + 6 + C, so when this is stored in both
        movb A,@INWK+5                  ; STA INWK+5        ; x_sign and y_sign, it moves the planet to the upper
                                                            ; right or lower left
@@ -23723,13 +23723,13 @@ DET1:
 
        li   A,>06*256                  ; LDA #6            ; Set A to 6 so we can update 6845 register R6 below
 
-       ; SEI                           ; SEI               ; Disable interrupts so we can update the 6845
+       limi 0                          ; SEI               ; Disable interrupts so we can update the 6845
 
        movb A,@VIA+>00                 ; STA VIA+&00       ; Set 6845 register R6 to the value in X. Register R6
        movb X,@VIA+>01                 ; STX VIA+&01       ; is the "vertical displayed" register, which sets the
                                                            ; number of rows shown on the screen
 
-       ; CLI                           ; CLI               ; Re-enable interrupts
+       limi 2                          ; CLI               ; Re-enable interrupts
 
        .rts                            ; RTS               ; Return from the subroutine
 
@@ -23788,7 +23788,7 @@ DENGY:
 
        sb   one,A                      ; DEC ENERGY        ; Decrement the energy banks in ENERGY
 
-       ; PHP                           ; PHP               ; Save the flags on the stack
+       .php                            ; PHP               ; Save the flags on the stack
 
        jne  B70                        ; BNE B70           ; If the energy levels are not yet zero, skip the
                                                            ; following instruction
@@ -23797,7 +23797,7 @@ DENGY:
                                                            ; reached 0, so increment ENERGY back to 1
 
 B70:
-       ; PLP                           ; PLP               ; Restore the flags from the stack, so we return with
+       .plp                            ; PLP               ; Restore the flags from the stack, so we return with
                                                            ; the Z flag from the DEC instruction above
 
        .rts                            ; RTS               ; Return from the subroutine
@@ -23854,7 +23854,7 @@ SPS2:
        movb A,X                        ; TAX               ; A
 
        li   A,>00*256                  ; LDA #0            ; Set Y to have the sign bit from A in bit 7, with the
-       ; ROR A                         ; ROR A             ; rest of its bits zeroed, so Y now contains the sign of
+       .rora                           ; ROR A             ; rest of its bits zeroed, so Y now contains the sign of
        movb A,Y                        ; TAY               ; the original argument
 
        li   A,>14*256                  ; LDA #20           ; Set Q = 20
@@ -25793,7 +25793,7 @@ PLL4:
                                                            ; and negative for 180 to 360 degrees
 
        li   A,>00*256                  ; LDA #0            ; Shift the C flag into the sign bit of XX16+5, so
-       ; ROR A                         ; ROR A             ; XX16+5 has the correct sign for sin(CNT2)
+       .rora                           ; ROR A             ; XX16+5 has the correct sign for sin(CNT2)
        movb A,@XX16+5                  ; STA XX16+5        ; 
                                                            ; Because we set the following above:
                                                            ; 
@@ -25852,7 +25852,7 @@ PLL4:
                                                            ; 270 to 360 degrees, and negative for 90 to 270 degrees
 
        li   A,>00*256                  ; LDA #0            ; Shift the C flag into the sign bit of XX16+4, so:
-       ; ROR A                         ; ROR A             ; XX16+4 has the correct sign for cos(CNT2)
+       .rora                           ; ROR A             ; XX16+4 has the correct sign for cos(CNT2)
        movb A,@XX16+4                  ; STA XX16+4        ; 
                                                            ; Because we set the following above:
                                                            ; 
@@ -26101,13 +26101,13 @@ SUN:
        movb @K,X                       ; LDX K             ; Set X = K = radius of the new sun
 
        ci   X,>60*256                  ; CPX #96           ; If X >= 96, set the C flag and rotate it into bit 0
-       ; ROL A                         ; ROL A             ; of A, otherwise rotate a 0 into bit 0
+       .rola                           ; ROL A             ; of A, otherwise rotate a 0 into bit 0
 
        ci   X,>28*256                  ; CPX #40           ; If X >= 40, set the C flag and rotate it into bit 0
-       ; ROL A                         ; ROL A             ; of A, otherwise rotate a 0 into bit 0
+       .rola                           ; ROL A             ; of A, otherwise rotate a 0 into bit 0
 
        ci   X,>10*256                  ; CPX #16           ; If X >= 16, set the C flag and rotate it into bit 0
-       ; ROL A                         ; ROL A             ; of A, otherwise rotate a 0 into bit 0
+       .rola                           ; ROL A             ; of A, otherwise rotate a 0 into bit 0
 
                                                            ; By now, A contains the following:
                                                            ; 
@@ -28596,7 +28596,7 @@ Ze:
        movb X,A                        ; TXA               ; Set the C flag if X >= 245 (4% chance)
        ci   A,>f5*256                  ; CMP #245          
 
-       ; ROL A                         ; ROL A             ; Set bit 0 of A to the C flag (i.e. there's a 4%
+       .rola                           ; ROL A             ; Set bit 0 of A to the C flag (i.e. there's a 4%
                                                            ; chance of this ship having E.C.M.)
 
        ori  A,>c0*256                  ; ORA #%11000000    ; Set bits 6 and 7 of A, so the ship is hostile (bit 6
@@ -28644,7 +28644,7 @@ DORND2:
 DORND:
 
        movb @RAND,A                    ; LDA RAND          ; Calculate the next two values f2 and f3 in the feeder
-       ; ROL A                         ; ROL A             ; sequence:
+       .rola                           ; ROL A             ; sequence:
        movb A,X                        ; TAX               ; 
        .adc @RAND+2,A                  ; ADC RAND+2        ; * f2 = (f1 << 1) mod 256 + C flag on entry
        movb A,@RAND                    ; STA RAND          ; * f3 = f0 + f2 + (1 if bit 7 of f1 is set)
@@ -28696,7 +28696,7 @@ MTT4:
                                                            ; clockwise roll (as bit 7 is clear), and a 1 in 127
                                                            ; chance of it having no damping
 
-       ; ROL INWK+31                   ; ROL INWK+31       ; Set bit 0 of the ship's missile count randomly (as the
+       .rol @INWK+31                   ; ROL INWK+31       ; Set bit 0 of the ship's missile count randomly (as the
                                                            ; C flag was set), giving the ship either no missiles or
                                                            ; one missile
 
@@ -28822,8 +28822,8 @@ B87:
        andi A,>80*256                  ; AND #%10000000    
        movb A,@INWK+5                  ; STA INWK+5        
 
-       ; ROL INWK+1                    ; ROL INWK+1        ; Set bit 1 of x_hi to the C flag, which is random, so
-       ; ROL INWK+1                    ; ROL INWK+1        ; this randomly moves us off-centre by 512 (as if x_hi
+       .rol @INWK+1                    ; ROL INWK+1        ; Set bit 1 of x_hi to the C flag, which is random, so
+       .rol @INWK+1                    ; ROL INWK+1        ; this randomly moves us off-centre by 512 (as if x_hi
                                                            ; is %00000010, then (x_hi x_lo) is 512 + x_lo)
 
        .jsr @DORND                     ; JSR DORND         ; Set A, X and V flag to random numbers
@@ -29020,7 +29020,7 @@ LABEL_2:
 
        ci   A,>c8*256                  ; CMP #200          ; First, set the C flag if X >= 200 (22% chance)
 
-       ; ROL A                         ; ROL A             ; Set bit 0 of A to the C flag (i.e. there's a 22%
+       .rola                           ; ROL A             ; Set bit 0 of A to the C flag (i.e. there's a 22%
                                                            ; chance of this ship having E.C.M.)
 
        ori  A,>c0*256                  ; ORA #%11000000    ; Set bits 6 and 7 of A, so the ship is hostile (bit 6)
@@ -29268,7 +29268,7 @@ B97:
 
 fvw_:
 
-       ; BIT QQ12                      ; BIT QQ12          ; If bit 7 of QQ12 is clear (i.e. we are not docked, but
+       .bit (QQ12)                     ; BIT QQ12          ; If bit 7 of QQ12 is clear (i.e. we are not docked, but
        jgt  INSP                       ; BPL INSP          ; in space), jump to INSP to skip the following checks
                                                            ; for f1-f3 and "@" (save commander file) key presses
 
@@ -29648,12 +29648,12 @@ D1:
        movb A,@INWK+29                 ; STA INWK+29       ; and store in byte #29 (roll counter) to give our ship
                                                            ; a gentle roll with damping
 
-       ; ROR A                         ; ROR A             ; The C flag is randomly set from the above call to Ze,
+       .rora                           ; ROR A             ; The C flag is randomly set from the above call to Ze,
        andi A,>87*256                  ; AND #%10000111    ; so this sets A to a number between -7 and +7, which
        movb A,@INWK+30                 ; STA INWK+30       ; we store in byte #30 (the pitch counter) to give our
                                                            ; ship a very gentle pitch with damping
 
-       ; PHP                           ; PHP               ; Store the processor flags
+       .php                            ; PHP               ; Store the processor flags
 
        li   X,(OIL)*256                ; LDX #OIL          ; Call fq1 with X set to #OIL, which adds a new cargo
        .jsr @fq1_                      ; JSR fq1           ; canister to our local bubble of universe and points it
@@ -29661,11 +29661,11 @@ D1:
                                                            ; was set to 3 by the call to RES2 above). INF is set to
                                                            ; point to the canister's ship data block in K%
 
-       ; PLP                           ; PLP               ; Restore the processor flags, including our random C
+       .plp                            ; PLP               ; Restore the processor flags, including our random C
                                                            ; flag from before
 
        li   A,>00*256                  ; LDA #0            ; Set bit 7 of A to our random C flag and store in byte
-       ; ROR A                         ; ROR A             ; #31 of the ship's data block, so this has a 50% chance
+       .rora                           ; ROR A             ; #31 of the ship's data block, so this has a 50% chance
        li   Y,>1f*256                  ; LDY #31           ; of marking our new canister as being killed (so it
        .st_ind_y_idx (INF),A           ; STA (INF),Y       ; will explode)
 
@@ -30796,7 +30796,7 @@ TAS2:
 TAL2:
 
        .asl (K3+9)                     ; ASL K3+9          ; Shift (A K3+9) to the left, so bit 7 of the high byte
-       ; ROL A                         ; ROL A             ; goes into the C flag
+       .rola                           ; ROL A             ; goes into the C flag
 
        joc  TA2                        ; BCS TA2           ; If the left shift pushed a 1 out of the end, then we
                                                            ; know that at least one of the coordinates has a 1 in
@@ -30804,13 +30804,13 @@ TAL2:
                                                            ; values in K3 any further to the left
 
        .asl (K3)                       ; ASL K3            ; Shift K3(1 0), the x-coordinate, to the left
-       ; ROL K3+1                      ; ROL K3+1          
+       .rol @K3+1                      ; ROL K3+1          
 
        .asl (K3+3)                     ; ASL K3+3          ; Shift K3(4 3), the y-coordinate, to the left
-       ; ROL K3+4                      ; ROL K3+4          
+       .rol @K3+4                      ; ROL K3+4          
 
        .asl (K3+6)                     ; ASL K3+6          ; Shift K3(6 7), the z-coordinate, to the left
-       ; ROL K3+7                      ; ROL K3+7          
+       .rol @K3+7                      ; ROL K3+7          
 
        jnc  TAL2                       ; BCC TAL2          ; Jump back to TAL2 to do another shift left (this BCC
                                                            ; is effectively a JMP as we know bit 7 of K3+7 is not a
@@ -31486,7 +31486,7 @@ DKS4:
        li   A,>03*256                  ; LDA #%00000011    ; Set A to %00000011, so it's ready to send to SHEILA
                                                            ; once interrupts have been disabled
 
-       ; SEI                           ; SEI               ; Disable interrupts so we can scan the keyboard
+       limi 0                          ; SEI               ; Disable interrupts so we can scan the keyboard
                                                            ; without being hijacked
 
        movb A,@VIA+>40                 ; STA VIA+&40       ; Set 6522 System VIA output register ORB (SHEILA &40)
@@ -31513,7 +31513,7 @@ DKS4:
        li   A,>0b*256                  ; LDA #%00001011    ; Set 6522 System VIA output register ORB (SHEILA &40)
        movb A,@VIA+>40                 ; STA VIA+&40       ; to %00001011 to restart auto scan of keyboard
 
-       ; CLI                           ; CLI               ; Allow interrupts again
+       limi 2                          ; CLI               ; Allow interrupts again
 
        movb X,A                        ; TXA               ; Transfer X into A
 
@@ -32640,7 +32640,7 @@ TIL2:
                                                            ; we are done
 
 B108:
-       ; ROL T                         ; ROL T             ; Rotate the counter in T to the left, and catch the
+       .rol @T                         ; ROL T             ; Rotate the counter in T to the left, and catch the
                                                            ; result bit into bit 0 (which will be a 0 if we didn't
                                                            ; do the subtraction, or 1 if we did)
 
@@ -32782,14 +32782,14 @@ DVIDT:
        li   X,>10*256                  ; LDX #16           ; Set a counter in X to count the 16 bits in P(1 0)
 
        .asl (P)                        ; ASL P             ; Shift P(1 0) left
-       ; ROL P+1                       ; ROL P+1           
+       .rol @P+1                       ; ROL P+1           
 
        .asl (Q)                        ; ASL Q             ; Clear the sign bit of Q the C flag at the same time
        .lsr @Q                         ; LSR Q             
 
 DVL2:
 
-       ; ROL A                         ; ROL A             ; Shift A to the left
+       .rola                           ; ROL A             ; Shift A to the left
 
        cb   @Q,A                       ; CMP Q             ; If A < Q skip the following subtraction
        jnc  B109                       ; BCC B109          
@@ -32802,8 +32802,8 @@ DVL2:
                                                            ; we are done
 
 B109:
-       ; ROL P                         ; ROL P             ; Rotate P(1 0) to the left, and catch the result bit
-       ; ROL P+1                       ; ROL P+1           ; into the C flag (which will be a 0 if we didn't
+       .rol @P                         ; ROL P             ; Rotate P(1 0) to the left, and catch the result bit
+       .rol @P+1                       ; ROL P+1           ; into the C flag (which will be a 0 if we didn't
                                                            ; do the subtraction, or 1 if we did)
 
        sb   one,X                      ; DEX               ; Decrement the loop counter
@@ -33005,25 +33005,25 @@ LL8:
 
 LL7:
 
-       ; ROL Q                         ; ROL Q             ; Shift the result in Q to the left, shifting the C flag
+       .rol @Q                         ; ROL Q             ; Shift the result in Q to the left, shifting the C flag
                                                            ; into bit 0 and bit 7 into the C flag
 
        .asl (S)                        ; ASL S             ; Shift the dividend in (Y S) to the left, inserting
        movb Y,A                        ; TYA               ; bit 7 from above into bit 0
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
        movb A,Y                        ; TAY               
 
        movb X,A                        ; TXA               ; Shift the remainder in X to the left
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
        movb A,X                        ; TAX               
 
        .asl (S)                        ; ASL S             ; Shift the dividend in (Y S) to the left
        movb Y,A                        ; TYA               
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
        movb A,Y                        ; TAY               
 
        movb X,A                        ; TXA               ; Shift the remainder in X to the left
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
        movb A,X                        ; TAX               
 
        sb   one,A                      ; DEC T             ; Decrement the loop counter
@@ -33102,7 +33102,7 @@ LL31:
        .sbc @Q,A                       ; SBC Q             ; A >= Q, so set A = A - Q
 
 B110:
-       ; ROL R                         ; ROL R             ; Rotate the counter in R to the left, and catch the
+       .rol @R                         ; ROL R             ; Rotate the counter in R to the left, and catch the
                                                            ; result bit into bit 0 (which will be a 0 if we didn't
                                                            ; do the subtraction, or 1 if we did)
 
@@ -33117,7 +33117,7 @@ LL29:
 
        .sec                            ; SEC               ; Set the C flag to rotate into the result in R
 
-       ; ROL R                         ; ROL R             ; Rotate the counter in R to the left, and catch the
+       .rol @R                         ; ROL R             ; Rotate the counter in R to the left, and catch the
                                                            ; result bit into bit 0 (which will be a 0 if we didn't
                                                            ; do the subtraction, or 1 if we did)
 
@@ -33415,7 +33415,7 @@ LL9:
                                                            ; distance if it turns out to be visible on-screen
 
        li   A,>20*256                  ; LDA #%00100000    ; If bit 5 of the ship's byte #31 is set, then the ship
-       ; BIT XX1+31                    ; BIT XX1+31        ; is currently exploding, so jump down to EE28
+       .bit (XX1+31)                   ; BIT XX1+31        ; is currently exploding, so jump down to EE28
        jne  EE28                       ; BNE EE28          
 
        jgt  EE28                       ; BPL EE28          ; If bit 7 of the ship's byte #31 is clear then the ship
@@ -33504,7 +33504,7 @@ LL14:
 EE51:
 
        li   A,>08*256                  ; LDA #%00001000    ; If bit 3 of the ship's byte #31 is clear, then there
-       ; BIT XX1+31                    ; BIT XX1+31        ; is already nothing being shown for this ship, so
+       .bit (XX1+31)                   ; BIT XX1+31        ; is already nothing being shown for this ship, so
        jeq  LL10-1                     ; BEQ LL10-1        ; return from the subroutine (as LL10-1 contains an RTS)
 
        .eor (XX1+31)                   ; EOR XX1+31        ; Otherwise flip bit 3 of byte #31 and store it (which
@@ -33592,18 +33592,18 @@ LL10:
        movb @XX1+7,A                   ; LDA XX1+7         
 
        srl  A,1                        ; LSR A             ; Set (A T) = (A T) / 8
-       ; ROR T                         ; ROR T             
+       .ror @T                         ; ROR T             
        srl  A,1                        ; LSR A             
-       ; ROR T                         ; ROR T             
+       .ror @T                         ; ROR T             
        srl  A,1                        ; LSR A             
-       ; ROR T                         ; ROR T             
+       .ror @T                         ; ROR T             
 
        srl  A,1                        ; LSR A             ; If A >> 4 is non-zero, i.e. z_hi >= 16, jump to LL13
        jne  LL13                       ; BNE LL13          ; as the ship is possibly far away enough to be shown as
                                                            ; a dot
 
        movb @T,A                       ; LDA T             ; Otherwise the C flag contains the previous bit 0 of A,
-       ; ROR A                         ; ROR A             ; which could have been set, so rotate A right four
+       .rora                           ; ROR A             ; which could have been set, so rotate A right four
        srl  A,1                        ; LSR A             ; times so it's in the form %000xxxxx, i.e. z_hi reduced
        srl  A,1                        ; LSR A             ; to a maximum value of 31
        srl  A,1                        ; LSR A             
@@ -33704,7 +33704,7 @@ LL21:
        movb @XX16+1(Y),A               ; LDA XX16+1,Y      ; Set A = the high byte of the vector coordinate, e.g.
                                                            ; nosev_z_hi when Y = 16
 
-       ; ROL A                         ; ROL A             ; Rotate A left, incorporating the C flag, so A now
+       .rola                           ; ROL A             ; Rotate A left, incorporating the C flag, so A now
                                                            ; contains the original high byte, doubled, and without
                                                            ; a sign bit, e.g. A = |nosev_z_hi| * 2
 
@@ -33868,13 +33868,13 @@ LL90:
        ab   one,X                      ; INX               ; Increment the scale factor in X
 
        .lsr @XX18+4                    ; LSR XX18+4        ; Divide (y_hi y_lo) by 2
-       ; ROR XX18+3                    ; ROR XX18+3        
+       .ror @XX18+3                    ; ROR XX18+3        
 
        .lsr @XX18+1                    ; LSR XX18+1        ; Divide (x_hi x_lo) by 2
-       ; ROR XX18                      ; ROR XX18          
+       .ror @XX18                      ; ROR XX18          
 
        srl  A,1                        ; LSR A             ; Divide (z_hi z_lo) by 2 (as A contains z_hi)
-       ; ROR XX18+6                    ; ROR XX18+6        
+       .ror @XX18+6                    ; ROR XX18+6        
 
        movb A,Y                        ; TAY               ; Set Y = z_hi
 
@@ -34261,7 +34261,7 @@ LL89:
 
        .pla                            ; PLA               ; Pull the dot product off the stack into A
 
-       ; BIT S                         ; BIT S             ; If bit 7 of S is set, i.e. the dot product is
+       .bit (S)                        ; BIT S             ; If bit 7 of S is set, i.e. the dot product is
        jlt  B112                       ; BMI B112          ; negative, then this face is visible as its normal is
                                                            ; pointing towards us, so skip the following instruction
 
@@ -34752,7 +34752,7 @@ LL63:
 LL64:
 
        .asla                           ; ASL A             ; Double (U A) by shifting left
-       ; ROL U                         ; ROL U             
+       .rol @U                         ; ROL U             
 
        jlt  LL84                       ; BMI LL84          ; If bit 7 of U is set, the doubling has overflowed, so
                                                            ; jump to LL84 to return a division error
@@ -34897,13 +34897,13 @@ LL57:
        jeq  LL60                       ; BEQ LL60          
 
        .lsr @XX15+1                    ; LSR XX15+1        ; Shift XX15(1 0) to the right
-       ; ROR XX15                      ; ROR XX15          
+       .ror @XX15                      ; ROR XX15          
 
        .lsr @XX15+4                    ; LSR XX15+4        ; Shift XX15(4 3) to the right
-       ; ROR XX15+3                    ; ROR XX15+3        
+       .ror @XX15+3                    ; ROR XX15+3        
 
        .lsr @U                         ; LSR U             ; Shift (U T) to the right
-       ; ROR T                         ; ROR T             
+       .ror @T                         ; ROR T             
 
        b    @LL57                      ; JMP LL57          ; Jump back to LL57 to see if we can shift the result
                                                            ; any more
@@ -35189,7 +35189,7 @@ LL72:
 EE31:
 
        li   A,>08*256                  ; LDA #%00001000    ; If bit 3 of the ship's byte #31 is clear, then there
-       ; BIT XX1+31                    ; BIT XX1+31        ; is nothing already being shown for this ship, so skip
+       .bit (XX1+31)                   ; BIT XX1+31        ; is nothing already being shown for this ship, so skip
        jeq  LL74                       ; BEQ LL74          ; to LL74 as we don't need to erase anything from the
                                                            ; screen
 
@@ -35223,7 +35223,7 @@ LL74:
                                                            ; line heap, using U to point to the end of the heap, so
                                                            ; we start by setting U = 1
 
-       ; BIT XX1+31                    ; BIT XX1+31        ; If bit 6 of the ship's byte #31 is clear, then the
+       .bit (XX1+31)                   ; BIT XX1+31        ; If bit 6 of the ship's byte #31 is clear, then the
        jno  LL170                      ; BVC LL170         ; ship is not firing its lasers, so jump to LL170 to
                                                            ; skip the drawing of laser lines
 
@@ -35913,7 +35913,7 @@ LL122:
        movb A,Y                        ; TAY               
 
        .lsr @S                         ; LSR S             ; Shift (S R) to the right, so we extract bit 0 of (S R)
-       ; ROR R                         ; ROR R             ; into the C flag
+       .ror @R                         ; ROR R             ; into the C flag
 
        .asl (Q)                        ; ASL Q             ; Shift Q to the left, catching bit 7 in the C flag
 
@@ -35935,7 +35935,7 @@ LL125:
 LL126:
 
        .lsr @S                         ; LSR S             ; Shift (S R) to the right
-       ; ROR R                         ; ROR R             
+       .ror @R                         ; ROR R             
 
        .asl (Q)                        ; ASL Q             ; Shift Q to the left, catching bit 7 in the C flag
 
@@ -36047,7 +36047,7 @@ LL121:
 LL130:
 
        .asl (R)                        ; ASL R             ; Shift (S R) to the left
-       ; ROL S                         ; ROL S             
+       .rol @S                         ; ROL S             
 
        movb @S,A                       ; LDA S             ; Set A = S
 
@@ -36076,10 +36076,10 @@ LL131:
 LL132:
 
        movb X,A                        ; TXA               ; Rotate the counter in (Y X) to the left, and catch the
-       ; ROL A                         ; ROL A             ; result bit into bit 0 (which will be a 0 if we didn't
+       .rola                           ; ROL A             ; result bit into bit 0 (which will be a 0 if we didn't
        movb A,X                        ; TAX               ; do the subtraction, or 1 if we did)
        movb Y,A                        ; TYA               
-       ; ROL A                         ; ROL A             
+       .rola                           ; ROL A             
        movb A,Y                        ; TAY               
 
        joc  LL130                      ; BCS LL130         ; If we still have set bits in (Y X), loop back to LL130
@@ -36496,10 +36496,10 @@ LL111:
 LL112:
 
        srl  A,1                        ; LSR A             ; Halve the value of delta_x in (A XX12+2)
-       ; ROR XX12+2                    ; ROR XX12+2        
+       .ror @XX12+2                    ; ROR XX12+2        
 
        .lsr @XX12+5                    ; LSR XX12+5        ; Halve the value of delta_y XX12(5 4)
-       ; ROR XX12+4                    ; ROR XX12+4        
+       .ror @XX12+4                    ; ROR XX12+4        
 
        b    @LL111                     ; JMP LL111         ; Loop back to LL111
 
