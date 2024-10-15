@@ -1,10 +1,10 @@
-A:
+ra:
        requ 0
-Alb:
+ralb:
        equ  >8301
-X:
+rx:
        requ 1
-Y:
+ry:
        requ 2
 zero:
        requ 3
@@ -20,10 +20,10 @@ tmp2:
        requ 7
 tmp2lb:
        equ >830f
-SP:
+sp:
        requ 10
-SPlb:
-       requ >8315
+splb:
+       equ >8315
 r11lb:
        equ  >8317
 

@@ -7,11 +7,11 @@ import java.util.regex.Pattern;
 
 public class BBCSourceConverter {
 
-    private static final String regA = "A";
-    private static final String regX = "X";
-    private static final String regY = "Y";
-    private static final String regSP = "SP";
-    private static final String regSPLowByte = "SPlb";
+    private static final String regA = "ra";
+    private static final String regX = "rx";
+    private static final String regY = "ry";
+    private static final String regSP = "sp";
+    private static final String regSPLowByte = "splb";
     private static final String regTmp = "tmp";
     private static final String regTmpLowByte = "tmplb";
     private static final String regOne = "one";
@@ -33,6 +33,8 @@ public class BBCSourceConverter {
 
     private List<TMS9900Line> convert(List<BBCLine> bbcLines) {
         List<TMS9900Line> tms9900Lines = new ArrayList<>();
+        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, "", "copy \"equates.a99\""));
+        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, "", "copy \"macros.a99\""));
         boolean insideMacro = false;
         boolean insideFor = false;
         int i = 0;

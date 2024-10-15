@@ -3,79 +3,92 @@
 *
        .defm jsr
        li   r11,!
-       movb r11,*SP
-       dec  SP
+       movb r11,*sp
+       dec  sp
        swpb r11
-       movb r11,*SP
-       dec  SP
+       movb r11,*sp
+       dec  sp
        b    #1
-!      equ  $
+!:
+       equ  $
        .endm
 
        .defm rts
-       inc  SP
-       movb *SP+,r11
+       inc  sp
+       movb *sp+,r11
        swpb r11
-       movb *SP,11
+       movb *sp,r11
        b    *r11
        .endm
 
        .defm pha
-       movb A,*SP
-       dec  SP
+       movb ra,*sp
+       dec  sp
        .endm
 
        .defm pla
-       inc  SP
-       movb *SP,A
+       inc  sp
+       movb *sp,ra
        .endm
 
        .defm php
        stst tmp
-       movb tmp,*SP
-       dec  SP
+       movb tmp,*sp
+       dec  sp
        .endm
 
        .defm plp
-       INC  SP
-       movb *SP,tmp
+       INC  sp
+       movb *sp,tmp
        ; todo: restore status
        .endm
 
        .defm adc
        jnc  !
-       ab   one,A
-!      ab   #1,A
+       ab   one,ra
+!:
+       ab   #1,ra
        .endm
 
        .defm adi
        jnc  !
-       ab   one,A
-!      ai   A,#1
+       ab   one,ra
+!:
+       ai   ra,#1
        .endm
 
        .defm sbc
        joc  !
-       sb   one,A
-!      sb   #1,A
+       sb   one,ra
+!:
+       sb   #1,ra
        .endm
 
        .defm sbi
        joc  !
-       sb   one,A
-!      ai   A,-#1
+       sb   one,ra
+!:
+       ai   ra,-#1
        .endm
 
        .defm and
        movb #1,tmp
        inv  tmp
-       szcb tmp,A
+       szcb tmp,ra
+       .endm
+
+       .defm cmp_ind_y_idx
+       movb @#1,@tmplb
+       movb @#1+1,tmp
+       a    ry,tmp
+       movb *tmp,tmp
+       cb   ra,tmp
        .endm
 
        .defm and_ind_y_idx
        movb @#1,@tmplb
        movb @#1+1,tmp
-       a    Y,tmp
+       a    ry,tmp
        movb *tmp,tmp
        inv  tmp
        szcb tmp,#2
@@ -90,39 +103,39 @@
        .endm
 
        .defm ld_x_idx_ind
-       movb @#1(X),@tmplb
-       movb @#1+1(X),tmp
+       movb @#1(rx),@tmplb
+       movb @#1+1(rx),tmp
        movb *tmp,#2
        .endm
 
        .defm st_x_idx_ind
-       movb @#1(X),@tmplb
-       movb @#1+1(X),tmp
+       movb @#1(rx),@tmplb
+       movb @#1+1(rx),tmp
        movb #2,*tmp
        .endm
 
        .defm ld_ind_y_idx
-       movb @#1,@tmplb
-       movb @#1+1,tmp
-       a    Y,tmp
+       movb #1,@tmplb
+       movb #1+1,tmp
+       a    ry,tmp
        movb *tmp,#2
        .endm
 
        .defm st_ind_y_idx
-       movb @#1,@tmplb
-       movb @#1+1,tmp
-       a    Y,tmp
+       movb #1,@tmplb
+       movb #1+1,tmp
+       a    ry,tmp
        movb #2,*tmp
         .endm
 
        .defm eoi
        li   tmp,#1
-       xor  tmp,A
+       xor  tmp,ra
        .endm
 
        .defm eor
        movb #1,tmp
-       xor  tmp,A
+       xor  tmp,ra
        .endm
 
        .defm lsr
@@ -133,30 +146,36 @@
 
        .defm rola
        jnc  !
-       ori  a,>0080
-!      jmp  !
-       andi a,>ff7f
-!      sla  a,1
+       ori  ra,>0080
+!:
+       jmp  !
+       andi ra,>ff7f
+!:
+       sla  ra,1
        .endm
 
        .defm rol
        movb #1,tmp
        jnc  !
        ori  tmp,>0080
-!      jmp  !
+!:
+       jmp  !
        andi tmp,>ff7f
-!      sla  tmp,1
+!:
+       sla  tmp,1
        mov  tmp,#1
        .endm
 
        .defm rora
        jnc  !
-       ori  a,>0001
-!      jmp  !
-       andi a,>fffe
-!      src  a,1
-       andi a,>0080
-       mov  a,tmp
+       ori  ra,>0001
+!:
+       jmp  !
+       andi ra,>fffe
+!:
+       src  ra,1
+       andi ra,>0080
+       mov  ra,tmp
        sla  tmp,9
        .endm
 
@@ -164,17 +183,19 @@
        movb #1,tmp
        jnc  !
        ori  tmp,>0001
-!      jmp  !
+!:
+       jmp  !
        andi tmp,>fffe
-!      src  tmp,1
+!:
+       src  tmp,1
        movb tmp,#1
        andi tmp,>0080
        sla  tmp,9
        .endm
 
        .defm asla
-       andi A,>ff00
-       sla  A,1
+       andi ra,>ff00
+       sla  ra,1
        .endm
 
        .defm asl
@@ -187,7 +208,8 @@
        .defm bvs
        joc  !
        jmp  #1
-!      equ  $
+!:
+       equ  $
        .endm
 
        .defm sec
@@ -200,9 +222,9 @@
 
        .defm char
        .ifeq #1, '`'
-       byte 39 ^ #2
+       byte 39 ^ RE
        .else
-       byte #1 ^ #2
+       byte #1 ^ RE
        .endif
        .endm
 
