@@ -216,6 +216,12 @@
        movb rtmp,#1
        .endm
 
+       .defm jmpi
+       movb #1(rx),@rtmplb
+       movb #1+1(rx),rtmp
+       b    *rtmp
+       .endm
+
        .defm bvs
        joc  !
        jmp  #1

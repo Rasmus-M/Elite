@@ -213,31 +213,31 @@ public class BBCSourceConverter {
                 }
                 break;
             case "BCC":
-                tms9900Line.setInstruction("jnc  " + convertExpression(operand.getExpression()));
+                tms9900Line.setInstruction("jnc  " + convertOperand(operand));
                 break;
             case "BCS":
-                tms9900Line.setInstruction("joc  " + convertExpression(operand.getExpression()));
+                tms9900Line.setInstruction("joc  " + convertOperand(operand));
                 break;
             case "BEQ":
-                tms9900Line.setInstruction("jeq  " + convertExpression(operand.getExpression()));
+                tms9900Line.setInstruction("jeq  " + convertOperand(operand));
                 break;
             case "BIT":
                 tms9900Line.setInstruction(".bit " + convertOperand(operand));
                 break;
             case "BMI":
-                tms9900Line.setInstruction("jlt  " + convertExpression(operand.getExpression()));
+                tms9900Line.setInstruction("jlt  " + convertOperand(operand));
                 break;
             case "BNE":
-                tms9900Line.setInstruction("jne  " + convertExpression(operand.getExpression()));
+                tms9900Line.setInstruction("jne  " + convertOperand(operand));
                 break;
             case "BPL":
-                tms9900Line.setInstruction("jgt  " + convertExpression(operand.getExpression()));
+                tms9900Line.setInstruction("jgt  " + convertOperand(operand));
                 break;
             case "BVC":
-                tms9900Line.setInstruction("jno  " + convertExpression(operand.getExpression()));
+                tms9900Line.setInstruction("jno  " + convertOperand(operand));
                 break;
             case "BVS":
-                tms9900Line.setInstruction(".bvs " + convertExpression(operand.getExpression()));
+                tms9900Line.setInstruction(".bvs " + convertOperand(operand));
                 break;
             case "CLC":
                 tms9900Line.setInstruction(".clc");
@@ -322,10 +322,14 @@ public class BBCSourceConverter {
                 tms9900Line.setInstruction("ab   " + regOne + "," + regY);
                 break;
             case "JMP":
-                tms9900Line.setInstruction("b    @" + convertExpression(operand.getExpression()));
+                if (operand.getType() == Operand.Type.Indirect) {
+                    tms9900Line.setInstruction(".jmpi " + convertOperand(operand));
+                } else {
+                    tms9900Line.setInstruction("b    " + convertOperand(operand));
+                }
                 break;
             case "JSR":
-                tms9900Line.setInstruction(".jsr @" + convertExpression(operand.getExpression()));
+                tms9900Line.setInstruction(".jsr " + convertOperand(operand));
                 break;
             case "LDA":
                     if (operand.getType() == Operand.Type.Immediate) {
@@ -499,7 +503,7 @@ public class BBCSourceConverter {
             case Implied:
                 return "";
             case Indirect:
-                return "*" + convertExpression(operand.getExpression());
+                return "@" + convertExpression(operand.getExpression());
             case XIndexedIndirect:
                 return "@" + convertExpression(operand.getExpression());
             case IndirectYIndexed:
