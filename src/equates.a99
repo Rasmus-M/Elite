@@ -6,23 +6,23 @@ rx:
        requ 1
 ry:
        requ 2
-zero:
+rzero:
        requ 3
-one:
+rone:
        requ 4
-mone:
+rmone:
        requ 5
-tmp:
+rtmp:
        requ 6
-tmplb:
+rtmplb:
        equ >830d
-tmp2:
+rtmp2:
        requ 7
 tmp2lb:
        equ >830f
-sp:
+rsp:
        requ 10
-splb:
+rsplb:
        equ >8315
 r11lb:
        equ  >8317

@@ -10,12 +10,13 @@ public class BBCSourceConverter {
     private static final String regA = "ra";
     private static final String regX = "rx";
     private static final String regY = "ry";
-    private static final String regSP = "sp";
-    private static final String regSPLowByte = "splb";
-    private static final String regTmp = "tmp";
-    private static final String regTmpLowByte = "tmplb";
-    private static final String regOne = "one";
-    private static final String regMone = "mone";
+    private static final String regSP = "rsp";
+    private static final String regSPLowByte = "rsplb";
+    private static final String regTmp = "rtmp";
+    private static final String regTmpLowByte = "rtmplb";
+    private static final String regOne = "rone";
+    private static final String regMone = "rmone";
+    private static final String regZero = "rzero";
 
     Pattern loFunctionPattern = Pattern.compile("LO\\((" + Operand.expressionRegEx + ")\\)");
     Pattern hiFunctionPattern = Pattern.compile("HI\\((" + Operand.expressionRegEx + ")\\)");
@@ -42,7 +43,9 @@ public class BBCSourceConverter {
             BBCLine bbcLine = bbcLines.get(i);
             switch (bbcLine.getType()) {
                 case Empty:
-                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Empty));
+                    if (!lastLineWasALabel(tms9900Lines)) {
+                        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Empty));
+                    }
                     break;
                 case MacroStart:
                     tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "; " + bbcLine.getDirective()));
@@ -71,6 +74,9 @@ public class BBCSourceConverter {
                                 i += convertDirective(bbcLine, tms9900Lines);
                                 break;
                             case Label:
+                                if (lastLineWasALabel(tms9900Lines)) {
+                                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, null, "equ  $"));
+                                }
                                 tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Label, bbcLine.getComment(), convertSymbol(bbcLine.getLabel())));
                                 break;
                             case Comment:
@@ -203,7 +209,7 @@ public class BBCSourceConverter {
                 if (operand.getType() == Operand.Type.Accumulator) {
                     tms9900Line.setInstruction(".asla");
                 } else {
-                    tms9900Line.setInstruction(".asl (" + convertExpression(operand.getExpression()) + ")");
+                    tms9900Line.setInstruction(".asl " + convertOperand(operand));
                 }
                 break;
             case "BCC":
@@ -216,7 +222,7 @@ public class BBCSourceConverter {
                 tms9900Line.setInstruction("jeq  " + convertExpression(operand.getExpression()));
                 break;
             case "BIT":
-                tms9900Line.setInstruction(".bit (" + convertExpression(operand.getExpression()) + ")");
+                tms9900Line.setInstruction(".bit " + convertOperand(operand));
                 break;
             case "BMI":
                 tms9900Line.setInstruction("jlt  " + convertExpression(operand.getExpression()));
@@ -291,29 +297,29 @@ public class BBCSourceConverter {
                 }
                 break;
             case "DEC":
-                tms9900Line.setInstruction("sb   one," + regA);
+                tms9900Line.setInstruction("sb   " + regOne + "," + regA);
                 break;
             case "DEX":
-                tms9900Line.setInstruction("sb   one," + regX);
+                tms9900Line.setInstruction("sb   " + regOne + "," + regX);
                 break;
             case "DEY":
-                tms9900Line.setInstruction("sb   one," + regY);
+                tms9900Line.setInstruction("sb   " + regOne + "," + regY);
                 break;
             case "EOR":
                 if (operand.getType() == Operand.Type.Immediate) {
-                    tms9900Line.setInstruction(".eoi " + convertExpression(operand.getExpression()));
+                    tms9900Line.setInstruction(".eoi (" + convertOperand(operand) + ")");
                 } else {
-                    tms9900Line.setInstruction(".eor (" + convertExpression(operand.getExpression()) + ")");
+                    tms9900Line.setInstruction(".eor " + convertOperand(operand));
                 }
                 break;
             case "INC":
-                tms9900Line.setInstruction("ab   one," + regA);
+                tms9900Line.setInstruction("ab   " + regOne + "," + regA);
                 break;
             case "INX":
-                tms9900Line.setInstruction("ab   one," + regX);
+                tms9900Line.setInstruction("ab   " + regOne + "," + regX);
                 break;
             case "INY":
-                tms9900Line.setInstruction("ab   one," + regY);
+                tms9900Line.setInstruction("ab   " + regOne + "," + regY);
                 break;
             case "JMP":
                 tms9900Line.setInstruction("b    @" + convertExpression(operand.getExpression()));
@@ -410,7 +416,7 @@ public class BBCSourceConverter {
                 break;
             case "SBC":
                 if (operand.getType() == Operand.Type.Immediate) {
-                    tms9900Line.setInstruction(".adi " + regA + ",-" + convertOperand(operand));
+                    tms9900Line.setInstruction(".sbi (" + convertOperand(operand) + ")");
                 } else {
                     switch (operand.getType()) {
                         case XIndexedIndirect:
@@ -495,9 +501,9 @@ public class BBCSourceConverter {
             case Indirect:
                 return "*" + convertExpression(operand.getExpression());
             case XIndexedIndirect:
-                return "(" + convertExpression(operand.getExpression()) + ")";
+                return "@" + convertExpression(operand.getExpression());
             case IndirectYIndexed:
-                return "(" + convertExpression(operand.getExpression()) + ")";
+                return "@" + convertExpression(operand.getExpression());
             case Relative:
                 return convertExpression(operand.getExpression());
             case ZeroPageXIndexed:
@@ -517,6 +523,8 @@ public class BBCSourceConverter {
             if (expression.startsWith("%")) {
                 expression = expression.replaceFirst("%", ":");
             }
+            expression = convertLo(expression);
+            expression = convertHi(expression);
             StringBuilder result = new StringBuilder();
             StringTokenizer tokenizer = new StringTokenizer(expression, " +-*/", true);
             while (tokenizer.hasMoreTokens()) {
@@ -524,18 +532,28 @@ public class BBCSourceConverter {
                 if (token.matches(Operand.symbolRegEx)) {
                     token = convertSymbol(token);
                 } else {
-                    Matcher loMatcher = loFunctionPattern.matcher(token);
-                    if (loMatcher.find()) {
-                        token = "(" + loMatcher.group(1) + ")%256";
-                    }
-                    Matcher hiMatcher = hiFunctionPattern.matcher(token);
-                    if (hiMatcher.find()) {
-                        token = "(" + hiMatcher.group(1) + ")/256";
-                    }
+                    token = convertLo(token);
+                    token = convertHi(token);
                 }
                 result.append(token);
             }
             expression = result.toString();
+        }
+        return expression;
+    }
+
+    String convertLo(String expression) {
+        Matcher loMatcher = loFunctionPattern.matcher(expression);
+        if (loMatcher.find()) {
+            expression = "(" + loMatcher.group(1) + ")%256";
+        }
+        return expression;
+    }
+
+    String convertHi(String expression) {
+        Matcher hiMatcher = hiFunctionPattern.matcher(expression);
+        if (hiMatcher.find()) {
+            expression = "(" + hiMatcher.group(1) + ")/256";
         }
         return expression;
     }
@@ -563,7 +581,7 @@ public class BBCSourceConverter {
             TMS9900Line.Type type = tms9900Line.getType();
             if (type == TMS9900Line.Type.Label) {
                 return true;
-            } else if (type == TMS9900Line.Type.Instruction || type == TMS9900Line.Type.Data) {
+            } else if (type == TMS9900Line.Type.Instruction || type == TMS9900Line.Type.Data || type == TMS9900Line.Type.Directive) {
                 return false;
             }
         }

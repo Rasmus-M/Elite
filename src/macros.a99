@@ -3,145 +3,156 @@
 *
        .defm jsr
        li   r11,!
-       movb r11,*sp
-       dec  sp
+       movb r11,*rsp
+       dec  rsp
        swpb r11
-       movb r11,*sp
-       dec  sp
+       movb r11,*rsp
+       dec  rsp
        b    #1
 !:
-       equ  $
+       nop
        .endm
 
        .defm rts
-       inc  sp
-       movb *sp+,r11
+       inc  rsp
+       movb *rsp+,r11
        swpb r11
-       movb *sp,r11
+       movb *rsp,r11
        b    *r11
        .endm
 
        .defm pha
-       movb ra,*sp
-       dec  sp
+       movb ra,*rsp
+       dec  rsp
        .endm
 
        .defm pla
-       inc  sp
-       movb *sp,ra
+       inc  rsp
+       movb *rsp,ra
        .endm
 
        .defm php
-       stst tmp
-       movb tmp,*sp
-       dec  sp
+       stst rtmp
+       movb rtmp,*rsp
+       dec  rsp
        .endm
 
        .defm plp
-       INC  sp
-       movb *sp,tmp
+       INC  rsp
+       movb *rsp,rtmp
        ; todo: restore status
        .endm
 
        .defm adc
        jnc  !
-       ab   one,ra
+       ab   rone,ra
 !:
        ab   #1,ra
        .endm
 
        .defm adi
        jnc  !
-       ab   one,ra
+       ab   rone,ra
 !:
        ai   ra,#1
        .endm
 
+       .defm adc_ind_y_idx
+       clr  ra
+       jnc  !
+       ab   rone,ra
+!:
+       movb #1,@rtmplb
+       movb #1+1,rtmp
+       a    ry,rtmp
+       ab   *rtmp,ra
+       .endm
+
        .defm sbc
        joc  !
-       sb   one,ra
+       sb   rone,ra
 !:
        sb   #1,ra
        .endm
 
        .defm sbi
        joc  !
-       sb   one,ra
+       sb   rone,ra
 !:
        ai   ra,-#1
        .endm
 
        .defm and
-       movb #1,tmp
-       inv  tmp
-       szcb tmp,ra
+       movb #1,rtmp
+       inv  rtmp
+       szcb rtmp,ra
        .endm
 
        .defm cmp_ind_y_idx
-       movb @#1,@tmplb
-       movb @#1+1,tmp
-       a    ry,tmp
-       movb *tmp,tmp
-       cb   ra,tmp
+       movb #1,@rtmplb
+       movb #1+1,rtmp
+       a    ry,rtmp
+       movb *rtmp,rtmp
+       cb   ra,rtmp
        .endm
 
        .defm and_ind_y_idx
-       movb @#1,@tmplb
-       movb @#1+1,tmp
-       a    ry,tmp
-       movb *tmp,tmp
-       inv  tmp
-       szcb tmp,#2
+       movb #1,@rtmplb
+       movb #1+1,rtmp
+       a    ry,rtmp
+       movb *rtmp,rtmp
+       inv  rtmp
+       szcb rtmp,#2
        .endm
 
        .defm bit
-       movb #1,tmp
-       inv  tmp
-       movb one,tmp2
-       szcb tmp2,tmp
+       movb #1,rtmp
+       inv  rtmp
+       movb rone,rtmp2
+       szcb rtmp2,rtmp
        ; todo: bit 6 and 7
        .endm
 
        .defm ld_x_idx_ind
-       movb @#1(rx),@tmplb
-       movb @#1+1(rx),tmp
-       movb *tmp,#2
+       movb #1(rx),@rtmplb
+       movb #1+1(rx),rtmp
+       movb *rtmp,#2
        .endm
 
        .defm st_x_idx_ind
-       movb @#1(rx),@tmplb
-       movb @#1+1(rx),tmp
-       movb #2,*tmp
+       movb #1(rx),@rtmplb
+       movb #1+1(rx),rtmp
+       movb #2,*rtmp
        .endm
 
        .defm ld_ind_y_idx
-       movb #1,@tmplb
-       movb #1+1,tmp
-       a    ry,tmp
-       movb *tmp,#2
+       movb #1,@rtmplb
+       movb #1+1,rtmp
+       a    ry,rtmp
+       movb *rtmp,#2
        .endm
 
        .defm st_ind_y_idx
-       movb #1,@tmplb
-       movb #1+1,tmp
-       a    ry,tmp
-       movb #2,*tmp
+       movb #1,@rtmplb
+       movb #1+1,rtmp
+       a    ry,rtmp
+       movb #2,*rtmp
         .endm
 
        .defm eoi
-       li   tmp,#1
-       xor  tmp,ra
+       li   rtmp,#1
+       xor  rtmp,ra
        .endm
 
        .defm eor
-       movb #1,tmp
-       xor  tmp,ra
+       movb #1,rtmp
+       xor  rtmp,ra
        .endm
 
        .defm lsr
-       movb #1,tmp
-       srl  tmp,1
-       movb tmp,#1
+       movb #1,rtmp
+       srl  rtmp,1
+       movb rtmp,#1
        .endm
 
        .defm rola
@@ -155,15 +166,15 @@
        .endm
 
        .defm rol
-       movb #1,tmp
+       movb #1,rtmp
        jnc  !
-       ori  tmp,>0080
+       ori  rtmp,>0080
 !:
        jmp  !
-       andi tmp,>ff7f
+       andi rtmp,>ff7f
 !:
-       sla  tmp,1
-       mov  tmp,#1
+       sla  rtmp,1
+       mov  rtmp,#1
        .endm
 
        .defm rora
@@ -175,22 +186,22 @@
 !:
        src  ra,1
        andi ra,>0080
-       mov  ra,tmp
-       sla  tmp,9
+       mov  ra,rtmp
+       sla  rtmp,9
        .endm
 
        .defm ror
-       movb #1,tmp
+       movb #1,rtmp
        jnc  !
-       ori  tmp,>0001
+       ori  rtmp,>0001
 !:
        jmp  !
-       andi tmp,>fffe
+       andi rtmp,>fffe
 !:
-       src  tmp,1
-       movb tmp,#1
-       andi tmp,>0080
-       sla  tmp,9
+       src  rtmp,1
+       movb rtmp,#1
+       andi rtmp,>0080
+       sla  rtmp,9
        .endm
 
        .defm asla
@@ -199,25 +210,25 @@
        .endm
 
        .defm asl
-       movb #1,tmp
-       andi tmp,>ff00
-       sla  tmp,1
-       movb tmp,#1
+       movb #1,rtmp
+       andi rtmp,>ff00
+       sla  rtmp,1
+       movb rtmp,#1
        .endm
 
        .defm bvs
        joc  !
        jmp  #1
 !:
-       equ  $
+       nop
        .endm
 
        .defm sec
-       sla  mone,1
+       sla  rmone,1
        .endm
 
        .defm clc
-       sla  zero,1
+       sla  rzero,1
        .endm
 
        .defm char
@@ -238,12 +249,12 @@
        .endm
 
        .defm proc
-       mov  r11,*sp+
+       mov  r11,*rsp+
        .endm
 
        .defm endproc
-       dect sp
-       mov  *sp,r11
+       dect rsp
+       mov  *rsp,r11
        b    *r11
        .endm
 
