@@ -1169,7 +1169,7 @@ SXL:
 * 
 * ******************************************************************************
 
-       ; CHAR x
+       ; MACRO CHAR x
 
        ; IF x = '`'                    ;                   
        ; EQUB 39 EOR RE                ;                   
@@ -1208,7 +1208,7 @@ SXL:
 * 
 * ******************************************************************************
 
-       ; TWOK t, k
+       ; MACRO TWOK t, k
 
        ; IF t = 'A' AND k = 'L' : EQUB 128 EOR RE : ENDIF ;                   
        ; IF t = 'L' AND k = 'E' : EQUB 129 EOR RE : ENDIF ;                   
@@ -1270,7 +1270,7 @@ SXL:
 * 
 * ******************************************************************************
 
-       ; CONT n
+       ; MACRO CONT n
 
        ; EQUB n EOR RE                 ;                   
 
@@ -1308,7 +1308,7 @@ SXL:
 * 
 * ******************************************************************************
 
-       ; RTOK n
+       ; MACRO RTOK n
 
        ; IF n >= 0 AND n <= 95         ;                   
        ; t = n + 160                   ;                   
@@ -1339,323 +1339,323 @@ QQ18:
        byte >00
 
        .char ' '                                           ; Token 1:      " CHART"
-       .char 'c'                                           ; 
-       .char 'h'                                           ; Encoded as:   " CH<138>T"
-       .twok 'a', 'r'
-       .char 't'
+       .char 'C'                                           ; 
+       .char 'H'                                           ; Encoded as:   " CH<138>T"
+       byte 138 ^ RE                                       ; TWOK 'A', 'R' null
+       .char 'T'
        byte >00
 
-       .char 'g'                                           ; Token 2:      "GOVERNMENT"
-       .char 'o'                                           ; 
-       .twok 'v', 'e'                                      ; Encoded as:   "GO<150>RNM<146>T"
-       .char 'r'
-       .char 'n'
-       .char 'm'
-       .twok 'e', 'n'
-       .char 't'
+       .char 'G'                                           ; Token 2:      "GOVERNMENT"
+       .char 'O'                                           ; 
+       byte 150 ^ RE                                       ; TWOK 'V', 'E' Encoded as:   "GO<150>RNM<146>T"
+       .char 'R'
+       .char 'N'
+       .char 'M'
+       byte 146 ^ RE                                       ; TWOK 'E', 'N' null
+       .char 'T'
        byte >00
 
-       .char 'd'                                           ; Token 3:      "DATA ON {selected system name}"
-       .twok 'a', 't'                                      ; 
-       .char 'a'                                           ; Encoded as:   "D<145>A[131]{3}"
+       .char 'D'                                           ; Token 3:      "DATA ON {selected system name}"
+       byte 145 ^ RE                                       ; TWOK 'A', 'T' 
+       .char 'A'                                           ; Encoded as:   "D<145>A[131]{3}"
        .rtok 131
        .cont 3
        byte >00
 
-       .twok 'i', 'n'                                      ; Token 4:      "INVENTORY{crlf}
-       .twok 'v', 'e'                                      ; "
-       .char 'n'                                           ; 
-       .char 't'                                           ; Encoded as:   "<140><150>NT<153>Y{13}"
-       .twok 'o', 'r'
-       .char 'y'
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' Token 4:      "INVENTORY{crlf}
+       byte 150 ^ RE                                       ; TWOK 'V', 'E' "
+       .char 'N'                                           ; 
+       .char 'T'                                           ; Encoded as:   "<140><150>NT<153>Y{13}"
+       byte 153 ^ RE                                       ; TWOK 'O', 'R' null
+       .char 'Y'
        .cont 13
        byte >00
 
-       .char 's'                                           ; Token 5:      "SYSTEM"
-       .char 'y'                                           ; 
-       .char 's'                                           ; Encoded as:   "SYS<156>M"
-       .twok 't', 'e'
-       .char 'm'
+       .char 'S'                                           ; Token 5:      "SYSTEM"
+       .char 'Y'                                           ; 
+       .char 'S'                                           ; Encoded as:   "SYS<156>M"
+       byte 156 ^ RE                                       ; TWOK 'T', 'E' null
+       .char 'M'
        byte >00
 
-       .char 'p'                                           ; Token 6:      "PRICE"
-       .twok 'r', 'i'                                      ; 
-       .twok 'c', 'e'                                      ; Encoded as:   "P<158><133>"
+       .char 'P'                                           ; Token 6:      "PRICE"
+       byte 158 ^ RE                                       ; TWOK 'R', 'I' 
+       byte 133 ^ RE                                       ; TWOK 'C', 'E' Encoded as:   "P<158><133>"
        byte >00
 
        .cont 2                                             ; Token 7:      "{current system name} MARKET PRICES"
        .char ' '                                           ; 
-       .twok 'm', 'a'                                      ; Encoded as:   "{2} <139>RKET [6]S"
-       .char 'r'
-       .char 'k'
-       .char 'e'
-       .char 't'
+       byte 139 ^ RE                                       ; TWOK 'M', 'A' Encoded as:   "{2} <139>RKET [6]S"
+       .char 'R'
+       .char 'K'
+       .char 'E'
+       .char 'T'
        .char ' '
        .rtok 6
-       .char 's'
+       .char 'S'
        byte >00
 
-       .twok 'i', 'n'                                      ; Token 8:      "INDUSTRIAL"
-       .char 'd'                                           ; 
-       .twok 'u', 's'                                      ; Encoded as:   "<140>D<136>T<158><128>"
-       .char 't'
-       .twok 'r', 'i'
-       .twok 'a', 'l'
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' Token 8:      "INDUSTRIAL"
+       .char 'D'                                           ; 
+       byte 136 ^ RE                                       ; TWOK 'U', 'S' Encoded as:   "<140>D<136>T<158><128>"
+       .char 'T'
+       byte 158 ^ RE                                       ; TWOK 'R', 'I' null
+       byte 128 ^ RE                                       ; TWOK 'A', 'L' null
        byte >00
 
-       .char 'a'                                           ; Token 9:      "AGRICULTURAL"
-       .char 'g'                                           ; 
-       .twok 'r', 'i'                                      ; Encoded as:   "AG<158>CULTU<148>L"
-       .char 'c'
-       .char 'u'
-       .char 'l'
-       .char 't'
-       .char 'u'
-       .twok 'r', 'a'
-       .char 'l'
+       .char 'A'                                           ; Token 9:      "AGRICULTURAL"
+       .char 'G'                                           ; 
+       byte 158 ^ RE                                       ; TWOK 'R', 'I' Encoded as:   "AG<158>CULTU<148>L"
+       .char 'C'
+       .char 'U'
+       .char 'L'
+       .char 'T'
+       .char 'U'
+       byte 148 ^ RE                                       ; TWOK 'R', 'A' null
+       .char 'L'
        byte >00
 
-       .twok 'r', 'i'                                      ; Token 10:     "RICH "
-       .char 'c'                                           ; 
-       .char 'h'                                           ; Encoded as:   "<158>CH "
+       byte 158 ^ RE                                       ; TWOK 'R', 'I' Token 10:     "RICH "
+       .char 'C'                                           ; 
+       .char 'H'                                           ; Encoded as:   "<158>CH "
        .char ' '
        byte >00
 
-       .char 'a'                                           ; Token 11:     "AVERAGE "
-       .twok 'v', 'e'                                      ; 
-       .twok 'r', 'a'                                      ; Encoded as:   "A<150><148><131> "
-       .twok 'g', 'e'
+       .char 'A'                                           ; Token 11:     "AVERAGE "
+       byte 150 ^ RE                                       ; TWOK 'V', 'E' 
+       byte 148 ^ RE                                       ; TWOK 'R', 'A' Encoded as:   "A<150><148><131> "
+       byte 131 ^ RE                                       ; TWOK 'G', 'E' null
        .char ' '
        byte >00
 
-       .char 'p'                                           ; Token 12:     "POOR "
-       .char 'o'                                           ; 
-       .twok 'o', 'r'                                      ; Encoded as:   "PO<153> "
+       .char 'P'                                           ; Token 12:     "POOR "
+       .char 'O'                                           ; 
+       byte 153 ^ RE                                       ; TWOK 'O', 'R' Encoded as:   "PO<153> "
        .char ' '
        byte >00
 
-       .twok 'm', 'a'                                      ; Token 13:     "MAINLY "
-       .twok 'i', 'n'                                      ; 
-       .char 'l'                                           ; Encoded as:   "<139><140>LY "
-       .char 'y'
+       byte 139 ^ RE                                       ; TWOK 'M', 'A' Token 13:     "MAINLY "
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' 
+       .char 'L'                                           ; Encoded as:   "<139><140>LY "
+       .char 'Y'
        .char ' '
        byte >00
 
-       .char 'u'                                           ; Token 14:     "UNIT"
-       .char 'n'                                           ; 
-       .char 'i'                                           ; Encoded as:   "UNIT"
-       .char 't'
+       .char 'U'                                           ; Token 14:     "UNIT"
+       .char 'N'                                           ; 
+       .char 'I'                                           ; Encoded as:   "UNIT"
+       .char 'T'
        byte >00
 
-       .char 'v'                                           ; Token 15:     "VIEW "
-       .char 'i'                                           ; 
-       .char 'e'                                           ; Encoded as:   "VIEW "
-       .char 'w'
+       .char 'V'                                           ; Token 15:     "VIEW "
+       .char 'I'                                           ; 
+       .char 'E'                                           ; Encoded as:   "VIEW "
+       .char 'W'
        .char ' '
        byte >00
 
-       .twok 'q', 'u'                                      ; Token 16:     "QUANTITY"
-       .twok 'a', 'n'                                      ; 
-       .twok 't', 'i'                                      ; Encoded as:   "<154><155><151>TY"
-       .char 't'
-       .char 'y'
+       byte 154 ^ RE                                       ; TWOK 'Q', 'U' Token 16:     "QUANTITY"
+       byte 155 ^ RE                                       ; TWOK 'A', 'N' 
+       byte 151 ^ RE                                       ; TWOK 'T', 'I' Encoded as:   "<154><155><151>TY"
+       .char 'T'
+       .char 'Y'
        byte >00
 
-       .twok 'a', 'n'                                      ; Token 17:     "ANARCHY"
-       .twok 'a', 'r'                                      ; 
-       .char 'c'                                           ; Encoded as:   "<155><138>CHY"
-       .char 'h'
-       .char 'y'
+       byte 155 ^ RE                                       ; TWOK 'A', 'N' Token 17:     "ANARCHY"
+       byte 138 ^ RE                                       ; TWOK 'A', 'R' 
+       .char 'C'                                           ; Encoded as:   "<155><138>CHY"
+       .char 'H'
+       .char 'Y'
        byte >00
 
-       .char 'f'                                           ; Token 18:     "FEUDAL"
-       .char 'e'                                           ; 
-       .char 'u'                                           ; Encoded as:   "FEUD<128>"
-       .char 'd'
-       .twok 'a', 'l'
+       .char 'F'                                           ; Token 18:     "FEUDAL"
+       .char 'E'                                           ; 
+       .char 'U'                                           ; Encoded as:   "FEUD<128>"
+       .char 'D'
+       byte 128 ^ RE                                       ; TWOK 'A', 'L' null
        byte >00
 
-       .char 'm'                                           ; Token 19:     "MULTI-GOVERNMENT"
-       .char 'u'                                           ; 
-       .char 'l'                                           ; Encoded as:   "MUL<151>-[2]"
-       .twok 't', 'i'
+       .char 'M'                                           ; Token 19:     "MULTI-GOVERNMENT"
+       .char 'U'                                           ; 
+       .char 'L'                                           ; Encoded as:   "MUL<151>-[2]"
+       byte 151 ^ RE                                       ; TWOK 'T', 'I' null
        .char '-'
        .rtok 2
        byte >00
 
-       .twok 'd', 'i'                                      ; Token 20:     "DICTATORSHIP"
-       .char 'c'                                           ; 
-       .char 't'                                           ; Encoded as:   "<141>CT<145><153>[25]"
-       .twok 'a', 't'
-       .twok 'o', 'r'
+       byte 141 ^ RE                                       ; TWOK 'D', 'I' Token 20:     "DICTATORSHIP"
+       .char 'C'                                           ; 
+       .char 'T'                                           ; Encoded as:   "<141>CT<145><153>[25]"
+       byte 145 ^ RE                                       ; TWOK 'A', 'T' null
+       byte 153 ^ RE                                       ; TWOK 'O', 'R' null
        .rtok 25
        byte >00
 
        .rtok 91                                            ; Token 21:     "COMMUNIST"
-       .char 'm'                                           ; 
-       .char 'u'                                           ; Encoded as:   "[91]MUN<157>T"
-       .char 'n'
-       .twok 'i', 's'
-       .char 't'
+       .char 'M'                                           ; 
+       .char 'U'                                           ; Encoded as:   "[91]MUN<157>T"
+       .char 'N'
+       byte 157 ^ RE                                       ; TWOK 'I', 'S' null
+       .char 'T'
        byte >00
 
-       .char 'c'                                           ; Token 22:     "CONFEDERACY"
-       .twok 'o', 'n'                                      ; 
-       .char 'f'                                           ; Encoded as:   "C<159>F<152><144>ACY"
-       .twok 'e', 'd'
-       .twok 'e', 'r'
-       .char 'a'
-       .char 'c'
-       .char 'y'
+       .char 'C'                                           ; Token 22:     "CONFEDERACY"
+       byte 159 ^ RE                                       ; TWOK 'O', 'N' 
+       .char 'F'                                           ; Encoded as:   "C<159>F<152><144>ACY"
+       byte 152 ^ RE                                       ; TWOK 'E', 'D' null
+       byte 144 ^ RE                                       ; TWOK 'E', 'R' null
+       .char 'A'
+       .char 'C'
+       .char 'Y'
        byte >00
 
-       .char 'd'                                           ; Token 23:     "DEMOCRACY"
-       .char 'e'                                           ; 
-       .char 'm'                                           ; Encoded as:   "DEMOC<148>CY"
-       .char 'o'
-       .char 'c'
-       .twok 'r', 'a'
-       .char 'c'
-       .char 'y'
+       .char 'D'                                           ; Token 23:     "DEMOCRACY"
+       .char 'E'                                           ; 
+       .char 'M'                                           ; Encoded as:   "DEMOC<148>CY"
+       .char 'O'
+       .char 'C'
+       byte 148 ^ RE                                       ; TWOK 'R', 'A' null
+       .char 'C'
+       .char 'Y'
        byte >00
 
-       .char 'c'                                           ; Token 24:     "CORPORATE STATE"
-       .twok 'o', 'r'                                      ; 
-       .char 'p'                                           ; Encoded as:   "C<153>P<153><145>E [43]<145>E"
-       .twok 'o', 'r'
-       .twok 'a', 't'
-       .char 'e'
+       .char 'C'                                           ; Token 24:     "CORPORATE STATE"
+       byte 153 ^ RE                                       ; TWOK 'O', 'R' 
+       .char 'P'                                           ; Encoded as:   "C<153>P<153><145>E [43]<145>E"
+       byte 153 ^ RE                                       ; TWOK 'O', 'R' null
+       byte 145 ^ RE                                       ; TWOK 'A', 'T' null
+       .char 'E'
        .char ' '
        .rtok 43
-       .twok 'a', 't'
-       .char 'e'
+       byte 145 ^ RE                                       ; TWOK 'A', 'T' null
+       .char 'E'
        byte >00
 
-       .char 's'                                           ; Token 25:     "SHIP"
-       .char 'h'                                           ; 
-       .char 'i'                                           ; Encoded as:   "SHIP"
-       .char 'p'
+       .char 'S'                                           ; Token 25:     "SHIP"
+       .char 'H'                                           ; 
+       .char 'I'                                           ; Encoded as:   "SHIP"
+       .char 'P'
        byte >00
 
-       .char 'p'                                           ; Token 26:     "PRODUCT"
-       .char 'r'                                           ; 
-       .char 'o'                                           ; Encoded as:   "PRODUCT"
-       .char 'd'
-       .char 'u'
-       .char 'c'
-       .char 't'
+       .char 'P'                                           ; Token 26:     "PRODUCT"
+       .char 'R'                                           ; 
+       .char 'O'                                           ; Encoded as:   "PRODUCT"
+       .char 'D'
+       .char 'U'
+       .char 'C'
+       .char 'T'
        byte >00
 
        .char ' '                                           ; Token 27:     " LASER"
-       .twok 'l', 'a'                                      ; 
-       .char 's'                                           ; Encoded as:   " <149>S<144>"
-       .twok 'e', 'r'
+       byte 149 ^ RE                                       ; TWOK 'L', 'A' 
+       .char 'S'                                           ; Encoded as:   " <149>S<144>"
+       byte 144 ^ RE                                       ; TWOK 'E', 'R' null
        byte >00
 
-       .char 'h'                                           ; Token 28:     "HUMAN COLONIAL"
-       .char 'u'                                           ; 
-       .char 'm'                                           ; Encoded as:   "HUM<155> COL<159>I<128>"
-       .twok 'a', 'n'
+       .char 'H'                                           ; Token 28:     "HUMAN COLONIAL"
+       .char 'U'                                           ; 
+       .char 'M'                                           ; Encoded as:   "HUM<155> COL<159>I<128>"
+       byte 155 ^ RE                                       ; TWOK 'A', 'N' null
        .char ' '
-       .char 'c'
-       .char 'o'
-       .char 'l'
-       .twok 'o', 'n'
-       .char 'i'
-       .twok 'a', 'l'
+       .char 'C'
+       .char 'O'
+       .char 'L'
+       byte 159 ^ RE                                       ; TWOK 'O', 'N' null
+       .char 'I'
+       byte 128 ^ RE                                       ; TWOK 'A', 'L' null
        byte >00
 
-       .char 'h'                                           ; Token 29:     "HYPERSPACE "
-       .char 'y'                                           ; 
-       .char 'p'                                           ; Encoded as:   "HYP<144>SPA<133> "
-       .twok 'e', 'r'
-       .char 's'
-       .char 'p'
-       .char 'a'
-       .twok 'c', 'e'
+       .char 'H'                                           ; Token 29:     "HYPERSPACE "
+       .char 'Y'                                           ; 
+       .char 'P'                                           ; Encoded as:   "HYP<144>SPA<133> "
+       byte 144 ^ RE                                       ; TWOK 'E', 'R' null
+       .char 'S'
+       .char 'P'
+       .char 'A'
+       byte 133 ^ RE                                       ; TWOK 'C', 'E' null
        .char ' '
        byte >00
 
-       .char 's'                                           ; Token 30:     "SHORT RANGE CHART"
-       .char 'h'                                           ; 
-       .twok 'o', 'r'                                      ; Encoded as:   "SH<153>T [42][1]"
-       .char 't'
+       .char 'S'                                           ; Token 30:     "SHORT RANGE CHART"
+       .char 'H'                                           ; 
+       byte 153 ^ RE                                       ; TWOK 'O', 'R' Encoded as:   "SH<153>T [42][1]"
+       .char 'T'
        .char ' '
        .rtok 42
        .rtok 1
        byte >00
 
-       .twok 'd', 'i'                                      ; Token 31:     "DISTANCE"
+       byte 141 ^ RE                                       ; TWOK 'D', 'I' Token 31:     "DISTANCE"
        .rtok 43                                            ; 
-       .twok 'a', 'n'                                      ; Encoded as:   "<141>[43]<155><133>"
-       .twok 'c', 'e'
+       byte 155 ^ RE                                       ; TWOK 'A', 'N' Encoded as:   "<141>[43]<155><133>"
+       byte 133 ^ RE                                       ; TWOK 'C', 'E' null
        byte >00
 
-       .char 'p'                                           ; Token 32:     "POPULATION"
-       .char 'o'                                           ; 
-       .char 'p'                                           ; Encoded as:   "POPUL<145>I<159>"
-       .char 'u'
-       .char 'l'
-       .twok 'a', 't'
-       .char 'i'
-       .twok 'o', 'n'
+       .char 'P'                                           ; Token 32:     "POPULATION"
+       .char 'O'                                           ; 
+       .char 'P'                                           ; Encoded as:   "POPUL<145>I<159>"
+       .char 'U'
+       .char 'L'
+       byte 145 ^ RE                                       ; TWOK 'A', 'T' null
+       .char 'I'
+       byte 159 ^ RE                                       ; TWOK 'O', 'N' null
        byte >00
 
-       .char 'g'                                           ; Token 33:     "GROSS PRODUCTIVITY"
-       .char 'r'                                           ; 
-       .char 'o'                                           ; Encoded as:   "GROSS [26]IVITY"
-       .char 's'
-       .char 's'
+       .char 'G'                                           ; Token 33:     "GROSS PRODUCTIVITY"
+       .char 'R'                                           ; 
+       .char 'O'                                           ; Encoded as:   "GROSS [26]IVITY"
+       .char 'S'
+       .char 'S'
        .char ' '
        .rtok 26
-       .char 'i'
-       .char 'v'
-       .char 'i'
-       .char 't'
-       .char 'y'
+       .char 'I'
+       .char 'V'
+       .char 'I'
+       .char 'T'
+       .char 'Y'
        byte >00
 
-       .char 'e'                                           ; Token 34:     "ECONOMY"
-       .char 'c'                                           ; 
-       .twok 'o', 'n'                                      ; Encoded as:   "EC<159>OMY"
-       .char 'o'
-       .char 'm'
-       .char 'y'
+       .char 'E'                                           ; Token 34:     "ECONOMY"
+       .char 'C'                                           ; 
+       byte 159 ^ RE                                       ; TWOK 'O', 'N' Encoded as:   "EC<159>OMY"
+       .char 'O'
+       .char 'M'
+       .char 'Y'
        byte >00
 
        .char ' '                                           ; Token 35:     " LIGHT YEARS"
-       .char 'l'                                           ; 
-       .char 'i'                                           ; Encoded as:   " LIGHT YE<138>S"
-       .char 'g'
-       .char 'h'
-       .char 't'
+       .char 'L'                                           ; 
+       .char 'I'                                           ; Encoded as:   " LIGHT YE<138>S"
+       .char 'G'
+       .char 'H'
+       .char 'T'
        .char ' '
-       .char 'y'
-       .char 'e'
-       .twok 'a', 'r'
-       .char 's'
+       .char 'Y'
+       .char 'E'
+       byte 138 ^ RE                                       ; TWOK 'A', 'R' null
+       .char 'S'
        byte >00
 
-       .twok 't', 'e'                                      ; Token 36:     "TECH.LEVEL"
-       .char 'c'                                           ; 
-       .char 'h'                                           ; Encoded as:   "<156>CH.<129><150>L"
+       byte 156 ^ RE                                       ; TWOK 'T', 'E' Token 36:     "TECH.LEVEL"
+       .char 'C'                                           ; 
+       .char 'H'                                           ; Encoded as:   "<156>CH.<129><150>L"
        .char '.'
-       .twok 'l', 'e'
-       .twok 'v', 'e'
-       .char 'l'
+       byte 129 ^ RE                                       ; TWOK 'L', 'E' null
+       byte 150 ^ RE                                       ; TWOK 'V', 'E' null
+       .char 'L'
        byte >00
 
-       .char 'c'                                           ; Token 37:     "CASH"
-       .char 'a'                                           ; 
-       .char 's'                                           ; Encoded as:   "CASH"
-       .char 'h'
+       .char 'C'                                           ; Token 37:     "CASH"
+       .char 'A'                                           ; 
+       .char 'S'                                           ; Encoded as:   "CASH"
+       .char 'H'
        byte >00
 
        .char ' '                                           ; Token 38:     " BILLION"
-       .twok 'b', 'i'                                      ; 
+       byte 134 ^ RE                                       ; TWOK 'B', 'I' 
        .rtok 118                                           ; Encoded as:   " <134>[118]I<159>"
-       .char 'i'
-       .twok 'o', 'n'
+       .char 'I'
+       byte 159 ^ RE                                       ; TWOK 'O', 'N' null
        byte >00
 
        .rtok 122                                           ; Token 39:     "GALACTIC CHART{galaxy number}"
@@ -1663,386 +1663,386 @@ QQ18:
        .cont 1                                             ; Encoded as:   "[122][1]{1}"
        byte >00
 
-       .char 't'                                           ; Token 40:     "TARGET LOST"
-       .twok 'a', 'r'                                      ; 
-       .twok 'g', 'e'                                      ; Encoded as:   "T<138><131>T LO[43]"
-       .char 't'
+       .char 'T'                                           ; Token 40:     "TARGET LOST"
+       byte 138 ^ RE                                       ; TWOK 'A', 'R' 
+       byte 131 ^ RE                                       ; TWOK 'G', 'E' Encoded as:   "T<138><131>T LO[43]"
+       .char 'T'
        .char ' '
-       .char 'l'
-       .char 'o'
+       .char 'L'
+       .char 'O'
        .rtok 43
        byte >00
 
        .rtok 106                                           ; Token 41:     "MISSILE JAMMED"
        .char ' '                                           ; 
-       .char 'j'                                           ; Encoded as:   "[106] JAMM<152>"
-       .char 'a'
-       .char 'm'
-       .char 'm'
-       .twok 'e', 'd'
+       .char 'J'                                           ; Encoded as:   "[106] JAMM<152>"
+       .char 'A'
+       .char 'M'
+       .char 'M'
+       byte 152 ^ RE                                       ; TWOK 'E', 'D' null
        byte >00
 
-       .char 'r'                                           ; Token 42:     "RANGE"
-       .twok 'a', 'n'                                      ; 
-       .twok 'g', 'e'                                      ; Encoded as:   "R<155><131>"
+       .char 'R'                                           ; Token 42:     "RANGE"
+       byte 155 ^ RE                                       ; TWOK 'A', 'N' 
+       byte 131 ^ RE                                       ; TWOK 'G', 'E' Encoded as:   "R<155><131>"
        byte >00
 
-       .char 's'                                           ; Token 43:     "ST"
-       .char 't'                                           ; 
-       byte >00                                                      ; Encoded as:   "ST"
+       .char 'S'                                           ; Token 43:     "ST"
+       .char 'T'                                           ; 
+       byte >00                                            ; Encoded as:   "ST"
 
        .rtok 16                                            ; Token 44:     "QUANTITY OF "
        .char ' '                                           ; 
-       .char 'o'                                           ; Encoded as:   "[16] OF "
-       .char 'f'
+       .char 'O'                                           ; Encoded as:   "[16] OF "
+       .char 'F'
        .char ' '
        byte >00
 
-       .char 's'                                           ; Token 45:     "SELL"
-       .char 'e'                                           ; 
+       .char 'S'                                           ; Token 45:     "SELL"
+       .char 'E'                                           ; 
        .rtok 118                                           ; Encoded as:   "SE[118]"
        byte >00
 
        .char ' '                                           ; Token 46:     " CARGO{sentence case}"
-       .char 'c'                                           ; 
-       .twok 'a', 'r'                                      ; Encoded as:   " C<138>GO{6}"
-       .char 'g'
-       .char 'o'
+       .char 'C'                                           ; 
+       byte 138 ^ RE                                       ; TWOK 'A', 'R' Encoded as:   " C<138>GO{6}"
+       .char 'G'
+       .char 'O'
        .cont 6
        byte >00
 
-       .char 'e'                                           ; Token 47:     "EQUIP"
-       .twok 'q', 'u'                                      ; 
-       .char 'i'                                           ; Encoded as:   "E<154>IP"
-       .char 'p'
+       .char 'E'                                           ; Token 47:     "EQUIP"
+       byte 154 ^ RE                                       ; TWOK 'Q', 'U' 
+       .char 'I'                                           ; Encoded as:   "E<154>IP"
+       .char 'P'
        byte >00
 
-       .char 'f'                                           ; Token 48:     "FOOD"
-       .char 'o'                                           ; 
-       .char 'o'                                           ; Encoded as:   "FOOD"
-       .char 'd'
+       .char 'F'                                           ; Token 48:     "FOOD"
+       .char 'O'                                           ; 
+       .char 'O'                                           ; Encoded as:   "FOOD"
+       .char 'D'
        byte >00
 
-       .twok 't', 'e'                                      ; Token 49:     "TEXTILES"
-       .char 'x'                                           ; 
-       .twok 't', 'i'                                      ; Encoded as:   "<156>X<151>L<137>"
-       .char 'l'
-       .twok 'e', 's'
+       byte 156 ^ RE                                       ; TWOK 'T', 'E' Token 49:     "TEXTILES"
+       .char 'X'                                           ; 
+       byte 151 ^ RE                                       ; TWOK 'T', 'I' Encoded as:   "<156>X<151>L<137>"
+       .char 'L'
+       byte 137 ^ RE                                       ; TWOK 'E', 'S' null
        byte >00
 
-       .twok 'r', 'a'                                      ; Token 50:     "RADIOACTIVES"
-       .twok 'd', 'i'                                      ; 
-       .char 'o'                                           ; Encoded as:   "<148><141>OAC<151><150>S"
-       .char 'a'
-       .char 'c'
-       .twok 't', 'i'
-       .twok 'v', 'e'
-       .char 's'
+       byte 148 ^ RE                                       ; TWOK 'R', 'A' Token 50:     "RADIOACTIVES"
+       byte 141 ^ RE                                       ; TWOK 'D', 'I' 
+       .char 'O'                                           ; Encoded as:   "<148><141>OAC<151><150>S"
+       .char 'A'
+       .char 'C'
+       byte 151 ^ RE                                       ; TWOK 'T', 'I' null
+       byte 150 ^ RE                                       ; TWOK 'V', 'E' null
+       .char 'S'
        byte >00
 
-       .char 's'                                           ; Token 51:     "SLAVES"
-       .twok 'l', 'a'                                      ; 
-       .twok 'v', 'e'                                      ; Encoded as:   "S<149><150>S"
-       .char 's'
+       .char 'S'                                           ; Token 51:     "SLAVES"
+       byte 149 ^ RE                                       ; TWOK 'L', 'A' 
+       byte 150 ^ RE                                       ; TWOK 'V', 'E' Encoded as:   "S<149><150>S"
+       .char 'S'
        byte >00
 
-       .char 'l'                                           ; Token 52:     "LIQUOR/WINES"
-       .char 'i'                                           ; 
-       .twok 'q', 'u'                                      ; Encoded as:   "LI<154><153>/W<140><137>"
-       .twok 'o', 'r'
+       .char 'L'                                           ; Token 52:     "LIQUOR/WINES"
+       .char 'I'                                           ; 
+       byte 154 ^ RE                                       ; TWOK 'Q', 'U' Encoded as:   "LI<154><153>/W<140><137>"
+       byte 153 ^ RE                                       ; TWOK 'O', 'R' null
        .char '/'
-       .char 'w'
-       .twok 'i', 'n'
-       .twok 'e', 's'
+       .char 'W'
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' null
+       byte 137 ^ RE                                       ; TWOK 'E', 'S' null
        byte >00
 
-       .char 'l'                                           ; Token 53:     "LUXURIES"
-       .char 'u'                                           ; 
-       .char 'x'                                           ; Encoded as:   "LUXU<158><137>"
-       .char 'u'
-       .twok 'r', 'i'
-       .twok 'e', 's'
+       .char 'L'                                           ; Token 53:     "LUXURIES"
+       .char 'U'                                           ; 
+       .char 'X'                                           ; Encoded as:   "LUXU<158><137>"
+       .char 'U'
+       byte 158 ^ RE                                       ; TWOK 'R', 'I' null
+       byte 137 ^ RE                                       ; TWOK 'E', 'S' null
        byte >00
 
-       .char 'n'                                           ; Token 54:     "NARCOTICS"
-       .twok 'a', 'r'                                      ; 
-       .char 'c'                                           ; Encoded as:   "N<138>CO<151>CS"
-       .char 'o'
-       .twok 't', 'i'
-       .char 'c'
-       .char 's'
+       .char 'N'                                           ; Token 54:     "NARCOTICS"
+       byte 138 ^ RE                                       ; TWOK 'A', 'R' 
+       .char 'C'                                           ; Encoded as:   "N<138>CO<151>CS"
+       .char 'O'
+       byte 151 ^ RE                                       ; TWOK 'T', 'I' null
+       .char 'C'
+       .char 'S'
        byte >00
 
        .rtok 91                                            ; Token 55:     "COMPUTERS"
-       .char 'p'                                           ; 
-       .char 'u'                                           ; Encoded as:   "[91]PUT<144>S"
-       .char 't'
-       .twok 'e', 'r'
-       .char 's'
+       .char 'P'                                           ; 
+       .char 'U'                                           ; Encoded as:   "[91]PUT<144>S"
+       .char 'T'
+       byte 144 ^ RE                                       ; TWOK 'E', 'R' null
+       .char 'S'
        byte >00
 
-       .twok 'm', 'a'                                      ; Token 56:     "MACHINERY"
-       .char 'c'                                           ; 
-       .char 'h'                                           ; Encoded as:   "<139>CH<140><144>Y"
-       .twok 'i', 'n'
-       .twok 'e', 'r'
-       .char 'y'
+       byte 139 ^ RE                                       ; TWOK 'M', 'A' Token 56:     "MACHINERY"
+       .char 'C'                                           ; 
+       .char 'H'                                           ; Encoded as:   "<139>CH<140><144>Y"
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' null
+       byte 144 ^ RE                                       ; TWOK 'E', 'R' null
+       .char 'Y'
        byte >00
 
        .rtok 117                                           ; Token 57:     "ALLOYS"
-       .char 'o'                                           ; 
-       .char 'y'                                           ; Encoded as:   "[117]OYS"
-       .char 's'
+       .char 'O'                                           ; 
+       .char 'Y'                                           ; Encoded as:   "[117]OYS"
+       .char 'S'
        byte >00
 
-       .char 'f'                                           ; Token 58:     "FIREARMS"
-       .char 'i'                                           ; 
-       .twok 'r', 'e'                                      ; Encoded as:   "FI<142><138>MS"
-       .twok 'a', 'r'
-       .char 'm'
-       .char 's'
+       .char 'F'                                           ; Token 58:     "FIREARMS"
+       .char 'I'                                           ; 
+       byte 142 ^ RE                                       ; TWOK 'R', 'E' Encoded as:   "FI<142><138>MS"
+       byte 138 ^ RE                                       ; TWOK 'A', 'R' null
+       .char 'M'
+       .char 'S'
        byte >00
 
-       .char 'f'                                           ; Token 59:     "FURS"
-       .char 'u'                                           ; 
-       .char 'r'                                           ; Encoded as:   "FURS"
-       .char 's'
+       .char 'F'                                           ; Token 59:     "FURS"
+       .char 'U'                                           ; 
+       .char 'R'                                           ; Encoded as:   "FURS"
+       .char 'S'
        byte >00
 
-       .char 'm'                                           ; Token 60:     "MINERALS"
-       .twok 'i', 'n'                                      ; 
-       .twok 'e', 'r'                                      ; Encoded as:   "M<140><144><128>S"
-       .twok 'a', 'l'
-       .char 's'
+       .char 'M'                                           ; Token 60:     "MINERALS"
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' 
+       byte 144 ^ RE                                       ; TWOK 'E', 'R' Encoded as:   "M<140><144><128>S"
+       byte 128 ^ RE                                       ; TWOK 'A', 'L' null
+       .char 'S'
        byte >00
 
-       .char 'g'                                           ; Token 61:     "GOLD"
-       .char 'o'                                           ; 
-       .char 'l'                                           ; Encoded as:   "GOLD"
-       .char 'd'
+       .char 'G'                                           ; Token 61:     "GOLD"
+       .char 'O'                                           ; 
+       .char 'L'                                           ; Encoded as:   "GOLD"
+       .char 'D'
        byte >00
 
-       .char 'p'                                           ; Token 62:     "PLATINUM"
-       .char 'l'                                           ; 
-       .twok 'a', 't'                                      ; Encoded as:   "PL<145><140>UM"
-       .twok 'i', 'n'
-       .char 'u'
-       .char 'm'
+       .char 'P'                                           ; Token 62:     "PLATINUM"
+       .char 'L'                                           ; 
+       byte 145 ^ RE                                       ; TWOK 'A', 'T' Encoded as:   "PL<145><140>UM"
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' null
+       .char 'U'
+       .char 'M'
        byte >00
 
-       .twok 'g', 'e'                                      ; Token 63:     "GEM-STONES"
-       .char 'm'                                           ; 
+       byte 131 ^ RE                                       ; TWOK 'G', 'E' Token 63:     "GEM-STONES"
+       .char 'M'                                           ; 
        .char '-'                                           ; Encoded as:   "<131>M-[43]<159><137>"
        .rtok 43
-       .twok 'o', 'n'
-       .twok 'e', 's'
+       byte 159 ^ RE                                       ; TWOK 'O', 'N' null
+       byte 137 ^ RE                                       ; TWOK 'E', 'S' null
        byte >00
 
-       .twok 'a', 'l'                                      ; Token 64:     "ALIEN ITEMS"
-       .char 'i'                                           ; 
-       .twok 'e', 'n'                                      ; Encoded as:   "<128>I<146> [127]S"
+       byte 128 ^ RE                                       ; TWOK 'A', 'L' Token 64:     "ALIEN ITEMS"
+       .char 'I'                                           ; 
+       byte 146 ^ RE                                       ; TWOK 'E', 'N' Encoded as:   "<128>I<146> [127]S"
        .char ' '
        .rtok 127
-       .char 's'
+       .char 'S'
        byte >00
 
        .char '('                                           ; Token 65:     "(Y/N)?"
-       .char 'y'                                           ; 
+       .char 'Y'                                           ; 
        .char '/'                                           ; Encoded as:   "(Y/N)?"
-       .char 'n'
+       .char 'N'
        .char ')'
        .char '?'
        byte >00
 
        .char ' '                                           ; Token 66:     " CR"
-       .char 'c'                                           ; 
-       .char 'r'                                           ; Encoded as:   " CR"
+       .char 'C'                                           ; 
+       .char 'R'                                           ; Encoded as:   " CR"
        byte >00
 
-       .char 'l'                                           ; Token 67:     "LARGE"
-       .twok 'a', 'r'                                      ; 
-       .twok 'g', 'e'                                      ; Encoded as:   "L<138><131>"
+       .char 'L'                                           ; Token 67:     "LARGE"
+       byte 138 ^ RE                                       ; TWOK 'A', 'R' 
+       byte 131 ^ RE                                       ; TWOK 'G', 'E' Encoded as:   "L<138><131>"
        byte >00
 
-       .char 'f'                                           ; Token 68:     "FIERCE"
-       .char 'i'                                           ; 
-       .twok 'e', 'r'                                      ; Encoded as:   "FI<144><133>"
-       .twok 'c', 'e'
+       .char 'F'                                           ; Token 68:     "FIERCE"
+       .char 'I'                                           ; 
+       byte 144 ^ RE                                       ; TWOK 'E', 'R' Encoded as:   "FI<144><133>"
+       byte 133 ^ RE                                       ; TWOK 'C', 'E' null
        byte >00
 
-       .char 's'                                           ; Token 69:     "SMALL"
-       .twok 'm', 'a'                                      ; 
+       .char 'S'                                           ; Token 69:     "SMALL"
+       byte 139 ^ RE                                       ; TWOK 'M', 'A' 
        .rtok 118                                           ; Encoded as:   "S<139>[118]"
        byte >00
 
-       .char 'g'                                           ; Token 70:     "GREEN"
-       .twok 'r', 'e'                                      ; 
-       .twok 'e', 'n'                                      ; Encoded as:   "G<142><146>"
+       .char 'G'                                           ; Token 70:     "GREEN"
+       byte 142 ^ RE                                       ; TWOK 'R', 'E' 
+       byte 146 ^ RE                                       ; TWOK 'E', 'N' Encoded as:   "G<142><146>"
        byte >00
 
-       .char 'r'                                           ; Token 71:     "RED"
-       .twok 'e', 'd'                                      ; 
-       byte >00                                                      ; Encoded as:   "R<152>"
+       .char 'R'                                           ; Token 71:     "RED"
+       byte 152 ^ RE                                       ; TWOK 'E', 'D' 
+       byte >00                                            ; Encoded as:   "R<152>"
 
-       .char 'y'                                           ; Token 72:     "YELLOW"
-       .char 'e'                                           ; 
+       .char 'Y'                                           ; Token 72:     "YELLOW"
+       .char 'E'                                           ; 
        .rtok 118                                           ; Encoded as:   "YE[118]OW"
-       .char 'o'
-       .char 'w'
+       .char 'O'
+       .char 'W'
        byte >00
 
-       .char 'b'                                           ; Token 73:     "BLUE"
-       .char 'l'                                           ; 
-       .char 'u'                                           ; Encoded as:   "BLUE"
-       .char 'e'
+       .char 'B'                                           ; Token 73:     "BLUE"
+       .char 'L'                                           ; 
+       .char 'U'                                           ; Encoded as:   "BLUE"
+       .char 'E'
        byte >00
 
-       .char 'b'                                           ; Token 74:     "BLACK"
-       .twok 'l', 'a'                                      ; 
-       .char 'c'                                           ; Encoded as:   "B<149>CK"
-       .char 'k'
+       .char 'B'                                           ; Token 74:     "BLACK"
+       byte 149 ^ RE                                       ; TWOK 'L', 'A' 
+       .char 'C'                                           ; Encoded as:   "B<149>CK"
+       .char 'K'
        byte >00
 
        .rtok 136                                           ; Token 75:     "HARMLESS"
-       byte >00                                                      ; 
-                                                                     ; Encoded as:   "[136]"
+       byte >00                                            ; 
+                                                           ; Encoded as:   "[136]"
 
-       .char 's'                                           ; Token 76:     "SLIMY"
-       .char 'l'                                           ; 
-       .char 'i'                                           ; Encoded as:   "SLIMY"
-       .char 'm'
-       .char 'y'
+       .char 'S'                                           ; Token 76:     "SLIMY"
+       .char 'L'                                           ; 
+       .char 'I'                                           ; Encoded as:   "SLIMY"
+       .char 'M'
+       .char 'Y'
        byte >00
 
-       .char 'b'                                           ; Token 77:     "BUG-EYED"
-       .char 'u'                                           ; 
-       .char 'g'                                           ; Encoded as:   "BUG-EY<152>"
+       .char 'B'                                           ; Token 77:     "BUG-EYED"
+       .char 'U'                                           ; 
+       .char 'G'                                           ; Encoded as:   "BUG-EY<152>"
        .char '-'
-       .char 'e'
-       .char 'y'
-       .twok 'e', 'd'
+       .char 'E'
+       .char 'Y'
+       byte 152 ^ RE                                       ; TWOK 'E', 'D' null
        byte >00
 
-       .char 'h'                                           ; Token 78:     "HORNED"
-       .twok 'o', 'r'                                      ; 
-       .char 'n'                                           ; Encoded as:   "H<153>N<152>"
-       .twok 'e', 'd'
+       .char 'H'                                           ; Token 78:     "HORNED"
+       byte 153 ^ RE                                       ; TWOK 'O', 'R' 
+       .char 'N'                                           ; Encoded as:   "H<153>N<152>"
+       byte 152 ^ RE                                       ; TWOK 'E', 'D' null
        byte >00
 
-       .char 'b'                                           ; Token 79:     "BONY"
-       .twok 'o', 'n'                                      ; 
-       .char 'y'                                           ; Encoded as:   "B<159>Y"
+       .char 'B'                                           ; Token 79:     "BONY"
+       byte 159 ^ RE                                       ; TWOK 'O', 'N' 
+       .char 'Y'                                           ; Encoded as:   "B<159>Y"
        byte >00
 
-       .char 'f'                                           ; Token 80:     "FAT"
-       .twok 'a', 't'                                      ; 
-       byte >00                                                      ; Encoded as:   "F<145>"
+       .char 'F'                                           ; Token 80:     "FAT"
+       byte 145 ^ RE                                       ; TWOK 'A', 'T' 
+       byte >00                                            ; Encoded as:   "F<145>"
 
-       .char 'f'                                           ; Token 81:     "FURRY"
-       .char 'u'                                           ; 
-       .char 'r'                                           ; Encoded as:   "FURRY"
-       .char 'r'
-       .char 'y'
+       .char 'F'                                           ; Token 81:     "FURRY"
+       .char 'U'                                           ; 
+       .char 'R'                                           ; Encoded as:   "FURRY"
+       .char 'R'
+       .char 'Y'
        byte >00
 
-       .char 'r'                                           ; Token 82:     "RODENT"
-       .char 'o'                                           ; 
-       .char 'd'                                           ; Encoded as:   "ROD<146>T"
-       .twok 'e', 'n'
-       .char 't'
+       .char 'R'                                           ; Token 82:     "RODENT"
+       .char 'O'                                           ; 
+       .char 'D'                                           ; Encoded as:   "ROD<146>T"
+       byte 146 ^ RE                                       ; TWOK 'E', 'N' null
+       .char 'T'
        byte >00
 
-       .char 'f'                                           ; Token 83:     "FROG"
-       .char 'r'                                           ; 
-       .char 'o'                                           ; Encoded as:   "FROG"
-       .char 'g'
+       .char 'F'                                           ; Token 83:     "FROG"
+       .char 'R'                                           ; 
+       .char 'O'                                           ; Encoded as:   "FROG"
+       .char 'G'
        byte >00
 
-       .char 'l'                                           ; Token 84:     "LIZARD"
-       .char 'i'                                           ; 
-       .twok 'z', 'a'                                      ; Encoded as:   "LI<132>RD"
-       .char 'r'
-       .char 'd'
+       .char 'L'                                           ; Token 84:     "LIZARD"
+       .char 'I'                                           ; 
+       byte 132 ^ RE                                       ; TWOK 'Z', 'A' Encoded as:   "LI<132>RD"
+       .char 'R'
+       .char 'D'
        byte >00
 
-       .char 'l'                                           ; Token 85:     "LOBSTER"
-       .char 'o'                                           ; 
-       .char 'b'                                           ; Encoded as:   "LOB[43]<144>"
+       .char 'L'                                           ; Token 85:     "LOBSTER"
+       .char 'O'                                           ; 
+       .char 'B'                                           ; Encoded as:   "LOB[43]<144>"
        .rtok 43
-       .twok 'e', 'r'
+       byte 144 ^ RE                                       ; TWOK 'E', 'R' null
        byte >00
 
-       .twok 'b', 'i'                                      ; Token 86:     "BIRD"
-       .char 'r'                                           ; 
-       .char 'd'                                           ; Encoded as:   "<134>RD"
+       byte 134 ^ RE                                       ; TWOK 'B', 'I' Token 86:     "BIRD"
+       .char 'R'                                           ; 
+       .char 'D'                                           ; Encoded as:   "<134>RD"
        byte >00
 
-       .char 'h'                                           ; Token 87:     "HUMANOID"
-       .char 'u'                                           ; 
-       .char 'm'                                           ; Encoded as:   "HUM<155>OID"
-       .twok 'a', 'n'
-       .char 'o'
-       .char 'i'
-       .char 'd'
+       .char 'H'                                           ; Token 87:     "HUMANOID"
+       .char 'U'                                           ; 
+       .char 'M'                                           ; Encoded as:   "HUM<155>OID"
+       byte 155 ^ RE                                       ; TWOK 'A', 'N' null
+       .char 'O'
+       .char 'I'
+       .char 'D'
        byte >00
 
-       .char 'f'                                           ; Token 88:     "FELINE"
-       .char 'e'                                           ; 
-       .char 'l'                                           ; Encoded as:   "FEL<140>E"
-       .twok 'i', 'n'
-       .char 'e'
+       .char 'F'                                           ; Token 88:     "FELINE"
+       .char 'E'                                           ; 
+       .char 'L'                                           ; Encoded as:   "FEL<140>E"
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' null
+       .char 'E'
        byte >00
 
-       .twok 'i', 'n'                                      ; Token 89:     "INSECT"
-       .char 's'                                           ; 
-       .char 'e'                                           ; Encoded as:   "<140>SECT"
-       .char 'c'
-       .char 't'
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' Token 89:     "INSECT"
+       .char 'S'                                           ; 
+       .char 'E'                                           ; Encoded as:   "<140>SECT"
+       .char 'C'
+       .char 'T'
        byte >00
 
        .rtok 11                                            ; Token 90:     "AVERAGE RADIUS"
-       .twok 'r', 'a'                                      ; 
-       .twok 'd', 'i'                                      ; Encoded as:   "[11]<148><141><136>"
-       .twok 'u', 's'
+       byte 148 ^ RE                                       ; TWOK 'R', 'A' 
+       byte 141 ^ RE                                       ; TWOK 'D', 'I' Encoded as:   "[11]<148><141><136>"
+       byte 136 ^ RE                                       ; TWOK 'U', 'S' null
        byte >00
 
-       .char 'c'                                           ; Token 91:     "COM"
-       .char 'o'                                           ; 
-       .char 'm'                                           ; Encoded as:   "COM"
+       .char 'C'                                           ; Token 91:     "COM"
+       .char 'O'                                           ; 
+       .char 'M'                                           ; Encoded as:   "COM"
        byte >00
 
        .rtok 91                                            ; Token 92:     "COMMANDER"
-       .char 'm'                                           ; 
-       .twok 'a', 'n'                                      ; Encoded as:   "[91]M<155>D<144>"
-       .char 'd'
-       .twok 'e', 'r'
+       .char 'M'                                           ; 
+       byte 155 ^ RE                                       ; TWOK 'A', 'N' Encoded as:   "[91]M<155>D<144>"
+       .char 'D'
+       byte 144 ^ RE                                       ; TWOK 'E', 'R' null
        byte >00
 
        .char ' '                                           ; Token 93:     " DESTROYED"
-       .char 'd'                                           ; 
-       .twok 'e', 's'                                      ; Encoded as:   " D<137>TROY<152>"
-       .char 't'
-       .char 'r'
-       .char 'o'
-       .char 'y'
-       .twok 'e', 'd'
+       .char 'D'                                           ; 
+       byte 137 ^ RE                                       ; TWOK 'E', 'S' Encoded as:   " D<137>TROY<152>"
+       .char 'T'
+       .char 'R'
+       .char 'O'
+       .char 'Y'
+       byte 152 ^ RE                                       ; TWOK 'E', 'D' null
        byte >00
 
-       .char 'b'                                           ; Token 94:     "BY D.BRABEN & I.BELL"
-       .char 'y'                                           ; 
+       .char 'B'                                           ; Token 94:     "BY D.BRABEN & I.BELL"
+       .char 'Y'                                           ; 
        .char ' '                                           ; Encoded as:   "BY D.B<148><147>N & I.<147>[118]"
-       .char 'd'
+       .char 'D'
        .char '.'
-       .char 'b'
-       .twok 'r', 'a'
-       .twok 'b', 'e'
-       .char 'n'
+       .char 'B'
+       byte 148 ^ RE                                       ; TWOK 'R', 'A' null
+       byte 147 ^ RE                                       ; TWOK 'B', 'E' null
+       .char 'N'
        .char ' '
        .char '&'
        .char ' '
-       .char 'i'
+       .char 'I'
        .char '.'
-       .twok 'b', 'e'
+       byte 147 ^ RE                                       ; TWOK 'B', 'E' null
        .rtok 118
        byte >00
 
@@ -2060,41 +2060,41 @@ QQ18:
        .char ' '
        .rtok 6
        .char ' '
-       .char 'f'
-       .twok 'o', 'r'
+       .char 'F'
+       byte 153 ^ RE                                       ; TWOK 'O', 'R' null
        .char ' '
-       .char 's'
-       .char 'a'
-       .twok 'l', 'e'
+       .char 'S'
+       .char 'A'
+       byte 129 ^ RE                                       ; TWOK 'L', 'E' null
        .cont 13
        .cont 10
        byte >00
 
-       .char 'f'                                           ; Token 96:     "FRONT"
-       .char 'r'                                           ; 
-       .twok 'o', 'n'                                      ; Encoded as:   "FR<159>T"
-       .char 't'
+       .char 'F'                                           ; Token 96:     "FRONT"
+       .char 'R'                                           ; 
+       byte 159 ^ RE                                       ; TWOK 'O', 'N' Encoded as:   "FR<159>T"
+       .char 'T'
        byte >00
 
-       .twok 'r', 'e'                                      ; Token 97:     "REAR"
-       .twok 'a', 'r'                                      ; 
-       byte >00                                                      ; Encoded as:   "<142><138>"
+       byte 142 ^ RE                                       ; TWOK 'R', 'E' Token 97:     "REAR"
+       byte 138 ^ RE                                       ; TWOK 'A', 'R' 
+       byte >00                                            ; Encoded as:   "<142><138>"
 
-       .twok 'l', 'e'                                      ; Token 98:     "LEFT"
-       .char 'f'                                           ; 
-       .char 't'                                           ; Encoded as:   "<129>FT"
+       byte 129 ^ RE                                       ; TWOK 'L', 'E' Token 98:     "LEFT"
+       .char 'F'                                           ; 
+       .char 'T'                                           ; Encoded as:   "<129>FT"
        byte >00
 
-       .twok 'r', 'i'                                      ; Token 99:     "RIGHT"
-       .char 'g'                                           ; 
-       .char 'h'                                           ; Encoded as:   "<158>GHT"
-       .char 't'
+       byte 158 ^ RE                                       ; TWOK 'R', 'I' Token 99:     "RIGHT"
+       .char 'G'                                           ; 
+       .char 'H'                                           ; Encoded as:   "<158>GHT"
+       .char 'T'
        byte >00
 
        .rtok 121                                           ; Token 100:    "ENERGY LOW{beep}"
-       .char 'l'                                           ; 
-       .char 'o'                                           ; Encoded as:   "[121]LOW{7}"
-       .char 'w'
+       .char 'L'                                           ; 
+       .char 'O'                                           ; Encoded as:   "[121]LOW{7}"
+       .char 'W'
        .cont 7
        byte >00
 
@@ -2104,102 +2104,102 @@ QQ18:
        .char '!'
        byte >00
 
-       .char 'e'                                           ; Token 102:    "EXTRA "
-       .char 'x'                                           ; 
-       .char 't'                                           ; Encoded as:   "EXT<148> "
-       .twok 'r', 'a'
+       .char 'E'                                           ; Token 102:    "EXTRA "
+       .char 'X'                                           ; 
+       .char 'T'                                           ; Encoded as:   "EXT<148> "
+       byte 148 ^ RE                                       ; TWOK 'R', 'A' null
        .char ' '
        byte >00
 
-       .char 'p'                                           ; Token 103:    "PULSE LASER"
-       .char 'u'                                           ; 
-       .char 'l'                                           ; Encoded as:   "PULSE[27]"
-       .char 's'
-       .char 'e'
+       .char 'P'                                           ; Token 103:    "PULSE LASER"
+       .char 'U'                                           ; 
+       .char 'L'                                           ; Encoded as:   "PULSE[27]"
+       .char 'S'
+       .char 'E'
        .rtok 27
        byte >00
 
-       .twok 'b', 'e'                                      ; Token 104:    "BEAM LASER"
-       .char 'a'                                           ; 
-       .char 'm'                                           ; Encoded as:   "<147>AM[27]"
+       byte 147 ^ RE                                       ; TWOK 'B', 'E' Token 104:    "BEAM LASER"
+       .char 'A'                                           ; 
+       .char 'M'                                           ; Encoded as:   "<147>AM[27]"
        .rtok 27
        byte >00
 
-       .char 'f'                                           ; Token 105:    "FUEL"
-       .char 'u'                                           ; 
-       .char 'e'                                           ; Encoded as:   "FUEL"
-       .char 'l'
+       .char 'F'                                           ; Token 105:    "FUEL"
+       .char 'U'                                           ; 
+       .char 'E'                                           ; Encoded as:   "FUEL"
+       .char 'L'
        byte >00
 
-       .char 'm'                                           ; Token 106:    "MISSILE"
-       .twok 'i', 's'                                      ; 
-       .char 's'                                           ; Encoded as:   "M<157>SI<129>"
-       .char 'i'
-       .twok 'l', 'e'
+       .char 'M'                                           ; Token 106:    "MISSILE"
+       byte 157 ^ RE                                       ; TWOK 'I', 'S' 
+       .char 'S'                                           ; Encoded as:   "M<157>SI<129>"
+       .char 'I'
+       byte 129 ^ RE                                       ; TWOK 'L', 'E' null
        byte >00
 
        .rtok 67                                            ; Token 107:    "LARGE CARGO{sentence case} BAY"
        .rtok 46                                            ; 
        .char ' '                                           ; Encoded as:   "[67][46] BAY"
-       .char 'b'
-       .char 'a'
-       .char 'y'
+       .char 'B'
+       .char 'A'
+       .char 'Y'
        byte >00
 
-       .char 'e'                                           ; Token 108:    "E.C.M.SYSTEM"
+       .char 'E'                                           ; Token 108:    "E.C.M.SYSTEM"
        .char '.'                                           ; 
-       .char 'c'                                           ; Encoded as:   "E.C.M.[5]"
+       .char 'C'                                           ; Encoded as:   "E.C.M.[5]"
        .char '.'
-       .char 'm'
+       .char 'M'
        .char '.'
        .rtok 5
        byte >00
 
        .rtok 102                                           ; Token 109:    "EXTRA PULSE LASERS"
        .rtok 103                                           ; 
-       .char 's'                                           ; Encoded as:   "[102][103]S"
+       .char 'S'                                           ; Encoded as:   "[102][103]S"
        byte >00
 
        .rtok 102                                           ; Token 110:    "EXTRA BEAM LASERS"
        .rtok 104                                           ; 
-       .char 's'                                           ; Encoded as:   "[102][104]S"
+       .char 'S'                                           ; Encoded as:   "[102][104]S"
        byte >00
 
        .rtok 105                                           ; Token 111:    "FUEL SCOOPS"
        .char ' '                                           ; 
-       .char 's'                                           ; Encoded as:   "[105] SCOOPS"
-       .char 'c'
-       .char 'o'
-       .char 'o'
-       .char 'p'
-       .char 's'
+       .char 'S'                                           ; Encoded as:   "[105] SCOOPS"
+       .char 'C'
+       .char 'O'
+       .char 'O'
+       .char 'P'
+       .char 'S'
        byte >00
 
-       .twok 'e', 's'                                      ; Token 112:    "ESCAPE POD"
-       .char 'c'                                           ; 
-       .char 'a'                                           ; Encoded as:   "<137>CAPE POD"
-       .char 'p'
-       .char 'e'
+       byte 137 ^ RE                                       ; TWOK 'E', 'S' Token 112:    "ESCAPE POD"
+       .char 'C'                                           ; 
+       .char 'A'                                           ; Encoded as:   "<137>CAPE POD"
+       .char 'P'
+       .char 'E'
        .char ' '
-       .char 'p'
-       .char 'o'
-       .char 'd'
+       .char 'P'
+       .char 'O'
+       .char 'D'
        byte >00
 
        .rtok 121                                           ; Token 113:    "ENERGY BOMB"
-       .char 'b'                                           ; 
-       .char 'o'                                           ; Encoded as:   "[121]BOMB"
-       .char 'm'
-       .char 'b'
+       .char 'B'                                           ; 
+       .char 'O'                                           ; Encoded as:   "[121]BOMB"
+       .char 'M'
+       .char 'B'
        byte >00
 
        .rtok 121                                           ; Token 114:    "ENERGY UNIT"
        .rtok 14                                            ; 
-       byte >00                                                      ; Encoded as:   "[121][14]"
+       byte >00                                            ; Encoded as:   "[121][14]"
 
        .rtok 124                                           ; Token 115:    "DOCKING COMPUTERS"
-       .twok 'i', 'n'                                      ; 
-       .char 'g'                                           ; Encoded as:   "[124]<140>G [55]"
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' 
+       .char 'G'                                           ; Encoded as:   "[124]<140>G [55]"
        .char ' '
        .rtok 55
        byte >00
@@ -2209,69 +2209,69 @@ QQ18:
        .rtok 29                                            ; Encoded as:   "[122] [29]"
        byte >00
 
-       .char 'a'                                           ; Token 117:    "ALL"
+       .char 'A'                                           ; Token 117:    "ALL"
        .rtok 118                                           ; 
-       byte >00                                                      ; Encoded as:   "A[118]"
+       byte >00                                            ; Encoded as:   "A[118]"
 
-       .char 'l'                                           ; Token 118:    "LL"
-       .char 'l'                                           ; 
-       byte >00                                                      ; Encoded as:   "LL"
+       .char 'L'                                           ; Token 118:    "LL"
+       .char 'L'                                           ; 
+       byte >00                                            ; Encoded as:   "LL"
 
        .rtok 37                                            ; Token 119:    "CASH:{cash} CR{crlf}
        .char ':'                                           ; "
        .cont 0                                             ; 
-       byte >00                                                      ; Encoded as:   "[37]:{0}"
+       byte >00                                            ; Encoded as:   "[37]:{0}"
 
-       .twok 'i', 'n'                                      ; Token 120:    "INCOMING MISSILE"
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' Token 120:    "INCOMING MISSILE"
        .rtok 91                                            ; 
-       .twok 'i', 'n'                                      ; Encoded as:   "<140>[91]<140>G [106]"
-       .char 'g'
+       byte 140 ^ RE                                       ; TWOK 'I', 'N' Encoded as:   "<140>[91]<140>G [106]"
+       .char 'G'
        .char ' '
        .rtok 106
        byte >00
 
-       .twok 'e', 'n'                                      ; Token 121:    "ENERGY "
-       .twok 'e', 'r'                                      ; 
-       .char 'g'                                           ; Encoded as:   "<146><144>GY "
-       .char 'y'
+       byte 146 ^ RE                                       ; TWOK 'E', 'N' Token 121:    "ENERGY "
+       byte 144 ^ RE                                       ; TWOK 'E', 'R' 
+       .char 'G'                                           ; Encoded as:   "<146><144>GY "
+       .char 'Y'
        .char ' '
        byte >00
 
-       .char 'g'                                           ; Token 122:    "GALACTIC"
-       .char 'a'                                           ; 
-       .twok 'l', 'a'                                      ; Encoded as:   "GA<149>C<151>C"
-       .char 'c'
-       .twok 't', 'i'
-       .char 'c'
+       .char 'G'                                           ; Token 122:    "GALACTIC"
+       .char 'A'                                           ; 
+       byte 149 ^ RE                                       ; TWOK 'L', 'A' Encoded as:   "GA<149>C<151>C"
+       .char 'C'
+       byte 151 ^ RE                                       ; TWOK 'T', 'I' null
+       .char 'C'
        byte >00
 
        .cont 13                                            ; Token 123:    "{crlf}
        .rtok 92                                            ; COMMANDER'S NAME? "
        .char '`'                                           ; 
-       .char 's'                                           ; Encoded as:   "{13}[92]'S NAME? "
+       .char 'S'                                           ; Encoded as:   "{13}[92]'S NAME? "
        .char ' '
-       .char 'n'
-       .char 'a'
-       .char 'm'
-       .char 'e'
+       .char 'N'
+       .char 'A'
+       .char 'M'
+       .char 'E'
        .char '?'
        .char ' '
        byte >00
 
-       .char 'd'                                           ; Token 124:    "DOCK"
-       .char 'o'                                           ; 
-       .char 'c'                                           ; Encoded as:   "DOCK"
-       .char 'k'
+       .char 'D'                                           ; Token 124:    "DOCK"
+       .char 'O'                                           ; 
+       .char 'C'                                           ; Encoded as:   "DOCK"
+       .char 'K'
        byte >00
 
        .cont 5                                             ; Token 125:    "FUEL: {fuel level} LIGHT YEARS{crlf}
-       .twok 'l', 'e'                                      ; CASH:{cash} CR{crlf}
-       .char 'g'                                           ; LEGAL STATUS:"
-       .twok 'a', 'l'                                      ; 
+       byte 129 ^ RE                                       ; TWOK 'L', 'E' CASH:{cash} CR{crlf}
+       .char 'G'                                           ; LEGAL STATUS:"
+       byte 128 ^ RE                                       ; TWOK 'A', 'L' 
        .char ' '                                           ; Encoded as:   "{5}<129>G<128> [43]<145><136>:"
        .rtok 43
-       .twok 'a', 't'
-       .twok 'u', 's'
+       byte 145 ^ RE                                       ; TWOK 'A', 'T' null
+       byte 136 ^ RE                                       ; TWOK 'U', 'S' null
        .char ':'
        byte >00
 
@@ -2293,29 +2293,29 @@ QQ18:
        .cont 9
        .cont 3
        .cont 13
-       .char 'c'
-       .twok 'o', 'n'
-       .twok 'd', 'i'
-       .twok 't', 'i'
-       .twok 'o', 'n'
+       .char 'C'
+       byte 159 ^ RE                                       ; TWOK 'O', 'N' null
+       byte 141 ^ RE                                       ; TWOK 'D', 'I' null
+       byte 151 ^ RE                                       ; TWOK 'T', 'I' null
+       byte 159 ^ RE                                       ; TWOK 'O', 'N' null
        .cont 9
        byte >00
 
-       .char 'i'                                           ; Token 127:    "ITEM"
-       .twok 't', 'e'                                      ; 
-       .char 'm'                                           ; Encoded as:   "I<156>M"
+       .char 'I'                                           ; Token 127:    "ITEM"
+       byte 156 ^ RE                                       ; TWOK 'T', 'E' 
+       .char 'M'                                           ; Encoded as:   "I<156>M"
        byte >00
 
        .char ' '                                           ; Token 128:    "  LOAD NEW COMMANDER (Y/N)?{crlf}
        .char ' '                                           ; {crlf}
-       .char 'l'                                           ; "
-       .char 'o'                                           ; 
-       .char 'a'                                           ; Encoded as:   "  LOAD NEW [92] [65]{13}{13}"
-       .char 'd'
+       .char 'L'                                           ; "
+       .char 'O'                                           ; 
+       .char 'A'                                           ; Encoded as:   "  LOAD NEW [92] [65]{13}{13}"
+       .char 'D'
        .char ' '
-       .char 'n'
-       .char 'e'
-       .char 'w'
+       .char 'N'
+       .char 'E'
+       .char 'W'
        .char ' '
        .rtok 92
        .char ' '
@@ -2326,107 +2326,107 @@ QQ18:
 
        .cont 6                                             ; Token 129:    "{sentence case}DOCKED"
        .rtok 124                                           ; 
-       .twok 'e', 'd'                                      ; Encoded as:   "{6}[124]<152>"
+       byte 152 ^ RE                                       ; TWOK 'E', 'D' Encoded as:   "{6}[124]<152>"
        byte >00
 
-       .twok 'r', 'a'                                      ; Token 130:    "RATING:"
-       .twok 't', 'i'                                      ; 
-       .char 'n'                                           ; Encoded as:   "<148><151>NG:"
-       .char 'g'
+       byte 148 ^ RE                                       ; TWOK 'R', 'A' Token 130:    "RATING:"
+       byte 151 ^ RE                                       ; TWOK 'T', 'I' 
+       .char 'N'                                           ; Encoded as:   "<148><151>NG:"
+       .char 'G'
        .char ':'
        byte >00
 
        .char ' '                                           ; Token 131:    " ON "
-       .twok 'o', 'n'                                      ; 
+       byte 159 ^ RE                                       ; TWOK 'O', 'N' 
        .char ' '                                           ; Encoded as:   " <159> "
        byte >00
 
        .cont 13                                            ; Token 132:    "{crlf}
        .cont 8                                             ; {all caps}EQUIPMENT: {sentence case}"
        .rtok 47                                            ; 
-       .char 'm'                                           ; Encoded as:   "{13}{8}[47]M<146>T:{6}"
-       .twok 'e', 'n'
-       .char 't'
+       .char 'M'                                           ; Encoded as:   "{13}{8}[47]M<146>T:{6}"
+       byte 146 ^ RE                                       ; TWOK 'E', 'N' null
+       .char 'T'
        .char ':'
        .cont 6
        byte >00
 
-       .char 'c'                                           ; Token 133:    "CLEAN"
-       .twok 'l', 'e'                                      ; 
-       .twok 'a', 'n'                                      ; Encoded as:   "C<129><155>"
+       .char 'C'                                           ; Token 133:    "CLEAN"
+       byte 129 ^ RE                                       ; TWOK 'L', 'E' 
+       byte 155 ^ RE                                       ; TWOK 'A', 'N' Encoded as:   "C<129><155>"
        byte >00
 
-       .char 'o'                                           ; Token 134:    "OFFENDER"
-       .char 'f'                                           ; 
-       .char 'f'                                           ; Encoded as:   "OFF<146>D<144>"
-       .twok 'e', 'n'
-       .char 'd'
-       .twok 'e', 'r'
+       .char 'O'                                           ; Token 134:    "OFFENDER"
+       .char 'F'                                           ; 
+       .char 'F'                                           ; Encoded as:   "OFF<146>D<144>"
+       byte 146 ^ RE                                       ; TWOK 'E', 'N' null
+       .char 'D'
+       byte 144 ^ RE                                       ; TWOK 'E', 'R' null
        byte >00
 
-       .char 'f'                                           ; Token 135:    "FUGITIVE"
-       .char 'u'                                           ; 
-       .char 'g'                                           ; Encoded as:   "FUGI<151><150>"
-       .char 'i'
-       .twok 't', 'i'
-       .twok 'v', 'e'
+       .char 'F'                                           ; Token 135:    "FUGITIVE"
+       .char 'U'                                           ; 
+       .char 'G'                                           ; Encoded as:   "FUGI<151><150>"
+       .char 'I'
+       byte 151 ^ RE                                       ; TWOK 'T', 'I' null
+       byte 150 ^ RE                                       ; TWOK 'V', 'E' null
        byte >00
 
-       .char 'h'                                           ; Token 136:    "HARMLESS"
-       .twok 'a', 'r'                                      ; 
-       .char 'm'                                           ; Encoded as:   "H<138>M<129>SS"
-       .twok 'l', 'e'
-       .char 's'
-       .char 's'
+       .char 'H'                                           ; Token 136:    "HARMLESS"
+       byte 138 ^ RE                                       ; TWOK 'A', 'R' 
+       .char 'M'                                           ; Encoded as:   "H<138>M<129>SS"
+       byte 129 ^ RE                                       ; TWOK 'L', 'E' null
+       .char 'S'
+       .char 'S'
        byte >00
 
-       .char 'm'                                           ; Token 137:    "MOSTLY HARMLESS"
-       .char 'o'                                           ; 
+       .char 'M'                                           ; Token 137:    "MOSTLY HARMLESS"
+       .char 'O'                                           ; 
        .rtok 43                                            ; Encoded as:   "MO[43]LY [136]"
-       .char 'l'
-       .char 'y'
+       .char 'L'
+       .char 'Y'
        .char ' '
        .rtok 136
        byte >00
 
        .rtok 12                                            ; Token 138:    "POOR "
-       byte >00                                                      ; 
-                                                                     ; Encoded as:   "[12]"
+       byte >00                                            ; 
+                                                           ; Encoded as:   "[12]"
 
        .rtok 11                                            ; Token 139:    "AVERAGE "
-       byte >00                                                      ; 
-                                                                     ; Encoded as:   "[11]"
+       byte >00                                            ; 
+                                                           ; Encoded as:   "[11]"
 
-       .char 'a'                                           ; Token 140:    "ABOVE AVERAGE "
-       .char 'b'                                           ; 
-       .char 'o'                                           ; Encoded as:   "ABO<150> [11]"
-       .twok 'v', 'e'
+       .char 'A'                                           ; Token 140:    "ABOVE AVERAGE "
+       .char 'B'                                           ; 
+       .char 'O'                                           ; Encoded as:   "ABO<150> [11]"
+       byte 150 ^ RE                                       ; TWOK 'V', 'E' null
        .char ' '
        .rtok 11
        byte >00
 
        .rtok 91                                            ; Token 141:    "COMPETENT"
-       .char 'p'                                           ; 
-       .char 'e'                                           ; Encoded as:   "[91]PET<146>T"
-       .char 't'
-       .twok 'e', 'n'
-       .char 't'
+       .char 'P'                                           ; 
+       .char 'E'                                           ; Encoded as:   "[91]PET<146>T"
+       .char 'T'
+       byte 146 ^ RE                                       ; TWOK 'E', 'N' null
+       .char 'T'
        byte >00
 
-       .char 'd'                                           ; Token 142:    "DANGEROUS"
-       .twok 'a', 'n'                                      ; 
-       .twok 'g', 'e'                                      ; Encoded as:   "D<155><131>RO<136>"
-       .char 'r'
-       .char 'o'
-       .twok 'u', 's'
+       .char 'D'                                           ; Token 142:    "DANGEROUS"
+       byte 155 ^ RE                                       ; TWOK 'A', 'N' 
+       byte 131 ^ RE                                       ; TWOK 'G', 'E' Encoded as:   "D<155><131>RO<136>"
+       .char 'R'
+       .char 'O'
+       byte 136 ^ RE                                       ; TWOK 'U', 'S' null
        byte >00
 
-       .char 'd'                                           ; Token 143:    "DEADLY"
-       .char 'e'                                           ; 
-       .char 'a'                                           ; Encoded as:   "DEADLY"
-       .char 'd'
-       .char 'l'
-       .char 'y'
+       .char 'D'                                           ; Token 143:    "DEADLY"
+       .char 'E'                                           ; 
+       .char 'A'                                           ; Encoded as:   "DEADLY"
+       .char 'D'
+       .char 'L'
+       .char 'Y'
        byte >00
 
        .char '-'                                           ; Token 144:    "---- E L I T E ----"
@@ -2434,15 +2434,15 @@ QQ18:
        .char '-'                                           ; Encoded as:   "---- E L I T E ----"
        .char '-'
        .char ' '
-       .char 'e'
+       .char 'E'
        .char ' '
-       .char 'l'
+       .char 'L'
        .char ' '
-       .char 'i'
+       .char 'I'
        .char ' '
-       .char 't'
+       .char 'T'
        .char ' '
-       .char 'e'
+       .char 'E'
        .char ' '
        .char '-'
        .char '-'
@@ -2450,39 +2450,39 @@ QQ18:
        .char '-'
        byte >00
 
-       .char 'p'                                           ; Token 145:    "PRESENT"
-       .twok 'r', 'e'                                      ; 
-       .char 's'                                           ; Encoded as:   "P<142>S<146>T"
-       .twok 'e', 'n'
-       .char 't'
+       .char 'P'                                           ; Token 145:    "PRESENT"
+       byte 142 ^ RE                                       ; TWOK 'R', 'E' 
+       .char 'S'                                           ; Encoded as:   "P<142>S<146>T"
+       byte 146 ^ RE                                       ; TWOK 'E', 'N' null
+       .char 'T'
        byte >00
 
        .cont 8                                             ; Token 146:    "{all caps}GAME OVER"
-       .char 'g'                                           ; 
-       .char 'a'                                           ; Encoded as:   "{8}GAME O<150>R"
-       .char 'm'
-       .char 'e'
+       .char 'G'                                           ; 
+       .char 'A'                                           ; Encoded as:   "{8}GAME O<150>R"
+       .char 'M'
+       .char 'E'
        .char ' '
-       .char 'o'
-       .twok 'v', 'e'
-       .char 'r'
+       .char 'O'
+       byte 150 ^ RE                                       ; TWOK 'V', 'E' null
+       .char 'R'
        byte >00
 
-       .char 'p'                                           ; Token 147:    "PRESS FIRE OR SPACE,COMMANDER.{crlf}
-       .char 'r'                                           ; {crlf}
-       .twok 'e', 's'                                      ; "
-       .char 's'                                           ; 
+       .char 'P'                                           ; Token 147:    "PRESS FIRE OR SPACE,COMMANDER.{crlf}
+       .char 'R'                                           ; {crlf}
+       byte 137 ^ RE                                       ; TWOK 'E', 'S' "
+       .char 'S'                                           ; 
        .char ' '                                           ; Encoded as:   "PR<137>S FI<142> <153> SPA<133>,[92].
-       .char 'f'                                           ; {13}{13}"
-       .char 'i'
-       .twok 'r', 'e'
+       .char 'F'                                           ; {13}{13}"
+       .char 'I'
+       byte 142 ^ RE                                       ; TWOK 'R', 'E' null
        .char ' '
-       .twok 'o', 'r'
+       byte 153 ^ RE                                       ; TWOK 'O', 'R' null
        .char ' '
-       .char 's'
-       .char 'p'
-       .char 'a'
-       .twok 'c', 'e'
+       .char 'S'
+       .char 'P'
+       .char 'A'
+       byte 133 ^ RE                                       ; TWOK 'C', 'E' null
        .char ','
        .rtok 92
        .char '.'
@@ -2491,16 +2491,16 @@ QQ18:
        byte >00
 
        .char '('                                           ; Token 148:    "(C) ACORNSOFT 1984"
-       .char 'c'                                           ; 
+       .char 'C'                                           ; 
        .char ')'                                           ; Encoded as:   "(C) AC<153>N<135>FT 1984"
        .char ' '
-       .char 'a'
-       .char 'c'
-       .twok 'o', 'r'
-       .char 'n'
-       .twok 's', 'o'
-       .char 'f'
-       .char 't'
+       .char 'A'
+       .char 'C'
+       byte 153 ^ RE                                       ; TWOK 'O', 'R' null
+       .char 'N'
+       byte 135 ^ RE                                       ; TWOK 'S', 'O' null
+       .char 'F'
+       .char 'T'
        .char ' '
        .char '1'
        .char '9'
@@ -3001,17 +3001,17 @@ LOAD_A.:
 * ******************************************************************************
 
 S.:
-       data >0000                                                    ; The entry point for the main game; once the main code
-                                                                     ; has been loaded, decrypted and moved to the right
-                                                                     ; place by elite-loader.asm, the game is started by a
-                                                                     ; JMP (S%) instruction, which jumps to the main entry
-                                                                     ; point at TT170 via this location
+       data >0000                                          ; The entry point for the main game; once the main code
+                                                           ; has been loaded, decrypted and moved to the right
+                                                           ; place by elite-loader.asm, the game is started by a
+                                                           ; JMP (S%) instruction, which jumps to the main entry
+                                                           ; point at TT170 via this location
 
-       data >0000                                                    ; WRCHV is set to point here by elite-loader.asm
+       data >0000                                          ; WRCHV is set to point here by elite-loader.asm
 
-       data >0000                                                    ; IRQ1V is set to point here by elite-loader.asm
+       data >0000                                          ; IRQ1V is set to point here by elite-loader.asm
 
-       data >0000                                                    ; BRKV is set to point here by elite-loader.asm
+       data >0000                                          ; BRKV is set to point here by elite-loader.asm
 
 COMC:
        bss 1                                               ; The colour of the dot on the compass
@@ -6603,11 +6603,11 @@ LOAD_B.:
 * ******************************************************************************
 
 NA.:
-       text 'JAMESON'                                                ; The current commander name, which defaults to JAMESON
-       byte >0d                                                      ; 
-                                                                     ; The commander name can be up to 7 characters (the DFS
-                                                                     ; limit for filenames), and is terminated by a carriage
-                                                                     ; return
+       text 'JAMESON'                                      ; The current commander name, which defaults to JAMESON
+       byte >0d                                            ; 
+                                                           ; The commander name can be up to 7 characters (the DFS
+                                                           ; limit for filenames), and is terminated by a carriage
+                                                           ; return
 
                                                            ; NA%+8 is the start of the commander data block
                                                            ; 
@@ -6623,100 +6623,100 @@ NA.:
                                                            ; commander. Q% can be set to TRUE to give the default
                                                            ; commander lots of credits and equipment
 
-       byte >00                                                      ; TP = Mission status, #0
+       byte >00                                            ; TP = Mission status, #0
 
-       byte >14                                                      ; QQ0 = Current system X-coordinate (Lave), #1
-       byte >ad                                                      ; QQ1 = Current system Y-coordinate (Lave), #2
+       byte >14                                            ; QQ0 = Current system X-coordinate (Lave), #1
+       byte >ad                                            ; QQ1 = Current system Y-coordinate (Lave), #2
 
-       data >4a5a                                                    ; QQ21 = Seed s0 for system 0, galaxy 0 (Tibedied), #3-4
-       data >4802                                                    ; QQ21 = Seed s1 for system 0, galaxy 0 (Tibedied), #5-6
-       data >53b7                                                    ; QQ21 = Seed s2 for system 0, galaxy 0 (Tibedied), #7-8
+       data >4a5a                                          ; QQ21 = Seed s0 for system 0, galaxy 0 (Tibedied), #3-4
+       data >4802                                          ; QQ21 = Seed s1 for system 0, galaxy 0 (Tibedied), #5-6
+       data >53b7                                          ; QQ21 = Seed s2 for system 0, galaxy 0 (Tibedied), #7-8
 
-       data >0000, >0000                                             ; CASH = Amount of cash (100,000,000 Cr), #9-12
-       data >0000, >0000                                             ; CASH = Amount of cash (100 Cr), #9-12
+       data >0000, >0000                                   ; CASH = Amount of cash (100,000,000 Cr), #9-12
+       data >0000, >0000                                   ; CASH = Amount of cash (100 Cr), #9-12
 
-       byte >46                                                      ; QQ14 = Fuel level, #13
+       byte >46                                            ; QQ14 = Fuel level, #13
 
-       byte >00                                                      ; COK = Competition flags, #14
+       byte >00                                            ; COK = Competition flags, #14
 
-       byte >00                                                      ; GCNT = Galaxy number, 0-7, #15
+       byte >00                                            ; GCNT = Galaxy number, 0-7, #15
 
-       byte >00                                                      ; LASER = Front laser, #16
+       byte >00                                            ; LASER = Front laser, #16
 
-       byte >00                                                      ; LASER+1 = Rear laser, #17
+       byte >00                                            ; LASER+1 = Rear laser, #17
 
-       byte >00                                                      ; LASER+2 = Left laser, #18
+       byte >00                                            ; LASER+2 = Left laser, #18
 
-       byte >00                                                      ; LASER+3 = Right laser, #19
+       byte >00                                            ; LASER+3 = Right laser, #19
 
-       data >0000                                                    ; These bytes appear to be unused (they were originally
-                                                                     ; used for up/down lasers, but they were dropped),
-                                                                     ; #20-21
+       data >0000                                          ; These bytes appear to be unused (they were originally
+                                                           ; used for up/down lasers, but they were dropped),
+                                                           ; #20-21
 
-       byte >16                                                      ; CRGO = Cargo capacity, #22
+       byte >16                                            ; CRGO = Cargo capacity, #22
 
-       byte >00                                                      ; QQ20+0  = Amount of food in cargo hold, #23
-       byte >00                                                      ; QQ20+1  = Amount of textiles in cargo hold, #24
-       byte >00                                                      ; QQ20+2  = Amount of radioactives in cargo hold, #25
-       byte >00                                                      ; QQ20+3  = Amount of slaves in cargo hold, #26
-       byte >00                                                      ; QQ20+4  = Amount of liquor/Wines in cargo hold, #27
-       byte >00                                                      ; QQ20+5  = Amount of luxuries in cargo hold, #28
-       byte >00                                                      ; QQ20+6  = Amount of narcotics in cargo hold, #29
-       byte >00                                                      ; QQ20+7  = Amount of computers in cargo hold, #30
-       byte >00                                                      ; QQ20+8  = Amount of machinery in cargo hold, #31
-       byte >00                                                      ; QQ20+9  = Amount of alloys in cargo hold, #32
-       byte >00                                                      ; QQ20+10 = Amount of firearms in cargo hold, #33
-       byte >00                                                      ; QQ20+11 = Amount of furs in cargo hold, #34
-       byte >00                                                      ; QQ20+12 = Amount of minerals in cargo hold, #35
-       byte >00                                                      ; QQ20+13 = Amount of gold in cargo hold, #36
-       byte >00                                                      ; QQ20+14 = Amount of platinum in cargo hold, #37
-       byte >00                                                      ; QQ20+15 = Amount of gem-stones in cargo hold, #38
-       byte >00                                                      ; QQ20+16 = Amount of alien items in cargo hold, #39
+       byte >00                                            ; QQ20+0  = Amount of food in cargo hold, #23
+       byte >00                                            ; QQ20+1  = Amount of textiles in cargo hold, #24
+       byte >00                                            ; QQ20+2  = Amount of radioactives in cargo hold, #25
+       byte >00                                            ; QQ20+3  = Amount of slaves in cargo hold, #26
+       byte >00                                            ; QQ20+4  = Amount of liquor/Wines in cargo hold, #27
+       byte >00                                            ; QQ20+5  = Amount of luxuries in cargo hold, #28
+       byte >00                                            ; QQ20+6  = Amount of narcotics in cargo hold, #29
+       byte >00                                            ; QQ20+7  = Amount of computers in cargo hold, #30
+       byte >00                                            ; QQ20+8  = Amount of machinery in cargo hold, #31
+       byte >00                                            ; QQ20+9  = Amount of alloys in cargo hold, #32
+       byte >00                                            ; QQ20+10 = Amount of firearms in cargo hold, #33
+       byte >00                                            ; QQ20+11 = Amount of furs in cargo hold, #34
+       byte >00                                            ; QQ20+12 = Amount of minerals in cargo hold, #35
+       byte >00                                            ; QQ20+13 = Amount of gold in cargo hold, #36
+       byte >00                                            ; QQ20+14 = Amount of platinum in cargo hold, #37
+       byte >00                                            ; QQ20+15 = Amount of gem-stones in cargo hold, #38
+       byte >00                                            ; QQ20+16 = Amount of alien items in cargo hold, #39
 
-       byte >00                                                      ; ECM = E.C.M. system, #40
+       byte >00                                            ; ECM = E.C.M. system, #40
 
-       byte >00                                                      ; BST = Fuel scoops ("barrel status"), #41
+       byte >00                                            ; BST = Fuel scoops ("barrel status"), #41
 
-       byte >00                                                      ; BOMB = Energy bomb, #42
+       byte >00                                            ; BOMB = Energy bomb, #42
 
-       byte >00                                                      ; ENGY = Energy/shield level, #43
+       byte >00                                            ; ENGY = Energy/shield level, #43
 
-       byte >00                                                      ; DKCMP = Docking computer, #44
+       byte >00                                            ; DKCMP = Docking computer, #44
 
-       byte >00                                                      ; GHYP = Galactic hyperdrive, #45
+       byte >00                                            ; GHYP = Galactic hyperdrive, #45
 
-       byte >00                                                      ; ESCP = Escape pod, #46
+       byte >00                                            ; ESCP = Escape pod, #46
 
-       data >0000, >0000                                             ; These four bytes appear to be unused, #47-50
+       data >0000, >0000                                   ; These four bytes appear to be unused, #47-50
 
-       byte >03                                                      ; NOMSL = Number of missiles, #51
+       byte >03                                            ; NOMSL = Number of missiles, #51
 
-       byte >00                                                      ; FIST = Legal status ("fugitive/innocent status"), #52
+       byte >00                                            ; FIST = Legal status ("fugitive/innocent status"), #52
 
-       byte >10                                                      ; AVL+0  = Market availability of food, #53
-       byte >0f                                                      ; AVL+1  = Market availability of textiles, #54
-       byte >11                                                      ; AVL+2  = Market availability of radioactives, #55
-       byte >00                                                      ; AVL+3  = Market availability of slaves, #56
-       byte >03                                                      ; AVL+4  = Market availability of liquor/Wines, #57
-       byte >1c                                                      ; AVL+5  = Market availability of luxuries, #58
-       byte >0e                                                      ; AVL+6  = Market availability of narcotics, #59
-       byte >00                                                      ; AVL+7  = Market availability of computers, #60
-       byte >00                                                      ; AVL+8  = Market availability of machinery, #61
-       byte >0a                                                      ; AVL+9  = Market availability of alloys, #62
-       byte >00                                                      ; AVL+10 = Market availability of firearms, #63
-       byte >11                                                      ; AVL+11 = Market availability of furs, #64
-       byte >3a                                                      ; AVL+12 = Market availability of minerals, #65
-       byte >07                                                      ; AVL+13 = Market availability of gold, #66
-       byte >09                                                      ; AVL+14 = Market availability of platinum, #67
-       byte >08                                                      ; AVL+15 = Market availability of gem-stones, #68
-       byte >00                                                      ; AVL+16 = Market availability of alien items, #69
+       byte >10                                            ; AVL+0  = Market availability of food, #53
+       byte >0f                                            ; AVL+1  = Market availability of textiles, #54
+       byte >11                                            ; AVL+2  = Market availability of radioactives, #55
+       byte >00                                            ; AVL+3  = Market availability of slaves, #56
+       byte >03                                            ; AVL+4  = Market availability of liquor/Wines, #57
+       byte >1c                                            ; AVL+5  = Market availability of luxuries, #58
+       byte >0e                                            ; AVL+6  = Market availability of narcotics, #59
+       byte >00                                            ; AVL+7  = Market availability of computers, #60
+       byte >00                                            ; AVL+8  = Market availability of machinery, #61
+       byte >0a                                            ; AVL+9  = Market availability of alloys, #62
+       byte >00                                            ; AVL+10 = Market availability of firearms, #63
+       byte >11                                            ; AVL+11 = Market availability of furs, #64
+       byte >3a                                            ; AVL+12 = Market availability of minerals, #65
+       byte >07                                            ; AVL+13 = Market availability of gold, #66
+       byte >09                                            ; AVL+14 = Market availability of platinum, #67
+       byte >08                                            ; AVL+15 = Market availability of gem-stones, #68
+       byte >00                                            ; AVL+16 = Market availability of alien items, #69
 
-       byte >00                                                      ; QQ26 = Random byte that changes for each visit to a
-                                                                     ; system, for randomising market prices, #70
+       byte >00                                            ; QQ26 = Random byte that changes for each visit to a
+                                                           ; system, for randomising market prices, #70
 
-       data >0000                                                    ; TALLY = Number of kills, #71-72
+       data >0000                                          ; TALLY = Number of kills, #71-72
 
-       byte >80                                                      ; SVC = Save count, #73
+       byte >80                                            ; SVC = Save count, #73
 
 * ******************************************************************************
 * 
@@ -6738,9 +6738,9 @@ NA.:
 * ******************************************************************************
 
 CHK2:
-       byte >03                                                      ; The checksum value for the default commander, EOR'd
-                                                                     ; with &A9 to make it harder to tamper with the checksum
-                                                                     ; byte, #74
+       byte >03                                            ; The checksum value for the default commander, EOR'd
+                                                           ; with &A9 to make it harder to tamper with the checksum
+                                                           ; byte, #74
 
 * ******************************************************************************
 * 
@@ -6762,7 +6762,7 @@ CHK2:
 * ******************************************************************************
 
 CHK:
-       byte >03                                                      ; The checksum value for the default commander, #75
+       byte >03                                            ; The checksum value for the default commander, #75
 
 * ******************************************************************************
 * 
@@ -6781,11 +6781,11 @@ CHK:
 * ******************************************************************************
 
 UNIV:
-       ;  FOR I%, 0, NOSH
+       ; FOR I%, 0, NOSH
 
        ; EQUW K% + I% * NI%            ;                   ; Address of block no. I%, of size NI%, in workspace K%
 
-       ;  NEXT
+       ; NEXT
 
 * ******************************************************************************
 * 
@@ -9259,18 +9259,18 @@ ST4:
 * ******************************************************************************
 
 PRXS:
-       data >0100                                                    ; 0  Fuel, calculated in EQSHP  140.0 Cr (full tank)
-       data >2c01                                                    ; 1  Missile                     30.0 Cr
-       data >a00f                                                    ; 2  Large Cargo Bay            400.0 Cr
-       data >7017                                                    ; 3  E.C.M. System              600.0 Cr
-       data >a00f                                                    ; 4  Extra Pulse Lasers         400.0 Cr
-       data >1027                                                    ; 5  Extra Beam Lasers         1000.0 Cr
-       data >8214                                                    ; 6  Fuel Scoops                525.0 Cr
-       data >1027                                                    ; 7  Escape Pod                1000.0 Cr
-       data >2823                                                    ; 8  Energy Bomb                900.0 Cr
-       data >983a                                                    ; 9  Energy Unit               1500.0 Cr
-       data >1027                                                    ; 10 Docking Computer          1000.0 Cr
-       data >50c3                                                    ; 11 Galactic Hyperspace       5000.0 Cr
+       data >0100                                          ; 0  Fuel, calculated in EQSHP  140.0 Cr (full tank)
+       data >2c01                                          ; 1  Missile                     30.0 Cr
+       data >a00f                                          ; 2  Large Cargo Bay            400.0 Cr
+       data >7017                                          ; 3  E.C.M. System              600.0 Cr
+       data >a00f                                          ; 4  Extra Pulse Lasers         400.0 Cr
+       data >1027                                          ; 5  Extra Beam Lasers         1000.0 Cr
+       data >8214                                          ; 6  Fuel Scoops                525.0 Cr
+       data >1027                                          ; 7  Escape Pod                1000.0 Cr
+       data >2823                                          ; 8  Energy Bomb                900.0 Cr
+       data >983a                                          ; 9  Energy Unit               1500.0 Cr
+       data >1027                                          ; 10 Docking Computer          1000.0 Cr
+       data >50c3                                          ; 11 Galactic Hyperspace       5000.0 Cr
 
 * ******************************************************************************
 * 
@@ -10766,9 +10766,9 @@ PZW:
                                                            ; colour 2 (yellow/white) and use the BIT trick below to
                                                            ; return from the subroutine
 
-       byte >2c                                                      ; Skip the next instruction by turning it into
-                                                                     ; &2C &A9 &0F, or BIT &0FA9, which does nothing apart
-                                                                     ; from affect the flags
+       byte >2c                                            ; Skip the next instruction by turning it into
+                                                           ; &2C &A9 &0F, or BIT &0FA9, which does nothing apart
+                                                           ; from affect the flags
 
 B29:
        li   ra,>0f*256                 ; LDA #&0F          ; Set A to dashboard colour 1 (red)
@@ -11129,30 +11129,30 @@ DLL12:
 * ******************************************************************************
 
 TVT1:
-       byte >d4                                                      ; This block of palette data is used to create two
-       byte >94                                                      ; palettes used in three different places, all of them
-       byte >f5                                                      ; redefining four colours in mode 5:
-       byte >b5                                                      ; 
-                                                                     ; 12 bytes from TVT1 (i.e. the first 6 rows): applied
-       byte >76                                                      ; when the T1 timer runs down at the switch from the
-       byte >36                                                      ; space view to the dashboard, so this is the standard
-                                                                     ; dashboard palette
-       byte >e1                                                      ; 
-       byte >b1                                                      ; 8 bytes from TVT1+8 (i.e. the last 4 rows): applied
-                                                                     ; when the T1 timer runs down at the switch from the
-                                                                     ; space view to the dashboard, and we have an escape
-                                                                     ; pod fitted, so this is the escape pod dashboard
-                                                                     ; palette
-                                                                     ; 
-                                                                     ; 8 bytes from TVT1+8 (i.e. the last 4 rows): applied
-                                                                     ; at vertical sync in LINSCN when HFX is non-zero, to
-                                                                     ; create the hyperspace effect in LINSCN (where the
-                                                                     ; whole screen is switched to mode 5 at vertical sync)
+       byte >d4                                            ; This block of palette data is used to create two
+       byte >94                                            ; palettes used in three different places, all of them
+       byte >f5                                            ; redefining four colours in mode 5:
+       byte >b5                                            ; 
+                                                           ; 12 bytes from TVT1 (i.e. the first 6 rows): applied
+       byte >76                                            ; when the T1 timer runs down at the switch from the
+       byte >36                                            ; space view to the dashboard, so this is the standard
+                                                           ; dashboard palette
+       byte >e1                                            ; 
+       byte >b1                                            ; 8 bytes from TVT1+8 (i.e. the last 4 rows): applied
+                                                           ; when the T1 timer runs down at the switch from the
+                                                           ; space view to the dashboard, and we have an escape
+                                                           ; pod fitted, so this is the escape pod dashboard
+                                                           ; palette
+                                                           ; 
+                                                           ; 8 bytes from TVT1+8 (i.e. the last 4 rows): applied
+                                                           ; at vertical sync in LINSCN when HFX is non-zero, to
+                                                           ; create the hyperspace effect in LINSCN (where the
+                                                           ; whole screen is switched to mode 5 at vertical sync)
 
-       byte >f0                                                      ; 12 bytes of palette data at TVT1+16, used to set the
-       byte >b0                                                      ; mode 4 palette in LINSCN when we hit vertical sync,
-       byte >d0                                                      ; so the palette is set to monochrome when we start to
-       byte >90                                                      ; draw the first row of the screen
+       byte >f0                                            ; 12 bytes of palette data at TVT1+16, used to set the
+       byte >b0                                            ; mode 4 palette in LINSCN when we hit vertical sync,
+       byte >d0                                            ; so the palette is set to monochrome when we start to
+       byte >90                                            ; draw the first row of the screen
        byte >77
        byte >37
 
@@ -13331,7 +13331,7 @@ STF1:
 * ******************************************************************************
 
 SNE:
-       ;  FOR I%, 0, 31
+       ; FOR I%, 0, 31
 
        ; N = ABS(SIN((I% / 64) * 2 * PI)) ;                   
 
@@ -13343,7 +13343,7 @@ SNE:
 
        ; EQUB B%                       ;                   
 
-       ;  NEXT
+       ; NEXT
 
 * ******************************************************************************
 * 
@@ -15305,11 +15305,11 @@ ARS1:
 * ******************************************************************************
 
 ACT:
-       ;  FOR I%, 0, 31
+       ; FOR I%, 0, 31
 
        ; EQUB INT((128 / PI) * ATN(I% / 32) + 0.5) ;                   
 
-       ;  NEXT
+       ; NEXT
 
 * ******************************************************************************
 * 
@@ -16075,9 +16075,9 @@ BOS1:
 
        li   ry,>02*256                 ; LDY #2            ; Set Y to 2 vertical syncs
 
-       byte >2c                                                      ; Skip the next instruction by turning it into
-                                                                     ; &2C &A0 &08, or BIT &08A0, which does nothing apart
-                                                                     ; from affect the flags
+       byte >2c                                            ; Skip the next instruction by turning it into
+                                                           ; &2C &A0 &08, or BIT &08A0, which does nothing apart
+                                                           ; from affect the flags
 
 DEL8:
        li   ry,>08*256                 ; LDY #8            ; Set Y to 8 vertical syncs and fall through into DELAY
@@ -21135,7 +21135,7 @@ qv1_:
        movb ry,ra                      ; TYA               ; Transfer the counter value from Y to A
 
        .clc                            ; CLC               ; Print ASCII character "0" - 16 + A, so as A goes from
-       .adc #'0'-16,ra                 ; ADC #'0'-16       ; 16 to 19, this prints "0" through "3" followed by a
+       .adi (('0'-16)*256)             ; ADC #'0'-16       ; 16 to 19, this prints "0" through "3" followed by a
        .jsr @spc_                      ; JSR spc           ; space
 
        movb @YC,ra                     ; LDA YC            ; Print recursive text token 80 + YC, so as YC goes from
@@ -24014,14 +24014,14 @@ BULB:
 * ******************************************************************************
 
 ECBT:
-       byte >e0                                                      ; x x x .
-       byte >e0                                                      ; x x x .
-       byte >80                                                      ; x . . .
-                                                                     ; x x x .
-                                                                     ; x x x .
-                                                                     ; x . . .
-                                                                     ; x x x .
-                                                                     ; x x x .
+       byte >e0                                            ; x x x .
+       byte >e0                                            ; x x x .
+       byte >80                                            ; x . . .
+                                                           ; x x x .
+                                                           ; x x x .
+                                                           ; x . . .
+                                                           ; x x x .
+                                                           ; x x x .
 
 * ******************************************************************************
 * 
@@ -24040,14 +24040,14 @@ ECBT:
 * ******************************************************************************
 
 SPBT:
-       byte >e0                                                      ; x x x .
-       byte >e0                                                      ; x x x .
-       byte >80                                                      ; x . . .
-       byte >e0                                                      ; x x x .
-       byte >e0                                                      ; x x x .
-       byte >20                                                      ; . . x .
-       byte >e0                                                      ; x x x .
-       byte >e0                                                      ; x x x .
+       byte >e0                                            ; x x x .
+       byte >e0                                            ; x x x .
+       byte >80                                            ; x . . .
+       byte >e0                                            ; x x x .
+       byte >e0                                            ; x x x .
+       byte >20                                            ; . . x .
+       byte >e0                                            ; x x x .
+       byte >e0                                            ; x x x .
 
 * ******************************************************************************
 * 
@@ -27234,16 +27234,16 @@ KSL3:
 * ******************************************************************************
 
 SFX:
-       byte >12                                                      ; 0  - Lasers fired by us
-       byte >12                                                      ; 8  - We're being hit by lasers
-       byte >11                                                      ; 16 - We died 1 / We made a hit or kill 2
-       byte >10                                                      ; 24 - We died 2 / We made a hit or kill 1
-       byte >03                                                      ; 32 - Short, high beep
-       byte >13                                                      ; 40 - Long, low beep
-       byte >10                                                      ; 48 - Missile launched / Ship launched from station
-       byte >10                                                      ; 56 - Hyperspace drive engaged
-       byte >13                                                      ; 64 - E.C.M. on
-       byte >13                                                      ; 72 - E.C.M. off
+       byte >12                                            ; 0  - Lasers fired by us
+       byte >12                                            ; 8  - We're being hit by lasers
+       byte >11                                            ; 16 - We died 1 / We made a hit or kill 2
+       byte >10                                            ; 24 - We died 2 / We made a hit or kill 1
+       byte >03                                            ; 32 - Short, high beep
+       byte >13                                            ; 40 - Long, low beep
+       byte >10                                            ; 48 - Missile launched / Ship launched from station
+       byte >10                                            ; 56 - Hyperspace drive engaged
+       byte >13                                            ; 64 - E.C.M. on
+       byte >13                                            ; 72 - E.C.M. off
 
 * ******************************************************************************
 * 
@@ -29235,14 +29235,14 @@ GTNME:
 * ******************************************************************************
 
 RLINE:
-       data >0000                                                    ; The address to store the input, so the commander's
-                                                                     ; name will be stored in INWK as it is typed
+       data >0000                                          ; The address to store the input, so the commander's
+                                                           ; name will be stored in INWK as it is typed
 
-       byte >07                                                      ; Maximum line length = 7, as that's the maximum size
-                                                                     ; for a commander's name
+       byte >07                                            ; Maximum line length = 7, as that's the maximum size
+                                                           ; for a commander's name
 
-       byte >00                                                      ; Allow ASCII characters from "!" through to "z" in
-       byte >00                                                      ; the name
+       byte >00                                            ; Allow ASCII characters from "!" through to "z" in
+       byte >00                                            ; the name
 
 * ******************************************************************************
 * 
@@ -30115,9 +30115,9 @@ EXNO:
                                                            ; (part 2 of the explosion), and fall through into NOISE
                                                            ; to make the sound
 
-       byte >2c                                                      ; Skip the next instruction by turning it into
-                                                                     ; &2C &A9 &20, or BIT &20A9, which does nothing apart
-                                                                     ; from affect the flags
+       byte >2c                                            ; Skip the next instruction by turning it into
+                                                           ; &2C &A9 &20, or BIT &20A9, which does nothing apart
+                                                           ; from affect the flags
 
 * ******************************************************************************
 * 
@@ -30267,24 +30267,24 @@ KYTB:                                                      ; Point KYTB to the b
                                                            ; These are the primary flight controls (pitch, roll,
                                                            ; speed and lasers):
 
-       byte >68                                                      ; ?         KYTB+1      Slow down
-       byte >62                                                      ; Space     KYTB+2      Speed up
-       byte >66                                                      ; <         KYTB+3      Roll left
-       byte >67                                                      ; >         KYTB+4      Roll right
-       byte >42                                                      ; X         KYTB+5      Pitch up
-       byte >51                                                      ; S         KYTB+6      Pitch down
-       byte >41                                                      ; A         KYTB+7      Fire lasers
+       byte >68                                            ; ?         KYTB+1      Slow down
+       byte >62                                            ; Space     KYTB+2      Speed up
+       byte >66                                            ; <         KYTB+3      Roll left
+       byte >67                                            ; >         KYTB+4      Roll right
+       byte >42                                            ; X         KYTB+5      Pitch up
+       byte >51                                            ; S         KYTB+6      Pitch down
+       byte >41                                            ; A         KYTB+7      Fire lasers
 
                                                            ; These are the secondary flight controls:
 
-       byte >60                                                      ; TAB       KYTB+8      Energy bomb
-       byte >70                                                      ; ESCAPE    KYTB+9      Launch escape pod
-       byte >23                                                      ; T         KYTB+10     Arm missile
-       byte >35                                                      ; U         KYTB+11     Unarm missile
-       byte >65                                                      ; M         KYTB+12     Fire missile
-       byte >22                                                      ; E         KYTB+13     E.C.M.
-       byte >45                                                      ; J         KYTB+14     In-system jump
-       byte >52                                                      ; C         KYTB+15     Docking computer
+       byte >60                                            ; TAB       KYTB+8      Energy bomb
+       byte >70                                            ; ESCAPE    KYTB+9      Launch escape pod
+       byte >23                                            ; T         KYTB+10     Arm missile
+       byte >35                                            ; U         KYTB+11     Unarm missile
+       byte >65                                            ; M         KYTB+12     Fire missile
+       byte >22                                            ; E         KYTB+13     E.C.M.
+       byte >45                                            ; J         KYTB+14     In-system jump
+       byte >52                                            ; C         KYTB+15     Docking computer
 
 * ******************************************************************************
 * 
@@ -30957,10 +30957,10 @@ me1_:
 
        .pla                            ; PLA               ; Restore the new message token
 
-       byte >2c                                                      ; Fall through into ou2 to print the new message, but
-                                                                     ; skip the first instruction by turning it into
-                                                                     ; &2C &A9 &6C, or BIT &6CA9, which does nothing apart
-                                                                     ; from affect the flags
+       byte >2c                                            ; Fall through into ou2 to print the new message, but
+                                                           ; skip the first instruction by turning it into
+                                                           ; &2C &A9 &6C, or BIT &6CA9, which does nothing apart
+                                                           ; from affect the flags
 
 * ******************************************************************************
 * 
@@ -30974,10 +30974,10 @@ me1_:
 ou2_:
        li   ra,>6c*256                 ; LDA #108          ; Set A to recursive token 108 ("E.C.M.SYSTEM")
 
-       byte >2c                                                      ; Fall through into ou3 to print the new message, but
-                                                                     ; skip the first instruction by turning it into
-                                                                     ; &2C &A9 &6F, or BIT &6FA9, which does nothing apart
-                                                                     ; from affect the flags
+       byte >2c                                            ; Fall through into ou3 to print the new message, but
+                                                           ; skip the first instruction by turning it into
+                                                           ; &2C &A9 &6F, or BIT &6FA9, which does nothing apart
+                                                           ; from affect the flags
 
 * ******************************************************************************
 * 
@@ -31141,38 +31141,38 @@ ou1_:
 * ******************************************************************************
 
 QQ16:
-       text 'AL'                                                     ; Token 128
-       text 'LE'                                                     ; Token 129
-       text 'XE'                                                     ; Token 130
-       text 'GE'                                                     ; Token 131
-       text 'ZA'                                                     ; Token 132
-       text 'CE'                                                     ; Token 133
-       text 'BI'                                                     ; Token 134
-       text 'SO'                                                     ; Token 135
-       text 'US'                                                     ; Token 136
-       text 'ES'                                                     ; Token 137
-       text 'AR'                                                     ; Token 138
-       text 'MA'                                                     ; Token 139
-       text 'IN'                                                     ; Token 140
-       text 'DI'                                                     ; Token 141
-       text 'RE'                                                     ; Token 142
-       text 'A?'                                                     ; Token 143
-       text 'ER'                                                     ; Token 144
-       text 'AT'                                                     ; Token 145
-       text 'EN'                                                     ; Token 146
-       text 'BE'                                                     ; Token 147
-       text 'RA'                                                     ; Token 148
-       text 'LA'                                                     ; Token 149
-       text 'VE'                                                     ; Token 150
-       text 'TI'                                                     ; Token 151
-       text 'ED'                                                     ; Token 152
-       text 'OR'                                                     ; Token 153
-       text 'QU'                                                     ; Token 154
-       text 'AN'                                                     ; Token 155
-       text 'TE'                                                     ; Token 156
-       text 'IS'                                                     ; Token 157
-       text 'RI'                                                     ; Token 158
-       text 'ON'                                                     ; Token 159
+       text 'AL'                                           ; Token 128
+       text 'LE'                                           ; Token 129
+       text 'XE'                                           ; Token 130
+       text 'GE'                                           ; Token 131
+       text 'ZA'                                           ; Token 132
+       text 'CE'                                           ; Token 133
+       text 'BI'                                           ; Token 134
+       text 'SO'                                           ; Token 135
+       text 'US'                                           ; Token 136
+       text 'ES'                                           ; Token 137
+       text 'AR'                                           ; Token 138
+       text 'MA'                                           ; Token 139
+       text 'IN'                                           ; Token 140
+       text 'DI'                                           ; Token 141
+       text 'RE'                                           ; Token 142
+       text 'A?'                                           ; Token 143
+       text 'ER'                                           ; Token 144
+       text 'AT'                                           ; Token 145
+       text 'EN'                                           ; Token 146
+       text 'BE'                                           ; Token 147
+       text 'RA'                                           ; Token 148
+       text 'LA'                                           ; Token 149
+       text 'VE'                                           ; Token 150
+       text 'TI'                                           ; Token 151
+       text 'ED'                                           ; Token 152
+       text 'OR'                                           ; Token 153
+       text 'QU'                                           ; Token 154
+       text 'AN'                                           ; Token 155
+       text 'TE'                                           ; Token 156
+       text 'IS'                                           ; Token 157
+       text 'RI'                                           ; Token 158
+       text 'ON'                                           ; Token 159
 
 * ******************************************************************************
 * 
@@ -31208,7 +31208,7 @@ QQ16:
 * 
 * ******************************************************************************
 
-       ; ITEM price, factor, units, quantity, mask
+       ; MACRO ITEM price, factor, units, quantity, mask
 
        ; IF factor < 0                 ;                   
        ; s = 1 << 7                    ;                   
@@ -35431,19 +35431,19 @@ LOAD_SHIPS.:
 * ******************************************************************************
 
 XX21:
-       data >0000                                                    ; 1 = Sidewinder
-       data >0000                                                    ; COPS =  2 = Viper
-       data >0000                                                    ; 3 = Mamba
-       data >0000                                                    ; 4 = Python
-       data >0000                                                    ; 5 = Cobra Mk III (bounty hunter)
-       data >0000                                                    ; THG  =  6 = Thargoid
-       data >0000                                                    ; CYL  =  7 = Cobra Mk III (trader)
-       data >0000                                                    ; SST  =  8 = Coriolis space station
-       data >0000                                                    ; MSL  =  9 = Missile
-       data >0000                                                    ; AST  = 10 = Asteroid
-       data >0000                                                    ; OIL  = 11 = Cargo canister
-       data >0000                                                    ; TGL  = 12 = Thargon
-       data >0000                                                    ; ESC  = 13 = Escape pod
+       data >0000                                          ; 1 = Sidewinder
+       data >0000                                          ; COPS =  2 = Viper
+       data >0000                                          ; 3 = Mamba
+       data >0000                                          ; 4 = Python
+       data >0000                                          ; 5 = Cobra Mk III (bounty hunter)
+       data >0000                                          ; THG  =  6 = Thargoid
+       data >0000                                          ; CYL  =  7 = Cobra Mk III (trader)
+       data >0000                                          ; SST  =  8 = Coriolis space station
+       data >0000                                          ; MSL  =  9 = Missile
+       data >0000                                          ; AST  = 10 = Asteroid
+       data >0000                                          ; OIL  = 11 = Cargo canister
+       data >0000                                          ; TGL  = 12 = Thargon
+       data >0000                                          ; ESC  = 13 = Escape pod
 
 * ******************************************************************************
 * 
@@ -35486,7 +35486,7 @@ XX21:
 * 
 * ******************************************************************************
 
-       ; VERTEX x, y, z, face1, face2, face3, face4, visibility
+       ; MACRO VERTEX x, y, z, face1, face2, face3, face4, visibility
 
        ; IF x < 0                      ;                   
        ; s_x = 1 << 7                  ;                   
@@ -35552,7 +35552,7 @@ XX21:
 * 
 * ******************************************************************************
 
-       ; EDGE vertex1, vertex2, face1, face2, visibility
+       ; MACRO EDGE vertex1, vertex2, face1, face2, visibility
 
        ; f = face1 + (face2 << 4)      ;                   
        ; EQUB visibility, f, vertex1 << 2, vertex2 << 2 ;                   
@@ -35592,7 +35592,7 @@ XX21:
 * 
 * ******************************************************************************
 
-       ; FACE normal_x, normal_y, normal_z, visibility
+       ; MACRO FACE normal_x, normal_y, normal_z, visibility
 
        ; IF normal_x < 0               ;                   
        ; s_x = 1 << 7                  ;                   
@@ -35632,29 +35632,29 @@ XX21:
 * ******************************************************************************
 
 SHIP_SIDEWINDER:
-       byte >00                                                      ; Max. canisters on demise = 0
-       data >4100                                                    ; Targetable area          = 65 * 65
+       byte >00                                            ; Max. canisters on demise = 0
+       data >4100                                          ; Targetable area          = 65 * 65
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >3d                                                      ; Max. edge count          = (61 - 1) / 4 = 15
-       byte >00                                                      ; Gun vertex               = 0
-       byte >1e                                                      ; Explosion count          = 6, as (4 * n) + 6 = 30
-       byte >3c                                                      ; Number of vertices       = 60 / 6 = 10
-       byte >0f                                                      ; Number of edges          = 15
-       data >3200                                                    ; Bounty                   = 50
-       byte >1c                                                      ; Number of faces          = 28 / 4 = 7
-       byte >14                                                      ; Visibility distance      = 20
-       byte >46                                                      ; Max. energy              = 70
-       byte >25                                                      ; Max. speed               = 37
+       byte >3d                                            ; Max. edge count          = (61 - 1) / 4 = 15
+       byte >00                                            ; Gun vertex               = 0
+       byte >1e                                            ; Explosion count          = 6, as (4 * n) + 6 = 30
+       byte >3c                                            ; Number of vertices       = 60 / 6 = 10
+       byte >0f                                            ; Number of edges          = 15
+       data >3200                                          ; Bounty                   = 50
+       byte >1c                                            ; Number of faces          = 28 / 4 = 7
+       byte >14                                            ; Visibility distance      = 20
+       byte >46                                            ; Max. energy              = 70
+       byte >25                                            ; Max. speed               = 37
 
-       byte >00                                                      ; Edges data offset (high)
-       byte >00                                                      ; Faces data offset (high)
+       byte >00                                            ; Edges data offset (high)
+       byte >00                                            ; Faces data offset (high)
 
-       byte >02                                                      ; Normals are scaled by    = 2^2 = 4
-       byte >10                                                      ; Laser power              = 2
-                                                                     ; Missiles                 = 0
+       byte >02                                            ; Normals are scaled by    = 2^2 = 4
+       byte >10                                            ; Laser power              = 2
+                                                           ; Missiles                 = 0
 
 SHIP_SIDEWINDER_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
@@ -35708,29 +35708,29 @@ SHIP_SIDEWINDER_FACES:
 * ******************************************************************************
 
 SHIP_VIPER:
-       byte >00                                                      ; Max. canisters on demise = 0
-       data >4b00                                                    ; Targetable area          = 75 * 75
+       byte >00                                            ; Max. canisters on demise = 0
+       data >4b00                                          ; Targetable area          = 75 * 75
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >4d                                                      ; Max. edge count          = (77 - 1) / 4 = 19
-       byte >00                                                      ; Gun vertex               = 0
-       byte >2a                                                      ; Explosion count          = 9, as (4 * n) + 6 = 42
-       byte >5a                                                      ; Number of vertices       = 90 / 6 = 15
-       byte >14                                                      ; Number of edges          = 20
-       data >0000                                                    ; Bounty                   = 0
-       byte >1c                                                      ; Number of faces          = 28 / 4 = 7
-       byte >17                                                      ; Visibility distance      = 23
-       byte >78                                                      ; Max. energy              = 120
-       byte >20                                                      ; Max. speed               = 32
+       byte >4d                                            ; Max. edge count          = (77 - 1) / 4 = 19
+       byte >00                                            ; Gun vertex               = 0
+       byte >2a                                            ; Explosion count          = 9, as (4 * n) + 6 = 42
+       byte >5a                                            ; Number of vertices       = 90 / 6 = 15
+       byte >14                                            ; Number of edges          = 20
+       data >0000                                          ; Bounty                   = 0
+       byte >1c                                            ; Number of faces          = 28 / 4 = 7
+       byte >17                                            ; Visibility distance      = 23
+       byte >78                                            ; Max. energy              = 120
+       byte >20                                            ; Max. speed               = 32
 
-       byte >00                                                      ; Edges data offset (high)
-       byte >00                                                      ; Faces data offset (high)
+       byte >00                                            ; Edges data offset (high)
+       byte >00                                            ; Faces data offset (high)
 
-       byte >01                                                      ; Normals are scaled by    = 2^1 = 2
-       byte >11                                                      ; Laser power              = 2
-                                                                     ; Missiles                 = 1
+       byte >01                                            ; Normals are scaled by    = 2^1 = 2
+       byte >11                                            ; Laser power              = 2
+                                                           ; Missiles                 = 1
 
 SHIP_VIPER_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
@@ -35794,29 +35794,29 @@ SHIP_VIPER_FACES:
 * ******************************************************************************
 
 SHIP_MAMBA:
-       byte >01                                                      ; Max. canisters on demise = 1
-       data >4600                                                    ; Targetable area          = 70 * 70
+       byte >01                                            ; Max. canisters on demise = 1
+       data >4600                                          ; Targetable area          = 70 * 70
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >5d                                                      ; Max. edge count          = (93 - 1) / 4 = 23
-       byte >00                                                      ; Gun vertex               = 0
-       byte >22                                                      ; Explosion count          = 7, as (4 * n) + 6 = 34
-       byte >96                                                      ; Number of vertices       = 150 / 6 = 25
-       byte >1c                                                      ; Number of edges          = 28
-       data >9600                                                    ; Bounty                   = 150
-       byte >14                                                      ; Number of faces          = 20 / 4 = 5
-       byte >19                                                      ; Visibility distance      = 25
-       byte >5a                                                      ; Max. energy              = 90
-       byte >1e                                                      ; Max. speed               = 30
+       byte >5d                                            ; Max. edge count          = (93 - 1) / 4 = 23
+       byte >00                                            ; Gun vertex               = 0
+       byte >22                                            ; Explosion count          = 7, as (4 * n) + 6 = 34
+       byte >96                                            ; Number of vertices       = 150 / 6 = 25
+       byte >1c                                            ; Number of edges          = 28
+       data >9600                                          ; Bounty                   = 150
+       byte >14                                            ; Number of faces          = 20 / 4 = 5
+       byte >19                                            ; Visibility distance      = 25
+       byte >5a                                            ; Max. energy              = 90
+       byte >1e                                            ; Max. speed               = 30
 
-       byte >00                                                      ; Edges data offset (high)
-       byte >00                                                      ; Faces data offset (high)
+       byte >00                                            ; Edges data offset (high)
+       byte >00                                            ; Faces data offset (high)
 
-       byte >02                                                      ; Normals are scaled by    = 2^2 = 4
-       byte >12                                                      ; Laser power              = 2
-                                                                     ; Missiles                 = 2
+       byte >02                                            ; Normals are scaled by    = 2^2 = 4
+       byte >12                                            ; Laser power              = 2
+                                                           ; Missiles                 = 2
 
 SHIP_MAMBA_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
@@ -35896,29 +35896,29 @@ SHIP_MAMBA_FACES:
 * ******************************************************************************
 
 SHIP_COBRA_MK_3:
-       byte >03                                                      ; Max. canisters on demise = 3
-       data >5f00                                                    ; Targetable area          = 95 * 95
+       byte >03                                            ; Max. canisters on demise = 3
+       data >5f00                                          ; Targetable area          = 95 * 95
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >99                                                      ; Max. edge count          = (153 - 1) / 4 = 38
-       byte >54                                                      ; Gun vertex               = 84 / 4 = 21
-       byte >2a                                                      ; Explosion count          = 9, as (4 * n) + 6 = 42
-       byte >a8                                                      ; Number of vertices       = 168 / 6 = 28
-       byte >26                                                      ; Number of edges          = 38
-       data >0000                                                    ; Bounty                   = 0
-       byte >34                                                      ; Number of faces          = 52 / 4 = 13
-       byte >32                                                      ; Visibility distance      = 50
-       byte >96                                                      ; Max. energy              = 150
-       byte >1c                                                      ; Max. speed               = 28
+       byte >99                                            ; Max. edge count          = (153 - 1) / 4 = 38
+       byte >54                                            ; Gun vertex               = 84 / 4 = 21
+       byte >2a                                            ; Explosion count          = 9, as (4 * n) + 6 = 42
+       byte >a8                                            ; Number of vertices       = 168 / 6 = 28
+       byte >26                                            ; Number of edges          = 38
+       data >0000                                          ; Bounty                   = 0
+       byte >34                                            ; Number of faces          = 52 / 4 = 13
+       byte >32                                            ; Visibility distance      = 50
+       byte >96                                            ; Max. energy              = 150
+       byte >1c                                            ; Max. speed               = 28
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >01                                                      ; Normals are scaled by    = 2^1 = 2
-       byte >13                                                      ; Laser power              = 2
-                                                                     ; Missiles                 = 3
+       byte >01                                            ; Normals are scaled by    = 2^1 = 2
+       byte >13                                            ; Laser power              = 2
+                                                           ; Missiles                 = 3
 
 SHIP_COBRA_MK_3_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
@@ -36019,29 +36019,29 @@ SHIP_COBRA_MK_3_FACES:
 * ******************************************************************************
 
 SHIP_THARGOID:
-       byte >00                                                      ; Max. canisters on demise = 0
-       data >6300                                                    ; Targetable area          = 99 * 99
+       byte >00                                            ; Max. canisters on demise = 0
+       data >6300                                          ; Targetable area          = 99 * 99
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >65                                                      ; Max. edge count          = (101 - 1) / 4 = 25
-       byte >3c                                                      ; Gun vertex               = 60 / 4 = 15
-       byte >26                                                      ; Explosion count          = 8, as (4 * n) + 6 = 38
-       byte >78                                                      ; Number of vertices       = 120 / 6 = 20
-       byte >1a                                                      ; Number of edges          = 26
-       data >f401                                                    ; Bounty                   = 500
-       byte >28                                                      ; Number of faces          = 40 / 4 = 10
-       byte >37                                                      ; Visibility distance      = 55
-       byte >f0                                                      ; Max. energy              = 240
-       byte >27                                                      ; Max. speed               = 39
+       byte >65                                            ; Max. edge count          = (101 - 1) / 4 = 25
+       byte >3c                                            ; Gun vertex               = 60 / 4 = 15
+       byte >26                                            ; Explosion count          = 8, as (4 * n) + 6 = 38
+       byte >78                                            ; Number of vertices       = 120 / 6 = 20
+       byte >1a                                            ; Number of edges          = 26
+       data >f401                                          ; Bounty                   = 500
+       byte >28                                            ; Number of faces          = 40 / 4 = 10
+       byte >37                                            ; Visibility distance      = 55
+       byte >f0                                            ; Max. energy              = 240
+       byte >27                                            ; Max. speed               = 39
 
-       byte >00                                                      ; Edges data offset (high)
-       byte >00                                                      ; Faces data offset (high)
+       byte >00                                            ; Edges data offset (high)
+       byte >00                                            ; Faces data offset (high)
 
-       byte >02                                                      ; Normals are scaled by    = 2^2 = 4
-       byte >16                                                      ; Laser power              = 2
-                                                                     ; Missiles                 = 6
+       byte >02                                            ; Normals are scaled by    = 2^2 = 4
+       byte >16                                            ; Laser power              = 2
+                                                           ; Missiles                 = 6
 
 SHIP_THARGOID_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
@@ -36119,29 +36119,29 @@ SHIP_THARGOID_FACES:
 * ******************************************************************************
 
 SHIP_CORIOLIS:
-       byte >00                                                      ; Max. canisters on demise = 0
-       data >a000                                                    ; Targetable area          = 160 * 160
+       byte >00                                            ; Max. canisters on demise = 0
+       data >a000                                          ; Targetable area          = 160 * 160
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >55                                                      ; Max. edge count          = (85 - 1) / 4 = 21
-       byte >00                                                      ; Gun vertex               = 0
-       byte >36                                                      ; Explosion count          = 12, as (4 * n) + 6 = 54
-       byte >60                                                      ; Number of vertices       = 96 / 6 = 16
-       byte >1c                                                      ; Number of edges          = 28
-       data >0000                                                    ; Bounty                   = 0
-       byte >38                                                      ; Number of faces          = 56 / 4 = 14
-       byte >78                                                      ; Visibility distance      = 120
-       byte >f0                                                      ; Max. energy              = 240
-       byte >00                                                      ; Max. speed               = 0
+       byte >55                                            ; Max. edge count          = (85 - 1) / 4 = 21
+       byte >00                                            ; Gun vertex               = 0
+       byte >36                                            ; Explosion count          = 12, as (4 * n) + 6 = 54
+       byte >60                                            ; Number of vertices       = 96 / 6 = 16
+       byte >1c                                            ; Number of edges          = 28
+       data >0000                                          ; Bounty                   = 0
+       byte >38                                            ; Number of faces          = 56 / 4 = 14
+       byte >78                                            ; Visibility distance      = 120
+       byte >f0                                            ; Max. energy              = 240
+       byte >00                                            ; Max. speed               = 0
 
-       byte >00                                                      ; Edges data offset (high)
-       byte >00                                                      ; Faces data offset (high)
+       byte >00                                            ; Edges data offset (high)
+       byte >00                                            ; Faces data offset (high)
 
-       byte >00                                                      ; Normals are scaled by    = 2^0 = 1
-       byte >06                                                      ; Laser power              = 0
-                                                                     ; Missiles                 = 6
+       byte >00                                            ; Normals are scaled by    = 2^0 = 1
+       byte >06                                            ; Laser power              = 0
+                                                           ; Missiles                 = 6
 
 SHIP_CORIOLIS_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
@@ -36221,29 +36221,29 @@ SHIP_CORIOLIS_FACES:
 * ******************************************************************************
 
 SHIP_MISSILE:
-       byte >00                                                      ; Max. canisters on demise = 0
-       data >2800                                                    ; Targetable area          = 40 * 40
+       byte >00                                            ; Max. canisters on demise = 0
+       data >2800                                          ; Targetable area          = 40 * 40
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >51                                                      ; Max. edge count          = (81 - 1) / 4 = 20
-       byte >00                                                      ; Gun vertex               = 0
-       byte >0a                                                      ; Explosion count          = 1, as (4 * n) + 6 = 10
-       byte >66                                                      ; Number of vertices       = 102 / 6 = 17
-       byte >18                                                      ; Number of edges          = 24
-       data >0000                                                    ; Bounty                   = 0
-       byte >24                                                      ; Number of faces          = 36 / 4 = 9
-       byte >0e                                                      ; Visibility distance      = 14
-       byte >02                                                      ; Max. energy              = 2
-       byte >2c                                                      ; Max. speed               = 44
+       byte >51                                            ; Max. edge count          = (81 - 1) / 4 = 20
+       byte >00                                            ; Gun vertex               = 0
+       byte >0a                                            ; Explosion count          = 1, as (4 * n) + 6 = 10
+       byte >66                                            ; Number of vertices       = 102 / 6 = 17
+       byte >18                                            ; Number of edges          = 24
+       data >0000                                          ; Bounty                   = 0
+       byte >24                                            ; Number of faces          = 36 / 4 = 9
+       byte >0e                                            ; Visibility distance      = 14
+       byte >02                                            ; Max. energy              = 2
+       byte >2c                                            ; Max. speed               = 44
 
-       byte >00                                                      ; Edges data offset (high)
-       byte >00                                                      ; Faces data offset (high)
+       byte >00                                            ; Edges data offset (high)
+       byte >00                                            ; Faces data offset (high)
 
-       byte >02                                                      ; Normals are scaled by    = 2^2 = 4
-       byte >00                                                      ; Laser power              = 0
-                                                                     ; Missiles                 = 0
+       byte >02                                            ; Normals are scaled by    = 2^2 = 4
+       byte >00                                            ; Laser power              = 0
+                                                           ; Missiles                 = 0
 
 SHIP_MISSILE_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
@@ -36315,29 +36315,29 @@ SHIP_MISSILE_FACES:
 * ******************************************************************************
 
 SHIP_ASTEROID:
-       byte >00                                                      ; Max. canisters on demise = 0
-       data >5000                                                    ; Targetable area          = 80 * 80
+       byte >00                                            ; Max. canisters on demise = 0
+       data >5000                                          ; Targetable area          = 80 * 80
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >41                                                      ; Max. edge count          = (65 - 1) / 4 = 16
-       byte >00                                                      ; Gun vertex               = 0
-       byte >22                                                      ; Explosion count          = 7, as (4 * n) + 6 = 34
-       byte >36                                                      ; Number of vertices       = 54 / 6 = 9
-       byte >15                                                      ; Number of edges          = 21
-       data >0500                                                    ; Bounty                   = 5
-       byte >38                                                      ; Number of faces          = 56 / 4 = 14
-       byte >32                                                      ; Visibility distance      = 50
-       byte >3c                                                      ; Max. energy              = 60
-       byte >1e                                                      ; Max. speed               = 30
+       byte >41                                            ; Max. edge count          = (65 - 1) / 4 = 16
+       byte >00                                            ; Gun vertex               = 0
+       byte >22                                            ; Explosion count          = 7, as (4 * n) + 6 = 34
+       byte >36                                            ; Number of vertices       = 54 / 6 = 9
+       byte >15                                            ; Number of edges          = 21
+       data >0500                                          ; Bounty                   = 5
+       byte >38                                            ; Number of faces          = 56 / 4 = 14
+       byte >32                                            ; Visibility distance      = 50
+       byte >3c                                            ; Max. energy              = 60
+       byte >1e                                            ; Max. speed               = 30
 
-       byte >00                                                      ; Edges data offset (high)
-       byte >00                                                      ; Faces data offset (high)
+       byte >00                                            ; Edges data offset (high)
+       byte >00                                            ; Faces data offset (high)
 
-       byte >01                                                      ; Normals are scaled by    = 2^1 = 2
-       byte >00                                                      ; Laser power              = 0
-                                                                     ; Missiles                 = 0
+       byte >01                                            ; Normals are scaled by    = 2^1 = 2
+       byte >00                                            ; Laser power              = 0
+                                                           ; Missiles                 = 0
 
 SHIP_ASTEROID_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
@@ -36403,29 +36403,29 @@ SHIP_ASTEROID_FACES:
 * ******************************************************************************
 
 SHIP_CANISTER:
-       byte >00                                                      ; Max. canisters on demise = 0
-       data >1400                                                    ; Targetable area          = 20 * 20
+       byte >00                                            ; Max. canisters on demise = 0
+       data >1400                                          ; Targetable area          = 20 * 20
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >31                                                      ; Max. edge count          = (49 - 1) / 4 = 12
-       byte >00                                                      ; Gun vertex               = 0
-       byte >12                                                      ; Explosion count          = 3, as (4 * n) + 6 = 18
-       byte >3c                                                      ; Number of vertices       = 60 / 6 = 10
-       byte >0f                                                      ; Number of edges          = 15
-       data >0000                                                    ; Bounty                   = 0
-       byte >1c                                                      ; Number of faces          = 28 / 4 = 7
-       byte >0c                                                      ; Visibility distance      = 12
-       byte >11                                                      ; Max. energy              = 17
-       byte >0f                                                      ; Max. speed               = 15
+       byte >31                                            ; Max. edge count          = (49 - 1) / 4 = 12
+       byte >00                                            ; Gun vertex               = 0
+       byte >12                                            ; Explosion count          = 3, as (4 * n) + 6 = 18
+       byte >3c                                            ; Number of vertices       = 60 / 6 = 10
+       byte >0f                                            ; Number of edges          = 15
+       data >0000                                          ; Bounty                   = 0
+       byte >1c                                            ; Number of faces          = 28 / 4 = 7
+       byte >0c                                            ; Visibility distance      = 12
+       byte >11                                            ; Max. energy              = 17
+       byte >0f                                            ; Max. speed               = 15
 
-       byte >00                                                      ; Edges data offset (high)
-       byte >00                                                      ; Faces data offset (high)
+       byte >00                                            ; Edges data offset (high)
+       byte >00                                            ; Faces data offset (high)
 
-       byte >02                                                      ; Normals are scaled by    = 2^2 = 4
-       byte >00                                                      ; Laser power              = 0
-                                                                     ; Missiles                 = 0
+       byte >02                                            ; Normals are scaled by    = 2^2 = 4
+       byte >00                                            ; Laser power              = 0
+                                                           ; Missiles                 = 0
 
 SHIP_CANISTER_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
@@ -36484,29 +36484,29 @@ SHIP_CANISTER_FACES:
 * ******************************************************************************
 
 SHIP_THARGON:
-       byte >00                                                      ; Max. canisters on demise = 0
-       data >2800                                                    ; Targetable area          = 40 * 40
+       byte >00                                            ; Max. canisters on demise = 0
+       data >2800                                          ; Targetable area          = 40 * 40
 
-       byte >00                                                      ; Edges from canister
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges from canister
+       byte >00                                            ; Faces data offset (low)
 
-       byte >41                                                      ; Max. edge count          = (65 - 1) / 4 = 16
-       byte >00                                                      ; Gun vertex               = 0
-       byte >12                                                      ; Explosion count          = 3, as (4 * n) + 6 = 18
-       byte >3c                                                      ; Number of vertices       = 60 / 6 = 10
-       byte >0f                                                      ; Number of edges          = 15
-       data >3200                                                    ; Bounty                   = 50
-       byte >1c                                                      ; Number of faces          = 28 / 4 = 7
-       byte >14                                                      ; Visibility distance      = 20
-       byte >14                                                      ; Max. energy              = 20
-       byte >1e                                                      ; Max. speed               = 30
+       byte >41                                            ; Max. edge count          = (65 - 1) / 4 = 16
+       byte >00                                            ; Gun vertex               = 0
+       byte >12                                            ; Explosion count          = 3, as (4 * n) + 6 = 18
+       byte >3c                                            ; Number of vertices       = 60 / 6 = 10
+       byte >0f                                            ; Number of edges          = 15
+       data >3200                                          ; Bounty                   = 50
+       byte >1c                                            ; Number of faces          = 28 / 4 = 7
+       byte >14                                            ; Visibility distance      = 20
+       byte >14                                            ; Max. energy              = 20
+       byte >1e                                            ; Max. speed               = 30
 
-       byte >00                                                      ; Edges from canister
-       byte >00                                                      ; Faces data offset (high)
+       byte >00                                            ; Edges from canister
+       byte >00                                            ; Faces data offset (high)
 
-       byte >02                                                      ; Normals are scaled by    = 2^2 = 4
-       byte >10                                                      ; Laser power              = 2
-                                                                     ; Missiles                 = 0
+       byte >02                                            ; Normals are scaled by    = 2^2 = 4
+       byte >10                                            ; Laser power              = 2
+                                                           ; Missiles                 = 0
 
 SHIP_THARGON_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
@@ -36542,29 +36542,29 @@ SHIP_THARGON_FACES:
 * ******************************************************************************
 
 SHIP_ESCAPE_POD:
-       byte >00                                                      ; Max. canisters on demise = 0
-       data >1000                                                    ; Targetable area          = 16 * 16
+       byte >00                                            ; Max. canisters on demise = 0
+       data >1000                                          ; Targetable area          = 16 * 16
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >19                                                      ; Max. edge count          = (25 - 1) / 4 = 6
-       byte >00                                                      ; Gun vertex               = 0
-       byte >16                                                      ; Explosion count          = 4, as (4 * n) + 6 = 22
-       byte >18                                                      ; Number of vertices       = 24 / 6 = 4
-       byte >06                                                      ; Number of edges          = 6
-       data >0000                                                    ; Bounty                   = 0
-       byte >10                                                      ; Number of faces          = 16 / 4 = 4
-       byte >08                                                      ; Visibility distance      = 8
-       byte >11                                                      ; Max. energy              = 17
-       byte >08                                                      ; Max. speed               = 8
+       byte >19                                            ; Max. edge count          = (25 - 1) / 4 = 6
+       byte >00                                            ; Gun vertex               = 0
+       byte >16                                            ; Explosion count          = 4, as (4 * n) + 6 = 22
+       byte >18                                            ; Number of vertices       = 24 / 6 = 4
+       byte >06                                            ; Number of edges          = 6
+       data >0000                                          ; Bounty                   = 0
+       byte >10                                            ; Number of faces          = 16 / 4 = 4
+       byte >08                                            ; Visibility distance      = 8
+       byte >11                                            ; Max. energy              = 17
+       byte >08                                            ; Max. speed               = 8
 
-       byte >00                                                      ; Edges data offset (high)
-       byte >00                                                      ; Faces data offset (high)
+       byte >00                                            ; Edges data offset (high)
+       byte >00                                            ; Faces data offset (high)
 
-       byte >03                                                      ; Normals are scaled by    =  2^3 = 8
-       byte >00                                                      ; Laser power              = 0
-                                                                     ; Missiles                 = 0
+       byte >03                                            ; Normals are scaled by    =  2^3 = 8
+       byte >00                                            ; Laser power              = 0
+                                                           ; Missiles                 = 0
 
 SHIP_ESCAPE_POD_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
@@ -36625,29 +36625,29 @@ LOAD_PYTHON.:
 * ******************************************************************************
 
 SHIP_PYTHON:
-       byte >03                                                      ; Max. canisters on demise = 3
-       data >7800                                                    ; Targetable area          = 120 * 120
+       byte >03                                            ; Max. canisters on demise = 3
+       data >7800                                          ; Targetable area          = 120 * 120
 
-       byte >00                                                      ; Edges data offset (low)
-       byte >00                                                      ; Faces data offset (low)
+       byte >00                                            ; Edges data offset (low)
+       byte >00                                            ; Faces data offset (low)
 
-       byte >55                                                      ; Max. edge count          = (85 - 1) / 4 = 21
-       byte >00                                                      ; Gun vertex               = 0
-       byte >2e                                                      ; Explosion count          = 10, as (4 * n) + 6 = 46
-       byte >42                                                      ; Number of vertices       = 66 / 6 = 11
-       byte >1a                                                      ; Number of edges          = 26
-       data >c800                                                    ; Bounty                   = 200
-       byte >34                                                      ; Number of faces          = 52 / 4 = 13
-       byte >28                                                      ; Visibility distance      = 40
-       byte >fa                                                      ; Max. energy              = 250
-       byte >14                                                      ; Max. speed               = 20
+       byte >55                                            ; Max. edge count          = (85 - 1) / 4 = 21
+       byte >00                                            ; Gun vertex               = 0
+       byte >2e                                            ; Explosion count          = 10, as (4 * n) + 6 = 46
+       byte >42                                            ; Number of vertices       = 66 / 6 = 11
+       byte >1a                                            ; Number of edges          = 26
+       data >c800                                          ; Bounty                   = 200
+       byte >34                                            ; Number of faces          = 52 / 4 = 13
+       byte >28                                            ; Visibility distance      = 40
+       byte >fa                                            ; Max. energy              = 250
+       byte >14                                            ; Max. speed               = 20
 
-       byte >00                                                      ; Edges data offset (high)
-       byte >00                                                      ; Faces data offset (high)
+       byte >00                                            ; Edges data offset (high)
+       byte >00                                            ; Faces data offset (high)
 
-       byte >00                                                      ; Normals are scaled by    = 2^0 = 1
-       byte >1b                                                      ; Laser power              = 3
-                                                                     ; Missiles                 = 3
+       byte >00                                            ; Normals are scaled by    = 2^0 = 1
+       byte >1b                                            ; Laser power              = 3
+                                                           ; Missiles                 = 3
 
 SHIP_PYTHON_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility

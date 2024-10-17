@@ -6,7 +6,7 @@ public class Operand {
     public static final String numberRegEx = "^[&$%]?[0-9A-F]+$";
     public static final String symbolRegEx = "^[0-9A-Za-z_%]+$";
     public static final String lowerCaseSymbolRegEx = "^[0-9a-z_]+$";
-    public static final String expressionRegEx = "[&$%0-9A-Za-z+\\-*/_]+|'.'|'.'\\+1|LO\\(.+?\\)|HI\\(.+?\\)";
+    public static final String expressionRegEx = "[&$%0-9A-Za-z+\\-*/_]+|'.'([+-][0-9]{1,2})?|LO\\(.+?\\)|HI\\(.+?\\)";
     private static final Pattern numberPattern = Pattern.compile(numberRegEx);
     private static final Pattern accumulatorPattern = Pattern.compile("^A$");
     private static final Pattern absolutePattern = Pattern.compile("^(" + expressionRegEx + ")$");

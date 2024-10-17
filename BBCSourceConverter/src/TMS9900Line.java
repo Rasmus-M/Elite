@@ -11,6 +11,9 @@ public class TMS9900Line {
         Instruction
     }
 
+    private final static int instructionIndent = 7;
+    private final static int commentIndent = 60;
+
     private final Type type;
     private String label;
     private String directive;
@@ -89,23 +92,23 @@ public class TMS9900Line {
                 return "";
             case Label:
                 String labelWithColon = label + (label.equals("!") ? "" : ":");
-                return labelWithColon + (comment != null ? Util.space(59 - labelWithColon.length()) + "; " + comment : "");
+                return labelWithColon + (comment != null ? Util.space(commentIndent - 1 - labelWithColon.length()) + "; " + comment : "");
             case Directive:
-                String directiveCommentIndent = Util.space(Math.max(69 - 17 - directive.length(), 1));
-                return Util.space(7) + directive + (comment != null ? directiveCommentIndent + "; " + comment : "");
+                String directiveCommentIndent = Util.space(Math.max(commentIndent - instructionIndent - 1 - directive.length(), 1));
+                return Util.space(instructionIndent) + directive + (comment != null ? directiveCommentIndent + "; " + comment : "");
             case Comment:
                 return "* " + comment;
             case ContinuationCommentData:
-                return Util.space(69) + "; " + comment;
+                return Util.space(commentIndent - 1) + "; " + comment;
             case ContinuationCommentInstruction:
-                return Util.space(59) + "; " + comment;
+                return Util.space(commentIndent - 1) + "; " + comment;
             case Data:
-                String dataCommentIndent = Util.space(Math.max(69 - 7 - instruction.length(), 1));
-                return Util.space(7) + instruction + (comment != null ? dataCommentIndent + "; " + comment : "");
+                String dataCommentIndent = Util.space(Math.max(commentIndent - instructionIndent - 1 - instruction.length(), 1));
+                return Util.space(instructionIndent) + instruction + (comment != null ? dataCommentIndent + "; " + comment : "");
             case Instruction:
                 String commentIndent = Util.space(Math.max(39 - 7 - instruction.length(), 1));
                 String combinedComment = Util.fit(bbcInstruction != null ? bbcInstruction : "", 17) + " " + (comment != null ? "; " + comment : "");
-                return Util.space(7) + instruction + commentIndent + "; " + combinedComment;
+                return Util.space(instructionIndent) + instruction + commentIndent + "; " + combinedComment;
         }
         return "";
     }

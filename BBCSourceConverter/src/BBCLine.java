@@ -40,18 +40,6 @@ public class BBCLine {
             } else if (typeChar == '.') {
                 label = line.length() > 1 ? line.substring( 1).trim() : "";
                 type = Type.Label;
-            } else if (line.startsWith("MACRO")) {
-                directive = line.substring(6);
-                type = Type.MacroStart;
-            } else if (line.startsWith("ENDMACRO")) {
-                directive = line;
-                type = Type.MacroEnd;
-            } else if (line.trim().startsWith("FOR")) {
-                directive = line;
-                type = Type.ForStart;
-            } else if (line.trim().startsWith("NEXT")) {
-                directive = line;
-                type = Type.ForEnd;
             } else {
                 int commentPos = line.indexOf(" \\");
                 if (commentPos != -1) {
@@ -67,14 +55,26 @@ public class BBCLine {
                 }
                 if (type == null) {
                     instruction = line.trim();
-                    if (instruction.startsWith("EQUB") || instruction.startsWith("EQUW") || instruction.startsWith("EQUD") || instruction.startsWith("EQUS")) {
-                        type = Type.Data;
-                    } else if (instruction.startsWith("ORG") || instruction.startsWith("SKIP") || instruction.startsWith("PRINT") || instruction.startsWith("INCLUDE") || instruction.startsWith("SAVE") || instruction.startsWith("GUARD") || instruction.startsWith("IF") || instruction.startsWith("ELIF") || instruction.startsWith("ELSE") || instruction.startsWith("ENDIF")) {
+                    if (instruction.startsWith("MACRO")) {
                         directive = instruction;
-                        type = Type.Directive;
+                        type = Type.MacroStart;
+                    } else if (instruction.startsWith("ENDMACRO")) {
+                        directive = instruction;
+                        type = Type.MacroEnd;
                     } else if (instruction.startsWith("CHAR") || instruction.startsWith("TWOK") || instruction.startsWith("RTOK") || instruction.startsWith("CONT")) {
                         directive = instruction;
                         type = Type.MacroCall;
+                    } else if (instruction.trim().startsWith("FOR")) {
+                        directive = instruction;
+                        type = Type.ForStart;
+                    } else if (instruction.trim().startsWith("NEXT")) {
+                        directive = instruction;
+                        type = Type.ForEnd;
+                    } else if (instruction.startsWith("ORG") || instruction.startsWith("SKIP") || instruction.startsWith("PRINT") || instruction.startsWith("INCLUDE") || instruction.startsWith("SAVE") || instruction.startsWith("GUARD") || instruction.startsWith("IF") || instruction.startsWith("ELIF") || instruction.startsWith("ELSE") || instruction.startsWith("ENDIF")) {
+                        directive = instruction;
+                        type = Type.Directive;
+                    } else if (instruction.startsWith("EQUB") || instruction.startsWith("EQUW") || instruction.startsWith("EQUD") || instruction.startsWith("EQUS")) {
+                        type = Type.Data;
                     } else if (instruction.contains("=")) {
                         type = Type.Variable;
                     } else {

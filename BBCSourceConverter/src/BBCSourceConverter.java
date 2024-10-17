@@ -56,8 +56,15 @@ public class BBCSourceConverter {
                     insideMacro = false;
                     break;
                 case MacroCall:
-                    String[] parts = bbcLine.getDirective().split(" ", 1);
-                    tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "." + parts[0].toLowerCase() + (parts.length > 1 ? " " + parts[1] : "")));
+                    String[] parts = bbcLine.getDirective().split(" ", 2);
+                    if (parts[0].equals("TWOK") && parts.length > 1) {
+                        String[] args = parts[1].split(",");
+                        char t = args[0].replace("'", "").trim().charAt(0);
+                        char k = args[1].replace("'", "").trim().charAt(0);
+                        tms9900Lines.add(convertMacroTWOK(t, k, bbcLine.getDirective() + " " + bbcLine.getComment()));
+                    } else {
+                        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "." + parts[0].toLowerCase() + (parts.length > 1 ? " " + parts[1] : "")));
+                    }
                     break;
                 case ForStart:
                     tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "; " + bbcLine.getDirective()));
@@ -569,15 +576,43 @@ public class BBCSourceConverter {
         return symbol.replace("%", ".");
     }
 
-    private String getLastInstruction(List<TMS9900Line> tms9900Lines) {
-        for (int i = tms9900Lines.size() - 1; i >= 0; i--) {
-            TMS9900Line tms9900Line = tms9900Lines.get(i);
-            if (tms9900Line.getType() == TMS9900Line.Type.Instruction) {
-                return tms9900Line.getInstruction();
-            }
-        }
-        return "";
+    private TMS9900Line convertMacroTWOK(char t, char k, String comment) {
+        int ch = 0;
+        if ( t == 'A' && k == 'L') { ch = 128; }
+        if ( t == 'L' && k == 'E') { ch = 129; }
+        if ( t == 'X' && k == 'E') { ch = 130; }
+        if ( t == 'G' && k == 'E') { ch = 131; }
+        if ( t == 'Z' && k == 'A') { ch = 132; }
+        if ( t == 'C' && k == 'E') { ch = 133; }
+        if ( t == 'B' && k == 'I') { ch = 134; }
+        if ( t == 'S' && k == 'O') { ch = 135; }
+        if ( t == 'U' && k == 'S') { ch = 136; }
+        if ( t == 'E' && k == 'S') { ch = 137; }
+        if ( t == 'A' && k == 'R') { ch = 138; }
+        if ( t == 'M' && k == 'A') { ch = 139; }
+        if ( t == 'I' && k == 'N') { ch = 140; }
+        if ( t == 'D' && k == 'I') { ch = 141; }
+        if ( t == 'R' && k == 'E') { ch = 142; }
+        if ( t == 'A' && k == '?') { ch = 143; }
+        if ( t == 'E' && k == 'R') { ch = 144; }
+        if ( t == 'A' && k == 'T') { ch = 145; }
+        if ( t == 'E' && k == 'N') { ch = 146; }
+        if ( t == 'B' && k == 'E') { ch = 147; }
+        if ( t == 'R' && k == 'A') { ch = 148; }
+        if ( t == 'L' && k == 'A') { ch = 149; }
+        if ( t == 'V' && k == 'E') { ch = 150; }
+        if ( t == 'T' && k == 'I') { ch = 151; }
+        if ( t == 'E' && k == 'D') { ch = 152; }
+        if ( t == 'O' && k == 'R') { ch = 153; }
+        if ( t == 'Q' && k == 'U') { ch = 154; }
+        if ( t == 'A' && k == 'N') { ch = 155; }
+        if ( t == 'T' && k == 'E') { ch = 156; }
+        if ( t == 'I' && k == 'S') { ch = 157; }
+        if ( t == 'R' && k == 'I') { ch = 158; }
+        if ( t == 'O' && k == 'N') { ch = 159; }
+        return new TMS9900Line(TMS9900Line.Type.Data, comment, "byte " + ch + " ^ RE");
     }
+
 
     private boolean lastLineWasALabel(List<TMS9900Line> tms9900Lines) {
         for (int i = tms9900Lines.size() - 1; i >= 0; i--) {

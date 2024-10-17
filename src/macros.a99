@@ -2,15 +2,13 @@
 * Macros
 *
        .defm jsr
-       li   r11,!
+       li   r11,$+18
        movb r11,*rsp
        dec  rsp
        swpb r11
        movb r11,*rsp
        dec  rsp
        b    #1
-!:
-       nop
        .endm
 
        .defm rts
@@ -223,10 +221,8 @@
        .endm
 
        .defm bvs
-       joc  !
+       joc  4
        jmp  #1
-!:
-       nop
        .endm
 
        .defm sec
@@ -245,13 +241,28 @@
        .endif
        .endm
 
-       .defm twok
-       .endm
-
        .defm rtok
+       .ifge #1,0
+         .ifle #1,95
+       byte (#1 + 160) ^ RE
+          .else
+            .ifge #1,128
+       byte (#1 - 114) ^ RE
+            .else
+       byte #1 ^ RE
+            .endif
+          .endif
+        .else
+          .ifge #1,128
+       byte (#1 - 114) ^ RE
+          .else
+       byte #1 ^ RE
+          .endif
+        .endif
        .endm
 
        .defm cont
+       byte #1 ^ RE
        .endm
 
        .defm proc
