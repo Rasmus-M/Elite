@@ -20,6 +20,10 @@ rtmp2:
        requ 7
 tmp2lb:
        equ >830f
+rarg1:
+       requ 8
+rarg2:
+       requ 9
 rsp:
        requ 10
 rsplb:

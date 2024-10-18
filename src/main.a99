@@ -1,0 +1,4 @@
+       copy "equates.a99"
+       copy "macros.a99"
+       copy "elite.a99"
+       copy "subroutines.a99"

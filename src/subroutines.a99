@@ -1,0 +1,13 @@
+ror:
+       movb *rarg1,rtmp
+       jnc  !
+       ori  rtmp,>0001
+!:
+       jmp  !
+       andi rtmp,>fffe
+!:
+       src  rtmp,1
+       movb rtmp,*rarg1
+       andi rtmp,>0080
+       sla  rtmp,9
+       rt

@@ -1,5 +1,3 @@
-       copy "equates.a99"                                  ; 
-       copy "macros.a99"                                   ; 
 * ******************************************************************************
 * 
 * ELITE GAME SOURCE
@@ -36,6 +34,7 @@
 * 
 * ******************************************************************************
 
+       ; INCLUDE "1-source-files/main-sources/elite-build-options.asm"
 
 _SOURCE_DISC:                                              ; (_VARIANT = 1)
        equ 0
@@ -44,6 +43,7 @@ _TEXT_SOURCES:                                             ; (_VARIANT = 2)
 _STH_CASSETTE:                                             ; (_VARIANT = 3)
        equ 1
 
+       ; GUARD &6000                                       ; Guard against assembling over screen memory
 
 * ******************************************************************************
 * 
@@ -829,6 +829,7 @@ XX2:
 K4:
        bss 2                                               ; Temporary storage, used in a number of places
 
+       ; PRINT "Zero page variables from ", ~ZP, " to ", ~P%
 
 * ******************************************************************************
 * 
@@ -1134,6 +1135,7 @@ SXL:
        bss NOST + 1                                        ; This is where we store the x_lo coordinates for all
                                                            ; the stardust particles
 
+       ; PRINT "T% workspace from  ", ~T%, " to ", ~P%
 
 * ******************************************************************************
 * 
@@ -2520,7 +2522,15 @@ QQ18:
 * 
 * ******************************************************************************
 
+       ; PRINT "WORDS9"
+       ; PRINT "Assembled at ", ~CODE_WORDS%
+       ; PRINT "Ends at ", ~P%
+       ; PRINT "Code size is ", ~(P% - CODE_WORDS%)
+       ; PRINT "Execute at ", ~LOAD_WORDS%
+       ; PRINT "Reload at ", ~LOAD_WORDS%
 
+       ; PRINT "S.WORDS9 ",~CODE_WORDS%," ",~P%," ",~LOAD_WORDS%," ",~LOAD_WORDS%
+       ; SAVE "3-assembled-output/WORDS9.bin", CODE_WORDS%, P%, LOAD_WORDS%
 
 * ******************************************************************************
 * 
@@ -2974,6 +2984,7 @@ NOSTM:
                                                            ; which is 18 (#NOST) for normal space, and 3 for
                                                            ; witchspace
 
+       ; PRINT "WP workspace from  ", ~WP," to ", ~P%
 
 * ******************************************************************************
 * 
@@ -3488,9 +3499,11 @@ MA68:
        movb ra,@DELT4                  ; STA DELT4         ; Take the 16-bit value (DELTA 0) - i.e. a two-byte
        movb @DELTA,ra                  ; LDA DELTA         ; number with DELTA as the high byte and 0 as the low
        srl  ra,1                       ; LSR A             ; byte - and divide it by 4, storing the 16-bit result
-       .ror @DELT4                     ; ROR DELT4         ; in DELT4(1 0). This has the effect of storing the
+       li   rarg1,DELT4                ; ROR DELT4         ; in DELT4(1 0). This has the effect of storing the
+       bl   @ror                       ;                   
        srl  ra,1                       ; LSR A             ; current speed * 64 in the 16-bit location DELT4(1 0)
-       .ror @DELT4                     ; ROR DELT4         
+       li   rarg1,DELT4                ; ROR DELT4         
+       bl   @ror                       ;                   
        movb ra,@DELT4+1                ; STA DELT4+1       
 
        movb @LASCT,ra                  ; LDA LASCT         ; If LASCT is zero, keep going, otherwise the laser is
@@ -3998,7 +4011,8 @@ MA60:
                                                            ; If we get here then scooping was successful
        .asl @INWK+31                   ; ASL INWK+31       ; Set bit 7 of the scooped or destroyed item, to denote
        .sec                            ; SEC               ; that it has been killed and should be removed from
-       .ror @INWK+31                   ; ROR INWK+31       ; the local bubble
+       li   rarg1,INWK+31              ; ROR INWK+31       ; the local bubble
+       bl   @ror                       ;                   
 
 MA61:
        jne  MA26                       ; BNE MA26          ; Jump to MA26 to skip over the collision routines and
@@ -4020,7 +4034,8 @@ MA58:
                                                            ; potentially fatal way
        .asl @INWK+31                   ; ASL INWK+31       ; Set bit 7 of the ship we just collided with, to
        .sec                            ; SEC               ; denote that it has been killed and should be removed
-       .ror @INWK+31                   ; ROR INWK+31       ; from the local bubble
+       li   rarg1,INWK+31              ; ROR INWK+31       ; from the local bubble
+       bl   @ror                       ;                   
 
        movb @INWK+35,ra                ; LDA INWK+35       ; Load A with the energy level of the ship we just hit
 
@@ -6111,13 +6126,17 @@ MVS5:
        andi ra,>7f*256                 ; AND #%01111111    ; A = |nosev_x_hi|
 
        srl  ra,1                       ; LSR A             ; Set (A P) = (A P) / 16
-       .ror @P                         ; ROR P             ; = |nosev_x_hi nosev_x_lo| / 16
+       li   rarg1,P                    ; ROR P             ; = |nosev_x_hi nosev_x_lo| / 16
+       bl   @ror                       ;                   
        srl  ra,1                       ; LSR A             ; = |nosev_x| / 16
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
        srl  ra,1                       ; LSR A             
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
        srl  ra,1                       ; LSR A             
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
 
        socb @T,ra                      ; ORA T             ; Set the sign of A to the sign in T (i.e. the sign of
                                                            ; the original nosev_x), so now:
@@ -6166,13 +6185,17 @@ MVS5:
        andi ra,>7f*256                 ; AND #%01111111    ; A = |roofv_x_hi|
 
        srl  ra,1                       ; LSR A             ; Set (A P) = (A P) / 16
-       .ror @P                         ; ROR P             ; = |roofv_x_hi roofv_x_lo| / 16
+       li   rarg1,P                    ; ROR P             ; = |roofv_x_hi roofv_x_lo| / 16
+       bl   @ror                       ;                   
        srl  ra,1                       ; LSR A             ; = |roofv_x| / 16
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
        srl  ra,1                       ; LSR A             
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
        srl  ra,1                       ; LSR A             
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
 
        socb @T,ra                      ; ORA T             ; Set the sign of A to the opposite sign to T (i.e. the
        .eoi (>80*256)                  ; EOR #%10000000    ; sign of the original -roofv_x), so now:
@@ -6564,7 +6587,15 @@ MV2:
 * 
 * ******************************************************************************
 
+       ; PRINT "ELITE A"
+       ; PRINT "Assembled at ", ~CODE%
+       ; PRINT "Ends at ", ~P%
+       ; PRINT "Code size is ", ~(P% - CODE%)
+       ; PRINT "Execute at ", ~LOAD%
+       ; PRINT "Reload at ", ~LOAD_A%
 
+       ; PRINT "S.ELTA ", ~CODE%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_A%
+       ; SAVE "3-assembled-output/ELTA.bin", CODE%, P%, LOAD%
 
 * ******************************************************************************
 * 
@@ -7184,7 +7215,8 @@ LI6:
        jnc  LI7                        ; BCC LI7           ; If the pixel didn't fall out of the right end of R
                                                            ; into the C flag, then jump to LI7
 
-       .ror @R                         ; ROR R             ; Otherwise we need to move over to the next character
+       li   rarg1,R                    ; ROR R             ; Otherwise we need to move over to the next character
+       bl   @ror                       ;                   
                                                            ; block, so first rotate R right so the set C flag goes
                                                            ; back into the left end, giving %10000000
 
@@ -7266,7 +7298,8 @@ LI9:
        jnc  LI10                       ; BCC LI10          ; If the pixel didn't fall out of the right end of R
                                                            ; into the C flag, then jump to LI10
 
-       .ror @R                         ; ROR R             ; Otherwise we need to move over to the next character
+       li   rarg1,R                    ; ROR R             ; Otherwise we need to move over to the next character
+       bl   @ror                       ;                   
                                                            ; block, so first rotate R right so the set C flag goes
                                                            ; back into the left end, giving %10000000
 
@@ -7506,7 +7539,8 @@ LI16:
        jnc  LIC5                       ; BCC LIC5          ; If the pixel didn't fall out of the right end of R
                                                            ; into the C flag, then jump to LIC5
 
-       .ror @R                         ; ROR R             ; Otherwise we need to move over to the next character
+       li   rarg1,R                    ; ROR R             ; Otherwise we need to move over to the next character
+       bl   @ror                       ;                   
                                                            ; block, so first rotate R right so the set C flag goes
                                                            ; back into the left end, giving %10000000
 
@@ -11419,7 +11453,15 @@ ESL2:
 * 
 * ******************************************************************************
 
+       ; PRINT "ELITE B"
+       ; PRINT "Assembled at ", ~CODE_B%
+       ; PRINT "Ends at ", ~P%
+       ; PRINT "Code size is ", ~(P% - CODE_B%)
+       ; PRINT "Execute at ", ~LOAD%
+       ; PRINT "Reload at ", ~LOAD_B%
 
+       ; PRINT "S.ELTB ", ~CODE_B%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_B%
+       ; SAVE "3-assembled-output/ELTB.bin", CODE_B%, P%, LOAD%
 
 * ******************************************************************************
 * 
@@ -11575,7 +11617,8 @@ TA87:
 
        .asl @INWK+31                   ; ASL INWK+31       ; Set bit 7 of the missile's byte #31 flag to mark it as
        .sec                            ; SEC               ; having been killed, so it explodes
-       .ror @INWK+31                   ; ROR INWK+31       
+       li   rarg1,INWK+31              ; ROR INWK+31       
+       bl   @ror                       ;                   
 
 TA1:
        .rts                            ; RTS               ; Return from the subroutine
@@ -12540,7 +12583,8 @@ B37:
 AN2:
        .asl @K.+NI.+32                 ; ASL K%+NI%+32     ; Fetch the AI counter (byte #32) of the second ship
        .sec                            ; SEC               ; in the ship data workspace at K%, which is reserved
-       .ror @K.+NI.+32                 ; ROR K%+NI%+32     ; for the sun or the space station (in this case it's
+       li   rarg1,K.+NI.+32            ; ROR K%+NI%+32     ; for the sun or the space station (in this case it's
+       bl   @ror                       ;                   
                                                            ; the latter), and set bit 7 to make it hostile
 
        .clc                            ; CLC               ; Clear the C flag, which isn't used by calls to this
@@ -13477,9 +13521,12 @@ MUL2:
 
 B38:
        .rora                           ; ROR A             ; Shift A right by one place to catch the next digit
-       .ror @K+2                       ; ROR K+2           ; next digit of our result in the left end of K(2 1 0),
-       .ror @K+1                       ; ROR K+1           ; while also shifting K(2 1 0) right to fetch the next
-       .ror @K                         ; ROR K             ; bit for the calculation into the C flag
+       li   rarg1,K+2                  ; ROR K+2           ; next digit of our result in the left end of K(2 1 0),
+       bl   @ror                       ;                   
+       li   rarg1,K+1                  ; ROR K+1           ; while also shifting K(2 1 0) right to fetch the next
+       bl   @ror                       ;                   
+       li   rarg1,K                    ; ROR K             ; bit for the calculation into the C flag
+       bl   @ror                       ;                   
                                                            ; 
                                                            ; On the last iteration of this loop, the bit falling
                                                            ; off the end of K will be bit 0 of the original A, as
@@ -13620,7 +13667,8 @@ B39:
                                                            ; which the next ROR sticks into the left end of P while
                                                            ; also extracting the next bit of P
 
-       .ror @P                         ; ROR P             ; Add the overspill from shifting A to the right onto
+       li   rarg1,P                    ; ROR P             ; Add the overspill from shifting A to the right onto
+       bl   @ror                       ;                   
                                                            ; the start of P, and shift P right to fetch the next
                                                            ; bit for the calculation into the C flag
 
@@ -13628,34 +13676,41 @@ B39:
        .adc @T1,ra                     ; ADC T1            
 B40:
        .rora                           ; ROR A             
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
 
        jnc  B41                        ; BCC B41           ; Repeat the shift-and-add loop for bit 2
        .adc @T1,ra                     ; ADC T1            
 B41:
        .rora                           ; ROR A             
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
 
        jnc  B42                        ; BCC B42           ; Repeat the shift-and-add loop for bit 3
        .adc @T1,ra                     ; ADC T1            
 B42:
        .rora                           ; ROR A             
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
 
        jnc  B43                        ; BCC B43           ; Repeat the shift-and-add loop for bit 4
        .adc @T1,ra                     ; ADC T1            
 B43:
        .rora                           ; ROR A             
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
 
        srl  ra,1                       ; LSR A             ; Just do the "shift" part for bit 5
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
 
        srl  ra,1                       ; LSR A             ; Just do the "shift" part for bit 6
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
 
        srl  ra,1                       ; LSR A             ; Just do the "shift" part for bit 7
-       .ror @P                         ; ROR P             
+       li   rarg1,P                    ; ROR P             
+       bl   @ror                       ;                   
 
        socb @T,ra                      ; ORA T             ; Give A the sign bit of the original argument A that
                                                            ; we put into T above
@@ -13852,7 +13907,8 @@ B44:
                                                            ; which the next ROR sticks into the left end of P while
                                                            ; also extracting the next bit of P
 
-       .ror @P                         ; ROR P             ; Add the overspill from shifting A to the right onto
+       li   rarg1,P                    ; ROR P             ; Add the overspill from shifting A to the right onto
+       bl   @ror                       ;                   
                                                            ; the start of P, and shift P right to fetch the next
                                                            ; bit for the calculation into the C flag
 
@@ -14099,7 +14155,8 @@ MLTU2:
 
        li   rx,>10*256                 ; LDX #16           ; Set up a counter in X to count the 16 bits in (P+1 P)
 
-       .ror @P                         ; ROR P             ; Set P = P >> 1 with bit 7 = bit 0 of A
+       li   rarg1,P                    ; ROR P             ; Set P = P >> 1 with bit 7 = bit 0 of A
+       bl   @ror                       ;                   
                                                            ; and C flag = bit 0 of P
 
 MUL7:
@@ -14113,8 +14170,10 @@ MUL7:
                                                            ; = A + Q
 
        .rora                           ; ROR A             ; Rotate (A P+1 P) to the right, so we capture the next
-       .ror @P+1                       ; ROR P+1           ; digit of the result in P+1, and extract the next digit
-       .ror @P                         ; ROR P             ; of (P+1 P) in the C flag
+       li   rarg1,P+1                  ; ROR P+1           ; digit of the result in P+1, and extract the next digit
+       bl   @ror                       ;                   
+       li   rarg1,P                    ; ROR P             ; of (P+1 P) in the C flag
+       bl   @ror                       ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -14125,8 +14184,10 @@ MUL7:
 
 MU21:
        srl  ra,1                       ; LSR A             ; Shift (A P+1 P) to the right, so we capture the next
-       .ror @P+1                       ; ROR P+1           ; digit of the result in P+1, and extract the next digit
-       .ror @P                         ; ROR P             ; of (P+1 P) in the C flag
+       li   rarg1,P+1                  ; ROR P+1           ; digit of the result in P+1, and extract the next digit
+       bl   @ror                       ;                   
+       li   rarg1,P                    ; ROR P             ; of (P+1 P) in the C flag
+       bl   @ror                       ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -14273,7 +14334,8 @@ B46:
                                                            ; left end of P while also extracting the next bit of P
                                                            ; for the next addition
 
-       .ror @P                         ; ROR P             ; Add the overspill from shifting A to the right onto
+       li   rarg1,P                    ; ROR P             ; Add the overspill from shifting A to the right onto
+       bl   @ror                       ;                   
                                                            ; the start of P, and shift P right to fetch the next
                                                            ; bit for the calculation
 
@@ -14283,7 +14345,8 @@ B46:
                                                            ; all the way
 
        srl  ra,1                       ; LSR A             ; Rotate (A P) once more to get the final result, as
-       .ror @P                         ; ROR P             ; we only pushed 7 bits through the above process
+       li   rarg1,P                    ; ROR P             ; we only pushed 7 bits through the above process
+       bl   @ror                       ;                   
 
        socb @T,ra                      ; ORA T             ; Set the sign bit of the result that we stored in T
 
@@ -16654,7 +16717,15 @@ B50:
 * 
 * ******************************************************************************
 
+       ; PRINT "ELITE C"
+       ; PRINT "Assembled at ", ~CODE_C%
+       ; PRINT "Ends at ", ~P%
+       ; PRINT "Code size is ", ~(P% - CODE_C%)
+       ; PRINT "Execute at ", ~LOAD%
+       ; PRINT "Reload at ", ~LOAD_C%
 
+       ; PRINT "S.ELTC ", ~CODE_C%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_C%
+       ; SAVE "3-assembled-output/ELTC.bin", CODE_C%, P%, LOAD%
 
 * ******************************************************************************
 * 
@@ -21223,7 +21294,15 @@ qv2_:
 * 
 * ******************************************************************************
 
+       ; PRINT "ELITE D"
+       ; PRINT "Assembled at ", ~CODE_D%
+       ; PRINT "Ends at ", ~P%
+       ; PRINT "Code size is ", ~(P% - CODE_D%)
+       ; PRINT "Execute at ", ~LOAD%
+       ; PRINT "Reload at ", ~LOAD_D%
 
+       ; PRINT "S.ELTD ", ~CODE_D%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_D%
+       ; SAVE "3-assembled-output/ELTD.bin", CODE_D%, P%, LOAD%
 
 * ******************************************************************************
 * 
@@ -26737,7 +26816,15 @@ pl1_:
 * 
 * ******************************************************************************
 
+       ; PRINT "ELITE E"
+       ; PRINT "Assembled at ", ~CODE_E%
+       ; PRINT "Ends at ", ~P%
+       ; PRINT "Code size is ", ~(P% - CODE_E%)
+       ; PRINT "Execute at ", ~LOAD%
+       ; PRINT "Reload at ", ~LOAD_E%
 
+       ; PRINT "S.ELTE ", ~CODE_E%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_E%
+       ; SAVE "3-assembled-output/ELTE.bin", CODE_E%, P%, LOAD%
 
 * ******************************************************************************
 * 
@@ -31724,7 +31811,15 @@ B109:
 * 
 * ******************************************************************************
 
+       ; PRINT "ELITE F"
+       ; PRINT "Assembled at ", ~CODE_F%
+       ; PRINT "Ends at ", ~P%
+       ; PRINT "Code size is ", ~(P% - CODE_F%)
+       ; PRINT "Execute at ", ~LOAD%
+       ; PRINT "Reload at ", ~LOAD_F%
 
+       ; PRINT "S.ELTF ", ~CODE_F%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_F%
+       ; SAVE "3-assembled-output/ELTF.bin", CODE_F%, P%, LOAD%
 
 * ******************************************************************************
 * 
@@ -32468,11 +32563,14 @@ LL10:
        movb @XX1+7,ra                  ; LDA XX1+7         
 
        srl  ra,1                       ; LSR A             ; Set (A T) = (A T) / 8
-       .ror @T                         ; ROR T             
+       li   rarg1,T                    ; ROR T             
+       bl   @ror                       ;                   
        srl  ra,1                       ; LSR A             
-       .ror @T                         ; ROR T             
+       li   rarg1,T                    ; ROR T             
+       bl   @ror                       ;                   
        srl  ra,1                       ; LSR A             
-       .ror @T                         ; ROR T             
+       li   rarg1,T                    ; ROR T             
+       bl   @ror                       ;                   
 
        srl  ra,1                       ; LSR A             ; If A >> 4 is non-zero, i.e. z_hi >= 16, jump to LL13
        jne  LL13                       ; BNE LL13          ; as the ship is possibly far away enough to be shown as
@@ -32734,13 +32832,16 @@ LL90:
        ab   rone,rx                    ; INX               ; Increment the scale factor in X
 
        .lsr @XX18+4                    ; LSR XX18+4        ; Divide (y_hi y_lo) by 2
-       .ror @XX18+3                    ; ROR XX18+3        
+       li   rarg1,XX18+3               ; ROR XX18+3        
+       bl   @ror                       ;                   
 
        .lsr @XX18+1                    ; LSR XX18+1        ; Divide (x_hi x_lo) by 2
-       .ror @XX18                      ; ROR XX18          
+       li   rarg1,XX18                 ; ROR XX18          
+       bl   @ror                       ;                   
 
        srl  ra,1                       ; LSR A             ; Divide (z_hi z_lo) by 2 (as A contains z_hi)
-       .ror @XX18+6                    ; ROR XX18+6        
+       li   rarg1,XX18+6               ; ROR XX18+6        
+       bl   @ror                       ;                   
 
        movb ra,ry                      ; TAY               ; Set Y = z_hi
 
@@ -33728,13 +33829,16 @@ LL57:
        jeq  LL60                       ; BEQ LL60          
 
        .lsr @XX15+1                    ; LSR XX15+1        ; Shift XX15(1 0) to the right
-       .ror @XX15                      ; ROR XX15          
+       li   rarg1,XX15                 ; ROR XX15          
+       bl   @ror                       ;                   
 
        .lsr @XX15+4                    ; LSR XX15+4        ; Shift XX15(4 3) to the right
-       .ror @XX15+3                    ; ROR XX15+3        
+       li   rarg1,XX15+3               ; ROR XX15+3        
+       bl   @ror                       ;                   
 
        .lsr @U                         ; LSR U             ; Shift (U T) to the right
-       .ror @T                         ; ROR T             
+       li   rarg1,T                    ; ROR T             
+       bl   @ror                       ;                   
 
        b    @LL57                      ; JMP LL57          ; Jump back to LL57 to see if we can shift the result
                                                            ; any more
@@ -34705,7 +34809,8 @@ LL122:
        movb ra,ry                      ; TAY               
 
        .lsr @S                         ; LSR S             ; Shift (S R) to the right, so we extract bit 0 of (S R)
-       .ror @R                         ; ROR R             ; into the C flag
+       li   rarg1,R                    ; ROR R             ; into the C flag
+       bl   @ror                       ;                   
 
        .asl @Q                         ; ASL Q             ; Shift Q to the left, catching bit 7 in the C flag
 
@@ -34725,7 +34830,8 @@ LL125:
 
 LL126:
        .lsr @S                         ; LSR S             ; Shift (S R) to the right
-       .ror @R                         ; ROR R             
+       li   rarg1,R                    ; ROR R             
+       bl   @ror                       ;                   
 
        .asl @Q                         ; ASL Q             ; Shift Q to the left, catching bit 7 in the C flag
 
@@ -35263,10 +35369,12 @@ LL111:
 
 LL112:
        srl  ra,1                       ; LSR A             ; Halve the value of delta_x in (A XX12+2)
-       .ror @XX12+2                    ; ROR XX12+2        
+       li   rarg1,XX12+2               ; ROR XX12+2        
+       bl   @ror                       ;                   
 
        .lsr @XX12+5                    ; LSR XX12+5        ; Halve the value of delta_y XX12(5 4)
-       .ror @XX12+4                    ; ROR XX12+4        
+       li   rarg1,XX12+4               ; ROR XX12+4        
+       bl   @ror                       ;                   
 
        b    @LL111                     ; JMP LL111         ; Loop back to LL111
 
@@ -35435,7 +35543,15 @@ LL137:
 * 
 * ******************************************************************************
 
+       ; PRINT "ELITE G"
+       ; PRINT "Assembled at ", ~CODE_G%
+       ; PRINT "Ends at ", ~P%
+       ; PRINT "Code size is ", ~(P% - CODE_G%)
+       ; PRINT "Execute at ", ~LOAD%
+       ; PRINT "Reload at ", ~LOAD_G%
 
+       ; PRINT "S.ELTG ", ~CODE_G%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_G%
+       ; SAVE "3-assembled-output/ELTG.bin", CODE_G%, P%, LOAD%
 
 * ******************************************************************************
 * 
@@ -36645,7 +36761,15 @@ SHIP_ESCAPE_POD_FACES:
 * 
 * ******************************************************************************
 
+       ; PRINT "SHIPS"
+       ; PRINT "Assembled at ", ~CODE_SHIPS%
+       ; PRINT "Ends at ", ~P%
+       ; PRINT "Code size is ", ~(P% - CODE_SHIPS%)
+       ; PRINT "Execute at ", ~LOAD%
+       ; PRINT "Reload at ", ~LOAD_SHIPS%
 
+       ; PRINT "S.SHIPS ", ~CODE_SHIPS%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_SHIPS%
+       ; SAVE "3-assembled-output/SHIPS.bin", CODE_SHIPS%, P%, LOAD%
 
 * ******************************************************************************
 * 
@@ -36797,7 +36921,15 @@ VEC:
 * 
 * ******************************************************************************
 
+       ; PRINT "PYTHON"
+       ; PRINT "Assembled at ", ~CODE_PYTHON%
+       ; PRINT "Ends at ", ~P%
+       ; PRINT "Code size is ", ~(P% - CODE_PYTHON%)
+       ; PRINT "Execute at ", ~LOAD%
+       ; PRINT "Reload at ", ~LOAD_PYTHON%
 
+       ; PRINT "S.PYTHON ", ~CODE_B%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_PYTHON%
+       ; SAVE "3-assembled-output/PYTHON.bin", CODE_PYTHON%, P%, LOAD%
 
 * ******************************************************************************
 * 
@@ -36805,3 +36937,5 @@ VEC:
 * 
 * ******************************************************************************
 
+       ; PRINT "ELITE game code ", ~(&6000-P%), " bytes free"
+       ; PRINT "Ends at ", ~P%

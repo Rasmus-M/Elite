@@ -34,8 +34,6 @@ public class BBCSourceConverter {
 
     private List<TMS9900Line> convert(List<BBCLine> bbcLines) {
         List<TMS9900Line> tms9900Lines = new ArrayList<>();
-        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, "", "copy \"equates.a99\""));
-        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, "", "copy \"macros.a99\""));
         boolean insideMacro = false;
         boolean insideFor = false;
         int i = 0;
@@ -164,6 +162,8 @@ public class BBCSourceConverter {
             tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), ".else"));
         } else if (bbcLine.getDirective().startsWith("ENDIF")) {
             tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), ".endif"));
+        } else {
+            tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "; " + bbcLine.getDirective()));
         }
         return 0;
     }
@@ -465,7 +465,9 @@ public class BBCSourceConverter {
                 if (operand.getType() == Operand.Type.Accumulator) {
                     tms9900Line.setInstruction(".rora");
                 } else {
-                    tms9900Line.setInstruction(".ror " + convertOperand(operand));
+                    // tms9900Line.setInstruction(".ror " + convertOperand(operand));
+                    tms9900Line.setInstruction("li   rarg1," + convertExpression(operand.getExpression()));
+                    additionalLines.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "bl   @ror"));
                 }
                 break;
             case "RTS":
