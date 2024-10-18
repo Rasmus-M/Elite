@@ -54,19 +54,19 @@ public class Util {
         }
     }
 
-    public static int parseInt(String s) {
+    public static Integer parseInt(String s) {
         s = s.trim();
         long value;
-        if (s.startsWith("$") || s.startsWith("&")) {
-            value = Long.parseLong(s.substring(1).toLowerCase(), 16);
-        } else if (s.startsWith("%")) {
-            value = Long.parseLong((s.substring(1)), 2);
-        } else {
-            try {
+        try {
+            if (s.startsWith("$") || s.startsWith("&")) {
+                value = Long.parseLong(s.substring(1).toLowerCase(), 16);
+            } else if (s.startsWith("%")) {
+                value = Long.parseLong((s.substring(1)), 2);
+            } else {
                 value = Long.parseLong((s));
-            } catch (NumberFormatException e) {
-                return 0;
             }
+        } catch (NumberFormatException e) {
+            return null;
         }
         return (int) value;
     }

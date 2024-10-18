@@ -57,13 +57,31 @@ public class BBCSourceConverter {
                     break;
                 case MacroCall:
                     String[] parts = bbcLine.getDirective().split(" ", 2);
-                    if (parts[0].equals("TWOK") && parts.length > 1) {
-                        String[] args = parts[1].split(",");
-                        char t = args[0].replace("'", "").trim().charAt(0);
-                        char k = args[1].replace("'", "").trim().charAt(0);
-                        tms9900Lines.add(convertMacroTWOK(t, k, bbcLine.getDirective() + " " + bbcLine.getComment()));
+                    if (parts.length > 0) {
+                        String args = parts.length > 1 ? parts[1] : "";
+                        String macroName = parts[0];
+                        switch (macroName) {
+                            case "TWOK":
+                                tms9900Lines.add(convertMacroTWOK(charParam(args, 0), charParam(args, 1), bbcLine.getDirective() + " " + bbcLine.getComment()));
+                                break;
+                            case "ITEM":
+                                tms9900Lines.add(convertMacroITEM(intParam(args, 0), intParam(args, 1), charParam(args, 2), intParam(args, 3), intParam(args, 4), bbcLine.getComment()));
+                                break;
+                            case "VERTEX":
+                                tms9900Lines.add(convertMacroVERTEX(intParam(args, 0), intParam(args, 1), intParam(args, 2), intParam(args, 3), intParam(args, 4), intParam(args, 5), intParam(args, 6), intParam(args, 7), bbcLine.getComment()));
+                                break;
+                            case "EDGE":
+                                tms9900Lines.add(convertMacroEDGE(intParam(args, 0), intParam(args, 1), intParam(args, 2), intParam(args, 3), intParam(args, 4), bbcLine.getComment()));
+                                break;
+                            case "FACE":
+                                tms9900Lines.add(convertMacroFACE(intParam(args, 0), intParam(args, 1), intParam(args, 2), intParam(args, 3), bbcLine.getComment()));
+                                break;
+                            default:
+                                tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "." + parts[0].toLowerCase() + (parts.length > 1 ? " " + parts[1] : "")));
+                                break;
+                        }
                     } else {
-                        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "." + parts[0].toLowerCase() + (parts.length > 1 ? " " + parts[1] : "")));
+                        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "; " + bbcLine.getDirective()));
                     }
                     break;
                 case ForStart:
@@ -105,7 +123,7 @@ public class BBCSourceConverter {
                                 i += convertInstruction(bbcLine, tms9900Lines);
                                 break;
                             case Variable:
-                                String[] variableAndValue = bbcLine.getInstruction().split("=");
+                                String[] variableAndValue = bbcLine.getInstruction().split("=", 2);
                                 if (variableAndValue.length == 2) {
                                     createEquate(tms9900Lines, variableAndValue[0].trim(), variableAndValue[1].trim(), bbcLine.getComment());
                                 }
@@ -120,14 +138,17 @@ public class BBCSourceConverter {
         return tms9900Lines;
     }
 
+    private char charParam(String args, int n) {
+        return args.split(",")[n].replace("'", "").trim().charAt(0);
+    }
+
+    private int intParam(String args, int n) {
+        return Util.parseInt(args.split(",")[n].trim());
+    }
+
     private void createEquate(List<TMS9900Line> tms9900Lines, String symbol, String value, String comment) {
         tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Label, comment, convertSymbol(symbol)));
         tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, null, "equ " + convertExpression(value)));
-    }
-
-    private void createRegEquate(List<TMS9900Line> tms9900Lines, String symbol, String value, String comment) {
-        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Label, comment, convertSymbol(symbol)));
-        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, null, "requ " + convertExpression(value)));
     }
 
     private int convertDirective(BBCLine bbcLine, List<TMS9900Line> tms9900Lines) {
@@ -135,30 +156,55 @@ public class BBCSourceConverter {
             tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "aorg " + convertExpression(bbcLine.getDirective().substring(4))));
         } else if (bbcLine.getDirective().startsWith("SKIP")) {
             tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "bss " + convertExpression(bbcLine.getDirective().substring(5))));
+        } else if (bbcLine.getDirective().startsWith("IF")) {
+            tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), ".ifeq " + convertExpression(bbcLine.getDirective().substring(3)) + ", 1"));
+        } else if (bbcLine.getDirective().startsWith("ELIF")) {
+            tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getDirective(), ".else"));
+        } else if (bbcLine.getDirective().startsWith("ELSE")) {
+            tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), ".else"));
+        } else if (bbcLine.getDirective().startsWith("ENDIF")) {
+            tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), ".endif"));
         }
         return 0;
     }
 
     private int convertData(BBCLine bbcLine, List<TMS9900Line> tms9900Lines) {
         String bbcInstruction = bbcLine.getInstruction();
-        String[] parts = bbcInstruction.split(" ");
+        String[] parts = bbcInstruction.split(" ", 2);
         String valuePart = parts.length > 1 ? parts[1] : "";
         String[] values = valuePart.split(",");
         String instruction = null;
         if (bbcInstruction.startsWith("EQUB")) {
             for (int i = 0; i < values.length; i++) {
-                values[i] = Util.tiHexByte(Util.parseInt(values[i]));
+                String value = values[i];
+                Integer integer = Util.parseInt(value);
+                if (integer != null) {
+                    values[i] = Util.tiHexByte(integer);
+                } else {
+                    values[i] = convertExpression(value);
+                }
             }
             instruction = "byte " + String.join(",", values);
         } else if (bbcInstruction.startsWith("EQUW")) {
             for (int i = 0; i < values.length; i++) {
-                values[i] = Util.tiHexWord(Util.parseInt(values[i]), true);
+                String value = values[i];
+                Integer integer = Util.parseInt(value);
+                if (integer != null) {
+                    values[i] = Util.tiHexWord(integer, true);
+                } else {
+                    values[i] = convertExpression(value);
+                }
             }
             instruction = "data " + String.join(",", values);
         } else if (bbcInstruction.startsWith("EQUD")) {
             for (int i = 0; i < values.length; i++) {
-                int v = Util.parseInt(values[i]);
-                values[i] = Util.tiHexWord(i & 0xffff, true) + ", " + Util.tiHexWord((i & 0xffff0000) >>> 16, true);
+                String value = values[i];
+                Integer integer = Util.parseInt(value);
+                if (integer != null) {
+                    values[i] = Util.tiHexWord(i & 0xffff, true) + ", " + Util.tiHexWord((i & 0xffff0000) >>> 16, true);
+                } else {
+                    values[i] = convertExpression(value);
+                }
             }
             instruction = "data " + String.join(",", values);
         } else if (bbcInstruction.startsWith("EQUS")) {
@@ -529,8 +575,8 @@ public class BBCSourceConverter {
 
     private String convertExpression(String expression) {
         if (expression != null) {
-            expression = expression.replace("&", ">");
             expression = expression.replace("P%", "$");
+            expression = expression.replace("&", ">");
             if (expression.startsWith("%")) {
                 expression = expression.replaceFirst("%", ":");
             }
@@ -540,12 +586,19 @@ public class BBCSourceConverter {
             StringTokenizer tokenizer = new StringTokenizer(expression, " +-*/", true);
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken();
-                if (token.matches(Operand.symbolRegEx)) {
+                if (token.equals("AND")) {
+                    token = "&";
+                } else if (token.equals("OR")) {
+                    token = "|";
+                } else if (token.equals("EOR")) {
+                    token = "^";
+                } else if (token.matches(Operand.symbolRegEx)) {
                     token = convertSymbol(token);
                 } else {
                     token = convertLo(token);
                     token = convertHi(token);
                 }
+                token = token.replace("%", ".");
                 result.append(token);
             }
             expression = result.toString();
@@ -613,6 +666,48 @@ public class BBCSourceConverter {
         return new TMS9900Line(TMS9900Line.Type.Data, comment, "byte " + ch + " ^ RE");
     }
 
+    private TMS9900Line convertMacroITEM(int price, int factor, char units, int quantity, int mask, String comment) {
+        int s = factor < 0 ? 1 << 7 : 0;
+        int u;
+        if (units == 't') {
+            u = 0;
+        } else if (units == 'k') {
+            u = 1 << 5;
+        } else {
+            u = 1 << 6;
+        }
+        int e = Math.abs(factor);
+        return new TMS9900Line(TMS9900Line.Type.Data, comment, "byte " + Util.tiHexByte(price) + ", " + Util.tiHexByte(s + u + e) + ", " + Util.tiHexByte(quantity) + ", " + Util.tiHexByte(mask));
+    }
+
+    private TMS9900Line convertMacroVERTEX(int x, int y, int z, int face1, int face2, int face3, int face4, int visibility, String comment) {
+        int sx = x < 0 ? 1 << 7 : 0;
+        int sy = y < 0 ? 1 << 6 : 0;
+        int sz = z < 0 ? 1 << 5 : 0;
+        int s = sx | sy | sz | visibility;
+        int f1 = face1 + (face2 << 4);
+        int f2 = face3 + (face4 << 4);
+        int ax = Math.abs(x);
+        int ay = Math.abs(y);
+        int az = Math.abs(z);
+        return new TMS9900Line(TMS9900Line.Type.Data, comment, "byte " + Util.tiHexByte(ax) + ", " + Util.tiHexByte(ay) + ", " + Util.tiHexByte(az) + ", " + Util.tiHexByte(s) + ", " + Util.tiHexByte(f1) + ", " + Util.tiHexByte(f2));
+    }
+
+    private TMS9900Line convertMacroEDGE(int vertex1, int vertex2, int face1, int face2, int visibility, String comment) {
+        int f = face1 + (face2 << 4);
+        return new TMS9900Line(TMS9900Line.Type.Data, comment, "byte " + Util.tiHexByte(visibility) + ", " + Util.tiHexByte(f) + ", " + Util.tiHexByte(vertex1 << 2) + ", " + Util.tiHexByte(vertex2 << 2));
+    }
+
+    private TMS9900Line convertMacroFACE(int normal_x, int normal_y, int normal_z, int visibility, String comment) {
+        int sx = normal_x < 0 ? 1 << 7 : 0;
+        int sy = normal_y < 0 ? 1 << 6 : 0;
+        int sz = normal_z < 0 ? 1 << 5 : 0;
+        int s = sx | sy | sz | visibility;
+        int ax = Math.abs(normal_x);
+        int ay = Math.abs(normal_y);
+        int az = Math.abs(normal_z);
+        return new TMS9900Line(TMS9900Line.Type.Data, comment, "byte " + Util.tiHexByte(s) + ", " + Util.tiHexByte(ax) + ", " + Util.tiHexByte(ay) + ", " + Util.tiHexByte(az));
+    }
 
     private boolean lastLineWasALabel(List<TMS9900Line> tms9900Lines) {
         for (int i = tms9900Lines.size() - 1; i >= 0; i--) {

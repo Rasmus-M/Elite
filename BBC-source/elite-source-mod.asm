@@ -36,9 +36,9 @@
 
  INCLUDE "1-source-files/main-sources/elite-build-options.asm"
 
- _SOURCE_DISC           = (_VARIANT = 1)
- _TEXT_SOURCES          = (_VARIANT = 2)
- _STH_CASSETTE          = (_VARIANT = 3)
+ _SOURCE_DISC           = 0     \ (_VARIANT = 1)
+ _TEXT_SOURCES          = 0     \ (_VARIANT = 2)
+ _STH_CASSETTE          = 1     \ (_VARIANT = 3)
 
  GUARD &6000            \ Guard against assembling over screen memory
 
@@ -7050,6 +7050,19 @@ ENDIF
   EQUW K% + I% * NI%    \ Address of block no. I%, of size NI%, in workspace K%
 
  NEXT
+
+EQUW K% + 0 * NI%
+EQUW K% + 1 * NI%
+EQUW K% + 2 * NI%
+EQUW K% + 3 * NI%
+EQUW K% + 4 * NI%
+EQUW K% + 5 * NI%
+EQUW K% + 6 * NI%
+EQUW K% + 7 * NI%
+EQUW K% + 8 * NI%
+EQUW K% + 9 * NI%
+EQUW K% + 10 * NI%
+EQUW K% + 11 * NI%
 
 \ ******************************************************************************
 \

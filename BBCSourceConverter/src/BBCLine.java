@@ -61,7 +61,7 @@ public class BBCLine {
                     } else if (instruction.startsWith("ENDMACRO")) {
                         directive = instruction;
                         type = Type.MacroEnd;
-                    } else if (instruction.startsWith("CHAR") || instruction.startsWith("TWOK") || instruction.startsWith("RTOK") || instruction.startsWith("CONT")) {
+                    } else if (instruction.startsWith("CHAR") || instruction.startsWith("TWOK") || instruction.startsWith("RTOK") || instruction.startsWith("CONT") || instruction.startsWith("ITEM") || instruction.startsWith("VERTEX") || instruction.startsWith("EDGE") || instruction.startsWith("FACE")) {
                         directive = instruction;
                         type = Type.MacroCall;
                     } else if (instruction.trim().startsWith("FOR")) {

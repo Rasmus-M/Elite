@@ -28,4 +28,6 @@ r11lb:
        equ  >8317
 
 _MAX_COMMANDER:
-       equ 0
+       equ  0
+_REMOVE_CHECKSUMS:
+       equ  1

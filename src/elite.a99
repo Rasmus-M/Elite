@@ -37,6 +37,12 @@
 * ******************************************************************************
 
 
+_SOURCE_DISC:                                              ; (_VARIANT = 1)
+       equ 0
+_TEXT_SOURCES:                                             ; (_VARIANT = 2)
+       equ 0
+_STH_CASSETTE:                                             ; (_VARIANT = 3)
+       equ 1
 
 
 * ******************************************************************************
@@ -3001,17 +3007,17 @@ LOAD_A.:
 * ******************************************************************************
 
 S.:
-       data >0000                                          ; The entry point for the main game; once the main code
+       data TT170                                          ; The entry point for the main game; once the main code
                                                            ; has been loaded, decrypted and moved to the right
                                                            ; place by elite-loader.asm, the game is started by a
                                                            ; JMP (S%) instruction, which jumps to the main entry
                                                            ; point at TT170 via this location
 
-       data >0000                                          ; WRCHV is set to point here by elite-loader.asm
+       data TT26                                           ; WRCHV is set to point here by elite-loader.asm
 
-       data >0000                                          ; IRQ1V is set to point here by elite-loader.asm
+       data IRQ1                                           ; IRQ1V is set to point here by elite-loader.asm
 
-       data >0000                                          ; BRKV is set to point here by elite-loader.asm
+       data BR1                                            ; BRKV is set to point here by elite-loader.asm
 
 COMC:
        bss 1                                               ; The colour of the dot on the compass
@@ -6632,8 +6638,11 @@ NA.:
        data >4802                                          ; QQ21 = Seed s1 for system 0, galaxy 0 (Tibedied), #5-6
        data >53b7                                          ; QQ21 = Seed s2 for system 0, galaxy 0 (Tibedied), #7-8
 
+       .ifeq Q., 1
        data >0000, >0000                                   ; CASH = Amount of cash (100,000,000 Cr), #9-12
+       .else
        data >0000, >0000                                   ; CASH = Amount of cash (100 Cr), #9-12
+       .endif
 
        byte >46                                            ; QQ14 = Fuel level, #13
 
@@ -6641,9 +6650,9 @@ NA.:
 
        byte >00                                            ; GCNT = Galaxy number, 0-7, #15
 
-       byte >00                                            ; LASER = Front laser, #16
+       byte POW+(128 & Q.)                                 ; LASER = Front laser, #16
 
-       byte >00                                            ; LASER+1 = Rear laser, #17
+       byte (POW+128) & Q.                                 ; LASER+1 = Rear laser, #17
 
        byte >00                                            ; LASER+2 = Left laser, #18
 
@@ -6653,7 +6662,7 @@ NA.:
                                                            ; used for up/down lasers, but they were dropped),
                                                            ; #20-21
 
-       byte >16                                            ; CRGO = Cargo capacity, #22
+       byte 22 + (15 & Q.)                                 ; CRGO = Cargo capacity, #22
 
        byte >00                                            ; QQ20+0  = Amount of food in cargo hold, #23
        byte >00                                            ; QQ20+1  = Amount of textiles in cargo hold, #24
@@ -6673,23 +6682,23 @@ NA.:
        byte >00                                            ; QQ20+15 = Amount of gem-stones in cargo hold, #38
        byte >00                                            ; QQ20+16 = Amount of alien items in cargo hold, #39
 
-       byte >00                                            ; ECM = E.C.M. system, #40
+       byte Q.                                             ; ECM = E.C.M. system, #40
 
-       byte >00                                            ; BST = Fuel scoops ("barrel status"), #41
+       byte Q.                                             ; BST = Fuel scoops ("barrel status"), #41
 
-       byte >00                                            ; BOMB = Energy bomb, #42
+       byte Q. & 127                                       ; BOMB = Energy bomb, #42
 
-       byte >00                                            ; ENGY = Energy/shield level, #43
+       byte Q. & 1                                         ; ENGY = Energy/shield level, #43
 
-       byte >00                                            ; DKCMP = Docking computer, #44
+       byte Q.                                             ; DKCMP = Docking computer, #44
 
-       byte >00                                            ; GHYP = Galactic hyperdrive, #45
+       byte Q.                                             ; GHYP = Galactic hyperdrive, #45
 
-       byte >00                                            ; ESCP = Escape pod, #46
+       byte Q.                                             ; ESCP = Escape pod, #46
 
        data >0000, >0000                                   ; These four bytes appear to be unused, #47-50
 
-       byte >03                                            ; NOMSL = Number of missiles, #51
+       byte 3 + (Q. & 1)                                   ; NOMSL = Number of missiles, #51
 
        byte >00                                            ; FIST = Legal status ("fugitive/innocent status"), #52
 
@@ -6738,7 +6747,7 @@ NA.:
 * ******************************************************************************
 
 CHK2:
-       byte >03                                            ; The checksum value for the default commander, EOR'd
+       byte >03 ^ >A9                                      ; The checksum value for the default commander, EOR'd
                                                            ; with &A9 to make it harder to tamper with the checksum
                                                            ; byte, #74
 
@@ -6786,6 +6795,19 @@ UNIV:
        ; EQUW K% + I% * NI%            ;                   ; Address of block no. I%, of size NI%, in workspace K%
 
        ; NEXT
+
+       data K. + 0 * NI.
+       data K. + 1 * NI.
+       data K. + 2 * NI.
+       data K. + 3 * NI.
+       data K. + 4 * NI.
+       data K. + 5 * NI.
+       data K. + 6 * NI.
+       data K. + 7 * NI.
+       data K. + 8 * NI.
+       data K. + 9 * NI.
+       data K. + 10 * NI.
+       data K. + 11 * NI.
 
 * ******************************************************************************
 * 
@@ -11129,16 +11151,16 @@ DLL12:
 * ******************************************************************************
 
 TVT1:
-       byte >d4                                            ; This block of palette data is used to create two
-       byte >94                                            ; palettes used in three different places, all of them
-       byte >f5                                            ; redefining four colours in mode 5:
-       byte >b5                                            ; 
+       byte >d4,>c4                                        ; This block of palette data is used to create two
+       byte >94,>84                                        ; palettes used in three different places, all of them
+       byte >f5,>e5                                        ; redefining four colours in mode 5:
+       byte >b5,>a5                                        ; 
                                                            ; 12 bytes from TVT1 (i.e. the first 6 rows): applied
-       byte >76                                            ; when the T1 timer runs down at the switch from the
-       byte >36                                            ; space view to the dashboard, so this is the standard
+       byte >76,>66                                        ; when the T1 timer runs down at the switch from the
+       byte >36,>26                                        ; space view to the dashboard, so this is the standard
                                                            ; dashboard palette
-       byte >e1                                            ; 
-       byte >b1                                            ; 8 bytes from TVT1+8 (i.e. the last 4 rows): applied
+       byte >e1,>f1                                        ; 
+       byte >b1,>a1                                        ; 8 bytes from TVT1+8 (i.e. the last 4 rows): applied
                                                            ; when the T1 timer runs down at the switch from the
                                                            ; space view to the dashboard, and we have an escape
                                                            ; pod fitted, so this is the escape pod dashboard
@@ -11149,12 +11171,12 @@ TVT1:
                                                            ; create the hyperspace effect in LINSCN (where the
                                                            ; whole screen is switched to mode 5 at vertical sync)
 
-       byte >f0                                            ; 12 bytes of palette data at TVT1+16, used to set the
-       byte >b0                                            ; mode 4 palette in LINSCN when we hit vertical sync,
-       byte >d0                                            ; so the palette is set to monochrome when we start to
-       byte >90                                            ; draw the first row of the screen
-       byte >77
-       byte >37
+       byte >f0,>e0                                        ; 12 bytes of palette data at TVT1+16, used to set the
+       byte >b0,>a0                                        ; mode 4 palette in LINSCN when we hit vertical sync,
+       byte >d0,>c0                                        ; so the palette is set to monochrome when we start to
+       byte >90,>80                                        ; draw the first row of the screen
+       byte >77,>67
+       byte >37,>27
 
 * ******************************************************************************
 * 
@@ -15339,6 +15361,8 @@ ACT:
 * ******************************************************************************
 
 WARP:
+       .ifeq _SOURCE_DISC, 1
+
        movb @MANY+AST,ra               ; LDA MANY+AST      ; Set X to the total number of asteroids, escape pods
        .clc                            ; CLC               ; and cargo canisters in the vicinity
        .adc @MANY+ESC,ra               ; ADC MANY+ESC      
@@ -15346,6 +15370,7 @@ WARP:
        .adc @MANY+OIL,ra               ; ADC MANY+OIL      ; no way that adding the number of asteroids and the
        movb ra,rx                      ; TAX               ; number escape pods will cause a carry
 
+       .else                                               ; ELIF _TEXT_SOURCES OR _STH_CASSETTE
 
        movb @MANY+AST,ra               ; LDA MANY+AST      ; Set X to the total number of asteroids, escape pods
        .clc                            ; CLC               ; and cargo canisters in the vicinity
@@ -15355,6 +15380,7 @@ WARP:
                                                            ; as there is no way that adding the number of asteroids
                                                            ; and the number of escape pods will cause a carry
 
+       .endif
 
        movb @FRIN+2(rx),ra             ; LDA FRIN+2,X      ; If the slot at FRIN+2+X is non-zero, then we have
                                                            ; something else in the vicinity besides asteroids,
@@ -15388,11 +15414,13 @@ WARP:
                                                            ; planet in any of the three axes (we could also call
                                                            ; routine m to do the same thing, as A = 0)
 
+       .ifeq _SOURCE_DISC, 1
 
        ci   ra,>02*256                 ; CMP #2            ; If A < 2 then jump to WA1 to abort the in-system jump
        jnc  WA1                        ; BCC WA1           ; with a low beep, as we are facing the planet and are
                                                            ; too close to jump in that direction
 
+       .else                                               ; ELIF _TEXT_SOURCES OR _STH_CASSETTE
 
        srl  ra,1                       ; LSR A             ; If A < 2 then jump to WA1 to abort the in-system jump
        jeq  WA1                        ; BEQ WA1           ; with a low beep, as we are facing the planet and are
@@ -15404,6 +15432,7 @@ WARP:
                                                            ; takes up two bytes (though the code does exactly the
                                                            ; same thing)
 
+       .endif
 
 WA3:
        movb @K.+NI.+8,ry               ; LDY K%+NI%+8      ; Fetch the z_sign (byte #8) of the second ship in the
@@ -15422,11 +15451,13 @@ WA3:
        .jsr @m_                        ; JSR m             ; Call m to set A to the largest distance to the sun
                                                            ; in any of the three axes
 
+       .ifeq _SOURCE_DISC, 1
 
        ci   ra,>02*256                 ; CMP #2            ; If A < 2 then jump to WA1 to abort the in-system jump
        jnc  WA1                        ; BCC WA1           ; with a low beep, as we are facing the planet and are
                                                            ; too close to jump in that direction
 
+       .else                                               ; ELIF _TEXT_SOURCES OR _STH_CASSETTE
 
        srl  ra,1                       ; LSR A             ; If A < 2 then jump to WA1 to abort the in-system jump
        jeq  WA1                        ; BEQ WA1           ; with a low beep, as we are facing the planet and are
@@ -15438,6 +15469,7 @@ WA3:
                                                            ; takes up two bytes (though the code does exactly the
                                                            ; same thing)
 
+       .endif
 
 WA2:
                                                            ; If we get here, then we can do an in-system jump, as
@@ -15923,14 +15955,17 @@ TTX66:
        li   ra,>80*256                 ; LDA #%10000000    ; Set bit 7 of QQ17 to switch to Sentence Case
        movb ra,@QQ17                   ; STA QQ17          
 
+       .ifeq _SOURCE_DISC, 1
 
        .asla                           ; ASL A             ; Set LASCT to 0, as 128 << 1 = %10000000 << 1 = 0. This
        movb ra,@LASCT                  ; STA LASCT         ; stops any laser pulsing
 
+       .else                                               ; ELIF _TEXT_SOURCES OR _STH_CASSETTE
 
        .asla                           ; ASL A             ; Set LAS2 to 0, as 128 << 1 = %10000000 << 1 = 0. This
        movb ra,@LAS2                   ; STA LAS2          ; stops any laser pulsing
 
+       .endif
 
        movb ra,@DLY                    ; STA DLY           ; Set the delay in DLY to 0, to indicate that we are
                                                            ; no longer showing an in-flight message, so any new
@@ -19290,6 +19325,8 @@ wW:
 * ******************************************************************************
 
 Ghy:
+       .ifeq _TEXT_SOURCES, 1
+
        .jsr @TT111                     ; JSR TT111         ; Call TT111 to set the current system to the nearest
                                                            ; system to (QQ9, QQ10), and put the seeds of the
                                                            ; nearest system into QQ15 to QQ15+5
@@ -19314,6 +19351,7 @@ Ghy:
                                                            ; of the Ghy routine, as the fix only works if it's done
                                                            ; after the new coordinates are set, not before
 
+       .endif
 
        movb @GHYP,rx                   ; LDX GHYP          ; Fetch GHYP, which tells us whether we own a galactic
        jeq  hy5_                       ; BEQ hy5           ; hyperdrive, and if it is zero, which means we don't,
@@ -19322,10 +19360,12 @@ Ghy:
        ab   rone,rx                    ; INX               ; We own a galactic hyperdrive, so X is &FF, so this
                                                            ; instruction sets X = 0
 
+       .ifeq _SOURCE_DISC | _TEXT_SOURCES, 1
 
        movb rx,@QQ8                    ; STX QQ8           ; Set the distance to the selected system in QQ8(1 0)
        movb rx,@QQ8+1                  ; STX QQ8+1         ; to 0
 
+       .endif
 
        movb rx,@GHYP                   ; STX GHYP          ; The galactic hyperdrive is a one-use item, so set GHYP
                                                            ; to 0 so we no longer have one fitted
@@ -19369,6 +19409,7 @@ zZ_:
 
        .jsr @TT110                     ; JSR TT110         ; Call TT110 to show the front space view
 
+       .ifeq _STH_CASSETTE, 1
 
        .jsr @TT111                     ; JSR TT111         ; Call TT111 to set the current system to the nearest
                                                            ; system to (QQ9, QQ10), and put the seeds of the
@@ -19384,12 +19425,15 @@ zZ_:
                                                            ; This call sets the current system correctly, so we
                                                            ; always arrive at the nearest system to (96, 96)
 
+       .endif
 
+       .ifeq _STH_CASSETTE, 1
 
        li   rx,>00*256                 ; LDX #0            ; Set the distance to the selected system in QQ8(1 0)
        movb rx,@QQ8                    ; STX QQ8           ; to 0
        movb rx,@QQ8+1                  ; STX QQ8+1         
 
+       .endif
 
        li   ra,>74*256                 ; LDA #116          ; Print recursive token 116 ("GALACTIC HYPERSPACE")
        .jsr @MESS                      ; JSR MESS          ; as an in-flight message
@@ -21215,24 +21259,24 @@ LOAD_E.:
 * 
 * ******************************************************************************
 
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
-       byte >00
+       byte '(' ^ 164
+       byte 'C' ^ 164
+       byte ')' ^ 164
+       byte 'B' ^ 164
+       byte 'e' ^ 164
+       byte 'l' ^ 164
+       byte 'l' ^ 164
+       byte '/' ^ 164
+       byte 'B' ^ 164
+       byte 'r' ^ 164
+       byte 'a' ^ 164
+       byte 'b' ^ 164
+       byte 'e' ^ 164
+       byte 'n' ^ 164
+       byte '1' ^ 164
+       byte '9' ^ 164
+       byte '8' ^ 164
+       byte '4' ^ 164
 
 * ******************************************************************************
 * 
@@ -22060,7 +22104,7 @@ TT47:
 ex_:
        movb ra,rx                      ; TAX               ; Copy the token number into X
 
-       li   ra,((QQ18)%256)*256        ; LDA #LO(QQ18)     ; Set V(1 0) to point to the recursive token table at
+       li   ra,((QQ18).256)*256        ; LDA #LO(QQ18)     ; Set V(1 0) to point to the recursive token table at
        movb ra,@V                      ; STA V             ; location QQ18
        li   ra,((QQ18)/256)*256        ; LDA #HI(QQ18)     
        movb ra,@V+1                    ; STA V+1           
@@ -23528,7 +23572,7 @@ NWSPS:
 
        .jsr @NwS1                      ; JSR NwS1          ; And again to flip the sign of nosev_z_hi (byte #14)
 
-       li   ra,((LSO)%256)*256         ; LDA #LO(LSO)      ; Set bytes #33 and #34 to point to LSO for the ship
+       li   ra,((LSO).256)*256         ; LDA #LO(LSO)      ; Set bytes #33 and #34 to point to LSO for the ship
        movb ra,@INWK+33                ; STA INWK+33       ; line heap for the space station
        li   ra,((LSO)/256)*256         ; LDA #HI(LSO)      
        movb ra,@INWK+34                ; STA INWK+34       
@@ -23921,7 +23965,7 @@ ECBLB:
                                                            ; low byte of the screen address of the character block
                                                            ; we want to draw to
 
-       li   rx,((ECBT)%256)*256        ; LDX #LO(ECBT)     ; Set (Y X) to point to the character definition in
+       li   rx,((ECBT).256)*256        ; LDX #LO(ECBT)     ; Set (Y X) to point to the character definition in
        li   ry,((ECBT)/256)*256        ; LDY #HI(ECBT)     ; ECBT. The LDY has no effect, as we overwrite Y with
                                                            ; the jump to BULB-2, which writes the high byte of SPBT
                                                            ; into Y. This works as long as ECBT and SPBT are in
@@ -23948,7 +23992,7 @@ SPBLB:
                                                            ; low byte of the screen address of the character block
                                                            ; we want to draw to
 
-       li   rx,((SPBT)%256)*256        ; LDX #LO(SPBT)     ; Set (Y X) to point to the character definition in SPBT
+       li   rx,((SPBT).256)*256        ; LDX #LO(SPBT)     ; Set (Y X) to point to the character definition in SPBT
        li   ry,((SPBT)/256)*256        ; LDY #HI(SPBT)     
 
                                                            ; Fall through into BULB to draw the space station bulb
@@ -26943,10 +26987,12 @@ KS6:
 KILLSHP:
        movb rx,@XX4                    ; STX XX4           ; Store the slot number of the ship to remove in XX4
 
+       .ifeq _SOURCE_DISC, 1
 
        movb @MSTG,ra                   ; LDA MSTG          ; Check whether this slot matches the slot number in
        cb   @XX4,ra                    ; CMP XX4           ; MSTG, which is the target of our missile lock
 
+       .else                                               ; ELIF _TEXT_SOURCES OR _STH_CASSETTE
 
        cb   @MSTG,rx                   ; CPX MSTG          ; Check whether this slot matches the slot number in
                                                            ; MSTG, which is the target of our missile lock
@@ -26957,6 +27003,7 @@ KILLSHP:
                                                            ; CMP XX4 take up four bytes between them (the code does
                                                            ; the same thing)
 
+       .endif
 
        jne  KS5                        ; BNE KS5           ; If our missile is not locked on this ship, jump to KS5
 
@@ -27234,16 +27281,16 @@ KSL3:
 * ******************************************************************************
 
 SFX:
-       byte >12                                            ; 0  - Lasers fired by us
-       byte >12                                            ; 8  - We're being hit by lasers
-       byte >11                                            ; 16 - We died 1 / We made a hit or kill 2
-       byte >10                                            ; 24 - We died 2 / We made a hit or kill 1
-       byte >03                                            ; 32 - Short, high beep
-       byte >13                                            ; 40 - Long, low beep
-       byte >10                                            ; 48 - Missile launched / Ship launched from station
-       byte >10                                            ; 56 - Hyperspace drive engaged
-       byte >13                                            ; 64 - E.C.M. on
-       byte >13                                            ; 72 - E.C.M. off
+       byte >12,>01,>00,>10                                ; 0  - Lasers fired by us
+       byte >12,>02,>2c,>08                                ; 8  - We're being hit by lasers
+       byte >11,>03,>f0,>18                                ; 16 - We died 1 / We made a hit or kill 2
+       byte >10,>f1,>07,>1a                                ; 24 - We died 2 / We made a hit or kill 1
+       byte >03,>f1,>bc,>01                                ; 32 - Short, high beep
+       byte >13,>f4,>0c,>08                                ; 40 - Long, low beep
+       byte >10,>f1,>06,>0c                                ; 48 - Missile launched / Ship launched from station
+       byte >10,>02,>60,>10                                ; 56 - Hyperspace drive engaged
+       byte >13,>04,>c2,>ff                                ; 64 - E.C.M. on
+       byte >13,>00,>00,>00                                ; 72 - E.C.M. off
 
 * ******************************************************************************
 * 
@@ -27397,7 +27444,7 @@ yu_:
                                                            ; slots for the local bubble of universe, and various
                                                            ; flight and ship status variables
 
-       li   ra,((WP-1)%256)*256        ; LDA #LO(WP-1)     ; We have reset the ship line heap, so we now point
+       li   ra,((WP-1).256)*256        ; LDA #LO(WP-1)     ; We have reset the ship line heap, so we now point
        movb ra,@SLSP                   ; STA SLSP          ; SLSP to the byte before the WP workspace to indicate
        li   ra,((WP-1)/256)*256        ; LDA #HI(WP-1)     ; that the heap is empty
        movb ra,@SLSP+1                 ; STA SLSP+1        
@@ -28801,16 +28848,19 @@ B102:
 
        cb   @CHK,ra                    ; CMP CHK           ; Test the calculated checksum against CHK
 
+       .ifeq _REMOVE_CHECKSUMS, 1
 
        nop                             ; NOP               ; If we have disabled checksums, then ignore the result
        nop                             ; NOP               ; of the comparison and fall through into the next part
 
+       .else
 
        jne  B102                       ; BNE B102          ; If the calculated checksum does not match CHK, then
                                                            ; loop back to repeat the check - in other words, we
                                                            ; enter an infinite loop here, as the checksum routine
                                                            ; will keep returning the same incorrect value
 
+       .endif
 
                                                            ; The checksum CHK is correct, so now we check whether
                                                            ; CHK2 = CHK EOR A9, and if this check fails, bit 7 of
@@ -29198,7 +29248,7 @@ GTNME:
        movb ra,rx                      ; TAX               
        .jsr @OSBYTE                    ; JSR OSBYTE        
 
-       li   rx,((RLINE)%256)*256       ; LDX #LO(RLINE)    ; Set (Y X) to point to the RLINE parameter block
+       li   rx,((RLINE).256)*256       ; LDX #LO(RLINE)    ; Set (Y X) to point to the RLINE parameter block
        li   ry,((RLINE)/256)*256       ; LDY #HI(RLINE)    ; configuration block below
 
        li   ra,>00*256                 ; LDA #0            ; Call OSWORD with A = 0 to read a line from the current
@@ -29235,14 +29285,14 @@ GTNME:
 * ******************************************************************************
 
 RLINE:
-       data >0000                                          ; The address to store the input, so the commander's
+       data INWK                                           ; The address to store the input, so the commander's
                                                            ; name will be stored in INWK as it is typed
 
        byte >07                                            ; Maximum line length = 7, as that's the maximum size
                                                            ; for a commander's name
 
-       byte >00                                            ; Allow ASCII characters from "!" through to "z" in
-       byte >00                                            ; the name
+       byte '!'                                            ; Allow ASCII characters from "!" through to "z" in
+       byte 'z'                                            ; the name
 
 * ******************************************************************************
 * 
@@ -30173,7 +30223,7 @@ NO3:
        jne  NO1                        ; BNE NO1           ; If DNOIZ is non-zero, then sound is disabled, so
                                                            ; return from the subroutine (as NO1 contains an RTS)
 
-       li   rx,((XX16)%256)*256        ; LDX #LO(XX16)     ; Otherwise set (Y X) to point to the sound block in
+       li   rx,((XX16).256)*256        ; LDX #LO(XX16)     ; Otherwise set (Y X) to point to the sound block in
        li   ry,((XX16)/256)*256        ; LDY #HI(XX16)     ; XX16
 
        li   ra,>07*256                 ; LDA #7            ; Call OSWORD 7 to makes the sound, as described in the
@@ -30267,13 +30317,13 @@ KYTB:                                                      ; Point KYTB to the b
                                                            ; These are the primary flight controls (pitch, roll,
                                                            ; speed and lasers):
 
-       byte >68                                            ; ?         KYTB+1      Slow down
-       byte >62                                            ; Space     KYTB+2      Speed up
-       byte >66                                            ; <         KYTB+3      Roll left
-       byte >67                                            ; >         KYTB+4      Roll right
-       byte >42                                            ; X         KYTB+5      Pitch up
-       byte >51                                            ; S         KYTB+6      Pitch down
-       byte >41                                            ; A         KYTB+7      Fire lasers
+       byte >68 + 128                                      ; ?         KYTB+1      Slow down
+       byte >62 + 128                                      ; Space     KYTB+2      Speed up
+       byte >66 + 128                                      ; <         KYTB+3      Roll left
+       byte >67 + 128                                      ; >         KYTB+4      Roll right
+       byte >42 + 128                                      ; X         KYTB+5      Pitch up
+       byte >51 + 128                                      ; S         KYTB+6      Pitch down
+       byte >41 + 128                                      ; A         KYTB+7      Fire lasers
 
                                                            ; These are the secondary flight controls:
 
@@ -31266,23 +31316,23 @@ QQ16:
 * ******************************************************************************
 
 QQ23:
-       ; ITEM 19,  -2, 't',   6, %00000001 ; ITEM 19,  -2, 't' ; 0 = Food
-       ; ITEM 20,  -1, 't',  10, %00000011 ; ITEM 20,  -1, 't' ; 1 = Textiles
-       ; ITEM 65,  -3, 't',   2, %00000111 ; ITEM 65,  -3, 't' ; 2 = Radioactives
-       ; ITEM 40,  -5, 't', 226, %00011111 ; ITEM 40,  -5, 't' ; 3 = Slaves
-       ; ITEM 83,  -5, 't', 251, %00001111 ; ITEM 83,  -5, 't' ; 4 = Liquor/Wines
-       ; ITEM 196,  8, 't',  54, %00000011 ; ITEM 196,  8, 't' ; 5 = Luxuries
-       ; ITEM 235, 29, 't',   8, %01111000 ; ITEM 235, 29, 't' ; 6 = Narcotics
-       ; ITEM 154, 14, 't',  56, %00000011 ; ITEM 154, 14, 't' ; 7 = Computers
-       ; ITEM 117,  6, 't',  40, %00000111 ; ITEM 117,  6, 't' ; 8 = Machinery
-       ; ITEM 78,   1, 't',  17, %00011111 ; ITEM 78,   1, 't' ; 9 = Alloys
-       ; ITEM 124, 13, 't',  29, %00000111 ; ITEM 124, 13, 't' ; 10 = Firearms
-       ; ITEM 176, -9, 't', 220, %00111111 ; ITEM 176, -9, 't' ; 11 = Furs
-       ; ITEM 32,  -1, 't',  53, %00000011 ; ITEM 32,  -1, 't' ; 12 = Minerals
-       ; ITEM 97,  -1, 'k',  66, %00000111 ; ITEM 97,  -1, 'k' ; 13 = Gold
-       ; ITEM 171, -2, 'k',  55, %00011111 ; ITEM 171, -2, 'k' ; 14 = Platinum
-       ; ITEM 45,  -1, 'g', 250, %00001111 ; ITEM 45,  -1, 'g' ; 15 = Gem-Stones
-       ; ITEM 53,  15, 't', 192, %00000111 ; ITEM 53,  15, 't' ; 16 = Alien items
+       byte >13, >82, >06, >01                             ; 0 = Food
+       byte >14, >81, >0a, >03                             ; 1 = Textiles
+       byte >41, >83, >02, >07                             ; 2 = Radioactives
+       byte >28, >85, >e2, >1f                             ; 3 = Slaves
+       byte >53, >85, >fb, >0f                             ; 4 = Liquor/Wines
+       byte >c4, >08, >36, >03                             ; 5 = Luxuries
+       byte >eb, >1d, >08, >78                             ; 6 = Narcotics
+       byte >9a, >0e, >38, >03                             ; 7 = Computers
+       byte >75, >06, >28, >07                             ; 8 = Machinery
+       byte >4e, >01, >11, >1f                             ; 9 = Alloys
+       byte >7c, >0d, >1d, >07                             ; 10 = Firearms
+       byte >b0, >89, >dc, >3f                             ; 11 = Furs
+       byte >20, >81, >35, >03                             ; 12 = Minerals
+       byte >61, >a1, >42, >07                             ; 13 = Gold
+       byte >ab, >a2, >37, >1f                             ; 14 = Platinum
+       byte >2d, >c1, >fa, >0f                             ; 15 = Gem-Stones
+       byte >35, >0f, >c0, >07                             ; 16 = Alien items
 
 * ******************************************************************************
 * 
@@ -35431,19 +35481,19 @@ LOAD_SHIPS.:
 * ******************************************************************************
 
 XX21:
-       data >0000                                          ; 1 = Sidewinder
-       data >0000                                          ; COPS =  2 = Viper
-       data >0000                                          ; 3 = Mamba
-       data >0000                                          ; 4 = Python
-       data >0000                                          ; 5 = Cobra Mk III (bounty hunter)
-       data >0000                                          ; THG  =  6 = Thargoid
-       data >0000                                          ; CYL  =  7 = Cobra Mk III (trader)
-       data >0000                                          ; SST  =  8 = Coriolis space station
-       data >0000                                          ; MSL  =  9 = Missile
-       data >0000                                          ; AST  = 10 = Asteroid
-       data >0000                                          ; OIL  = 11 = Cargo canister
-       data >0000                                          ; TGL  = 12 = Thargon
-       data >0000                                          ; ESC  = 13 = Escape pod
+       data SHIP_SIDEWINDER                                ; 1 = Sidewinder
+       data SHIP_VIPER                                     ; COPS =  2 = Viper
+       data SHIP_MAMBA                                     ; 3 = Mamba
+       data SHIP_PYTHON                                    ; 4 = Python
+       data SHIP_COBRA_MK_3                                ; 5 = Cobra Mk III (bounty hunter)
+       data SHIP_THARGOID                                  ; THG  =  6 = Thargoid
+       data SHIP_COBRA_MK_3                                ; CYL  =  7 = Cobra Mk III (trader)
+       data SHIP_CORIOLIS                                  ; SST  =  8 = Coriolis space station
+       data SHIP_MISSILE                                   ; MSL  =  9 = Missile
+       data SHIP_ASTEROID                                  ; AST  = 10 = Asteroid
+       data SHIP_CANISTER                                  ; OIL  = 11 = Cargo canister
+       data SHIP_THARGON                                   ; TGL  = 12 = Thargon
+       data SHIP_ESCAPE_POD                                ; ESC  = 13 = Escape pod
 
 * ******************************************************************************
 * 
@@ -35633,10 +35683,10 @@ XX21:
 
 SHIP_SIDEWINDER:
        byte >00                                            ; Max. canisters on demise = 0
-       data >4100                                          ; Targetable area          = 65 * 65
+       data 65 * 65                                        ; Targetable area          = 65 * 65
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_SIDEWINDER_EDGES - SHIP_SIDEWINDER).256  ; Edges data offset (low)
+       byte (SHIP_SIDEWINDER_FACES - SHIP_SIDEWINDER).256  ; Faces data offset (low)
 
        byte >3d                                            ; Max. edge count          = (61 - 1) / 4 = 15
        byte >00                                            ; Gun vertex               = 0
@@ -35649,8 +35699,8 @@ SHIP_SIDEWINDER:
        byte >46                                            ; Max. energy              = 70
        byte >25                                            ; Max. speed               = 37
 
-       byte >00                                            ; Edges data offset (high)
-       byte >00                                            ; Faces data offset (high)
+       byte (SHIP_SIDEWINDER_EDGES - SHIP_SIDEWINDER)/256  ; Edges data offset (high)
+       byte (SHIP_SIDEWINDER_FACES - SHIP_SIDEWINDER)/256  ; Faces data offset (high)
 
        byte >02                                            ; Normals are scaled by    = 2^2 = 4
        byte >10                                            ; Laser power              = 2
@@ -35658,44 +35708,44 @@ SHIP_SIDEWINDER:
 
 SHIP_SIDEWINDER_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX  -32,    0,   36,     0,      1,    4,     5,         31 ; VERTEX  -32,    0 ; Vertex 0
-       ; VERTEX   32,    0,   36,     0,      2,    5,     6,         31 ; VERTEX   32,    0 ; Vertex 1
-       ; VERTEX   64,    0,  -28,     2,      3,    6,     6,         31 ; VERTEX   64,    0 ; Vertex 2
-       ; VERTEX  -64,    0,  -28,     1,      3,    4,     4,         31 ; VERTEX  -64,    0 ; Vertex 3
-       ; VERTEX    0,   16,  -28,     0,      1,    2,     3,         31 ; VERTEX    0,   16 ; Vertex 4
-       ; VERTEX    0,  -16,  -28,     3,      4,    5,     6,         31 ; VERTEX    0,  -16 ; Vertex 5
-       ; VERTEX  -12,    6,  -28,     3,      3,    3,     3,         15 ; VERTEX  -12,    6 ; Vertex 6
-       ; VERTEX   12,    6,  -28,     3,      3,    3,     3,         15 ; VERTEX   12,    6 ; Vertex 7
-       ; VERTEX   12,   -6,  -28,     3,      3,    3,     3,         12 ; VERTEX   12,   -6 ; Vertex 8
-       ; VERTEX  -12,   -6,  -28,     3,      3,    3,     3,         12 ; VERTEX  -12,   -6 ; Vertex 9
+       byte >20, >00, >24, >9f, >10, >54                   ; Vertex 0
+       byte >20, >00, >24, >1f, >20, >65                   ; Vertex 1
+       byte >40, >00, >1c, >3f, >32, >66                   ; Vertex 2
+       byte >40, >00, >1c, >bf, >31, >44                   ; Vertex 3
+       byte >00, >10, >1c, >3f, >10, >32                   ; Vertex 4
+       byte >00, >10, >1c, >7f, >43, >65                   ; Vertex 5
+       byte >0c, >06, >1c, >af, >33, >33                   ; Vertex 6
+       byte >0c, >06, >1c, >2f, >33, >33                   ; Vertex 7
+       byte >0c, >06, >1c, >6c, >33, >33                   ; Vertex 8
+       byte >0c, >06, >1c, >ec, >33, >33                   ; Vertex 9
 
 SHIP_SIDEWINDER_EDGES:
                                                            ; vertex1, vertex2, face1, face2, visibility
-       ; EDGE       0,       1,     0,     5,         31 ; EDGE       0,     ; Edge 0
-       ; EDGE       1,       2,     2,     6,         31 ; EDGE       1,     ; Edge 1
-       ; EDGE       1,       4,     0,     2,         31 ; EDGE       1,     ; Edge 2
-       ; EDGE       0,       4,     0,     1,         31 ; EDGE       0,     ; Edge 3
-       ; EDGE       0,       3,     1,     4,         31 ; EDGE       0,     ; Edge 4
-       ; EDGE       3,       4,     1,     3,         31 ; EDGE       3,     ; Edge 5
-       ; EDGE       2,       4,     2,     3,         31 ; EDGE       2,     ; Edge 6
-       ; EDGE       3,       5,     3,     4,         31 ; EDGE       3,     ; Edge 7
-       ; EDGE       2,       5,     3,     6,         31 ; EDGE       2,     ; Edge 8
-       ; EDGE       1,       5,     5,     6,         31 ; EDGE       1,     ; Edge 9
-       ; EDGE       0,       5,     4,     5,         31 ; EDGE       0,     ; Edge 10
-       ; EDGE       6,       7,     3,     3,         15 ; EDGE       6,     ; Edge 11
-       ; EDGE       7,       8,     3,     3,         12 ; EDGE       7,     ; Edge 12
-       ; EDGE       6,       9,     3,     3,         12 ; EDGE       6,     ; Edge 13
-       ; EDGE       8,       9,     3,     3,         12 ; EDGE       8,     ; Edge 14
+       byte >1f, >50, >00, >04                             ; Edge 0
+       byte >1f, >62, >04, >08                             ; Edge 1
+       byte >1f, >20, >04, >10                             ; Edge 2
+       byte >1f, >10, >00, >10                             ; Edge 3
+       byte >1f, >41, >00, >0c                             ; Edge 4
+       byte >1f, >31, >0c, >10                             ; Edge 5
+       byte >1f, >32, >08, >10                             ; Edge 6
+       byte >1f, >43, >0c, >14                             ; Edge 7
+       byte >1f, >63, >08, >14                             ; Edge 8
+       byte >1f, >65, >04, >14                             ; Edge 9
+       byte >1f, >54, >00, >14                             ; Edge 10
+       byte >0f, >33, >18, >1c                             ; Edge 11
+       byte >0c, >33, >1c, >20                             ; Edge 12
+       byte >0c, >33, >18, >24                             ; Edge 13
+       byte >0c, >33, >20, >24                             ; Edge 14
 
 SHIP_SIDEWINDER_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE        0,       32,        8,         31 ; FACE        0,    ; Face 0
-       ; FACE      -12,       47,        6,         31 ; FACE      -12,    ; Face 1
-       ; FACE       12,       47,        6,         31 ; FACE       12,    ; Face 2
-       ; FACE        0,        0,     -112,         31 ; FACE        0,    ; Face 3
-       ; FACE      -12,      -47,        6,         31 ; FACE      -12,    ; Face 4
-       ; FACE        0,      -32,        8,         31 ; FACE        0,    ; Face 5
-       ; FACE       12,      -47,        6,         31 ; FACE       12,    ; Face 6
+       byte >1f, >00, >20, >08                             ; Face 0
+       byte >9f, >0c, >2f, >06                             ; Face 1
+       byte >1f, >0c, >2f, >06                             ; Face 2
+       byte >3f, >00, >00, >70                             ; Face 3
+       byte >df, >0c, >2f, >06                             ; Face 4
+       byte >5f, >00, >20, >08                             ; Face 5
+       byte >5f, >0c, >2f, >06                             ; Face 6
 
 * ******************************************************************************
 * 
@@ -35709,10 +35759,10 @@ SHIP_SIDEWINDER_FACES:
 
 SHIP_VIPER:
        byte >00                                            ; Max. canisters on demise = 0
-       data >4b00                                          ; Targetable area          = 75 * 75
+       data 75 * 75                                        ; Targetable area          = 75 * 75
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_VIPER_EDGES - SHIP_VIPER).256            ; Edges data offset (low)
+       byte (SHIP_VIPER_FACES - SHIP_VIPER).256            ; Faces data offset (low)
 
        byte >4d                                            ; Max. edge count          = (77 - 1) / 4 = 19
        byte >00                                            ; Gun vertex               = 0
@@ -35725,8 +35775,8 @@ SHIP_VIPER:
        byte >78                                            ; Max. energy              = 120
        byte >20                                            ; Max. speed               = 32
 
-       byte >00                                            ; Edges data offset (high)
-       byte >00                                            ; Faces data offset (high)
+       byte (SHIP_VIPER_EDGES - SHIP_VIPER)/256            ; Edges data offset (high)
+       byte (SHIP_VIPER_FACES - SHIP_VIPER)/256            ; Faces data offset (high)
 
        byte >01                                            ; Normals are scaled by    = 2^1 = 2
        byte >11                                            ; Laser power              = 2
@@ -35734,54 +35784,54 @@ SHIP_VIPER:
 
 SHIP_VIPER_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX    0,    0,   72,     1,      2,    3,     4,         31 ; VERTEX    0,    0 ; Vertex 0
-       ; VERTEX    0,   16,   24,     0,      1,    2,     2,         30 ; VERTEX    0,   16 ; Vertex 1
-       ; VERTEX    0,  -16,   24,     3,      4,    5,     5,         30 ; VERTEX    0,  -16 ; Vertex 2
-       ; VERTEX   48,    0,  -24,     2,      4,    6,     6,         31 ; VERTEX   48,    0 ; Vertex 3
-       ; VERTEX  -48,    0,  -24,     1,      3,    6,     6,         31 ; VERTEX  -48,    0 ; Vertex 4
-       ; VERTEX   24,  -16,  -24,     4,      5,    6,     6,         30 ; VERTEX   24,  -16 ; Vertex 5
-       ; VERTEX  -24,  -16,  -24,     5,      3,    6,     6,         30 ; VERTEX  -24,  -16 ; Vertex 6
-       ; VERTEX   24,   16,  -24,     0,      2,    6,     6,         31 ; VERTEX   24,   16 ; Vertex 7
-       ; VERTEX  -24,   16,  -24,     0,      1,    6,     6,         31 ; VERTEX  -24,   16 ; Vertex 8
-       ; VERTEX  -32,    0,  -24,     6,      6,    6,     6,         19 ; VERTEX  -32,    0 ; Vertex 9
-       ; VERTEX   32,    0,  -24,     6,      6,    6,     6,         19 ; VERTEX   32,    0 ; Vertex 10
-       ; VERTEX    8,    8,  -24,     6,      6,    6,     6,         19 ; VERTEX    8,    8 ; Vertex 11
-       ; VERTEX   -8,    8,  -24,     6,      6,    6,     6,         19 ; VERTEX   -8,    8 ; Vertex 12
-       ; VERTEX   -8,   -8,  -24,     6,      6,    6,     6,         18 ; VERTEX   -8,   -8 ; Vertex 13
-       ; VERTEX    8,   -8,  -24,     6,      6,    6,     6,         18 ; VERTEX    8,   -8 ; Vertex 14
+       byte >00, >00, >48, >1f, >21, >43                   ; Vertex 0
+       byte >00, >10, >18, >1e, >10, >22                   ; Vertex 1
+       byte >00, >10, >18, >5e, >43, >55                   ; Vertex 2
+       byte >30, >00, >18, >3f, >42, >66                   ; Vertex 3
+       byte >30, >00, >18, >bf, >31, >66                   ; Vertex 4
+       byte >18, >10, >18, >7e, >54, >66                   ; Vertex 5
+       byte >18, >10, >18, >fe, >35, >66                   ; Vertex 6
+       byte >18, >10, >18, >3f, >20, >66                   ; Vertex 7
+       byte >18, >10, >18, >bf, >10, >66                   ; Vertex 8
+       byte >20, >00, >18, >b3, >66, >66                   ; Vertex 9
+       byte >20, >00, >18, >33, >66, >66                   ; Vertex 10
+       byte >08, >08, >18, >33, >66, >66                   ; Vertex 11
+       byte >08, >08, >18, >b3, >66, >66                   ; Vertex 12
+       byte >08, >08, >18, >f2, >66, >66                   ; Vertex 13
+       byte >08, >08, >18, >72, >66, >66                   ; Vertex 14
 
 SHIP_VIPER_EDGES:
                                                            ; vertex1, vertex2, face1, face2, visibility
-       ; EDGE       0,       3,     2,     4,         31 ; EDGE       0,     ; Edge 0
-       ; EDGE       0,       1,     1,     2,         30 ; EDGE       0,     ; Edge 1
-       ; EDGE       0,       2,     3,     4,         30 ; EDGE       0,     ; Edge 2
-       ; EDGE       0,       4,     1,     3,         31 ; EDGE       0,     ; Edge 3
-       ; EDGE       1,       7,     0,     2,         30 ; EDGE       1,     ; Edge 4
-       ; EDGE       1,       8,     0,     1,         30 ; EDGE       1,     ; Edge 5
-       ; EDGE       2,       5,     4,     5,         30 ; EDGE       2,     ; Edge 6
-       ; EDGE       2,       6,     3,     5,         30 ; EDGE       2,     ; Edge 7
-       ; EDGE       7,       8,     0,     6,         31 ; EDGE       7,     ; Edge 8
-       ; EDGE       5,       6,     5,     6,         30 ; EDGE       5,     ; Edge 9
-       ; EDGE       4,       8,     1,     6,         31 ; EDGE       4,     ; Edge 10
-       ; EDGE       4,       6,     3,     6,         30 ; EDGE       4,     ; Edge 11
-       ; EDGE       3,       7,     2,     6,         31 ; EDGE       3,     ; Edge 12
-       ; EDGE       3,       5,     6,     4,         30 ; EDGE       3,     ; Edge 13
-       ; EDGE       9,      12,     6,     6,         19 ; EDGE       9,     ; Edge 14
-       ; EDGE       9,      13,     6,     6,         18 ; EDGE       9,     ; Edge 15
-       ; EDGE      10,      11,     6,     6,         19 ; EDGE      10,     ; Edge 16
-       ; EDGE      10,      14,     6,     6,         18 ; EDGE      10,     ; Edge 17
-       ; EDGE      11,      14,     6,     6,         16 ; EDGE      11,     ; Edge 18
-       ; EDGE      12,      13,     6,     6,         16 ; EDGE      12,     ; Edge 19
+       byte >1f, >42, >00, >0c                             ; Edge 0
+       byte >1e, >21, >00, >04                             ; Edge 1
+       byte >1e, >43, >00, >08                             ; Edge 2
+       byte >1f, >31, >00, >10                             ; Edge 3
+       byte >1e, >20, >04, >1c                             ; Edge 4
+       byte >1e, >10, >04, >20                             ; Edge 5
+       byte >1e, >54, >08, >14                             ; Edge 6
+       byte >1e, >53, >08, >18                             ; Edge 7
+       byte >1f, >60, >1c, >20                             ; Edge 8
+       byte >1e, >65, >14, >18                             ; Edge 9
+       byte >1f, >61, >10, >20                             ; Edge 10
+       byte >1e, >63, >10, >18                             ; Edge 11
+       byte >1f, >62, >0c, >1c                             ; Edge 12
+       byte >1e, >46, >0c, >14                             ; Edge 13
+       byte >13, >66, >24, >30                             ; Edge 14
+       byte >12, >66, >24, >34                             ; Edge 15
+       byte >13, >66, >28, >2c                             ; Edge 16
+       byte >12, >66, >28, >38                             ; Edge 17
+       byte >10, >66, >2c, >38                             ; Edge 18
+       byte >10, >66, >30, >34                             ; Edge 19
 
 SHIP_VIPER_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE        0,       32,        0,         31 ; FACE        0,    ; Face 0
-       ; FACE      -22,       33,       11,         31 ; FACE      -22,    ; Face 1
-       ; FACE       22,       33,       11,         31 ; FACE       22,    ; Face 2
-       ; FACE      -22,      -33,       11,         31 ; FACE      -22,    ; Face 3
-       ; FACE       22,      -33,       11,         31 ; FACE       22,    ; Face 4
-       ; FACE        0,      -32,        0,         31 ; FACE        0,    ; Face 5
-       ; FACE        0,        0,      -48,         31 ; FACE        0,    ; Face 6
+       byte >1f, >00, >20, >00                             ; Face 0
+       byte >9f, >16, >21, >0b                             ; Face 1
+       byte >1f, >16, >21, >0b                             ; Face 2
+       byte >df, >16, >21, >0b                             ; Face 3
+       byte >5f, >16, >21, >0b                             ; Face 4
+       byte >5f, >00, >20, >00                             ; Face 5
+       byte >3f, >00, >00, >30                             ; Face 6
 
 * ******************************************************************************
 * 
@@ -35795,10 +35845,10 @@ SHIP_VIPER_FACES:
 
 SHIP_MAMBA:
        byte >01                                            ; Max. canisters on demise = 1
-       data >4600                                          ; Targetable area          = 70 * 70
+       data 70 * 70                                        ; Targetable area          = 70 * 70
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_MAMBA_EDGES - SHIP_MAMBA).256            ; Edges data offset (low)
+       byte (SHIP_MAMBA_FACES - SHIP_MAMBA).256            ; Faces data offset (low)
 
        byte >5d                                            ; Max. edge count          = (93 - 1) / 4 = 23
        byte >00                                            ; Gun vertex               = 0
@@ -35811,8 +35861,8 @@ SHIP_MAMBA:
        byte >5a                                            ; Max. energy              = 90
        byte >1e                                            ; Max. speed               = 30
 
-       byte >00                                            ; Edges data offset (high)
-       byte >00                                            ; Faces data offset (high)
+       byte (SHIP_MAMBA_EDGES - SHIP_MAMBA)/256            ; Edges data offset (high)
+       byte (SHIP_MAMBA_FACES - SHIP_MAMBA)/256            ; Faces data offset (high)
 
        byte >02                                            ; Normals are scaled by    = 2^2 = 4
        byte >12                                            ; Laser power              = 2
@@ -35820,70 +35870,70 @@ SHIP_MAMBA:
 
 SHIP_MAMBA_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX    0,    0,   64,     0,      1,    2,     3,         31 ; VERTEX    0,    0 ; Vertex 0
-       ; VERTEX  -64,   -8,  -32,     0,      2,    4,     4,         31 ; VERTEX  -64,   -8 ; Vertex 1
-       ; VERTEX  -32,    8,  -32,     1,      2,    4,     4,         30 ; VERTEX  -32,    8 ; Vertex 2
-       ; VERTEX   32,    8,  -32,     1,      3,    4,     4,         30 ; VERTEX   32,    8 ; Vertex 3
-       ; VERTEX   64,   -8,  -32,     0,      3,    4,     4,         31 ; VERTEX   64,   -8 ; Vertex 4
-       ; VERTEX   -4,    4,   16,     1,      1,    1,     1,         14 ; VERTEX   -4,    4 ; Vertex 5
-       ; VERTEX    4,    4,   16,     1,      1,    1,     1,         14 ; VERTEX    4,    4 ; Vertex 6
-       ; VERTEX    8,    3,   28,     1,      1,    1,     1,         13 ; VERTEX    8,    3 ; Vertex 7
-       ; VERTEX   -8,    3,   28,     1,      1,    1,     1,         13 ; VERTEX   -8,    3 ; Vertex 8
-       ; VERTEX  -20,   -4,   16,     0,      0,    0,     0,         20 ; VERTEX  -20,   -4 ; Vertex 9
-       ; VERTEX   20,   -4,   16,     0,      0,    0,     0,         20 ; VERTEX   20,   -4 ; Vertex 10
-       ; VERTEX  -24,   -7,  -20,     0,      0,    0,     0,         20 ; VERTEX  -24,   -7 ; Vertex 11
-       ; VERTEX  -16,   -7,  -20,     0,      0,    0,     0,         16 ; VERTEX  -16,   -7 ; Vertex 12
-       ; VERTEX   16,   -7,  -20,     0,      0,    0,     0,         16 ; VERTEX   16,   -7 ; Vertex 13
-       ; VERTEX   24,   -7,  -20,     0,      0,    0,     0,         20 ; VERTEX   24,   -7 ; Vertex 14
-       ; VERTEX   -8,    4,  -32,     4,      4,    4,     4,         13 ; VERTEX   -8,    4 ; Vertex 15
-       ; VERTEX    8,    4,  -32,     4,      4,    4,     4,         13 ; VERTEX    8,    4 ; Vertex 16
-       ; VERTEX    8,   -4,  -32,     4,      4,    4,     4,         14 ; VERTEX    8,   -4 ; Vertex 17
-       ; VERTEX   -8,   -4,  -32,     4,      4,    4,     4,         14 ; VERTEX   -8,   -4 ; Vertex 18
-       ; VERTEX  -32,    4,  -32,     4,      4,    4,     4,          7 ; VERTEX  -32,    4 ; Vertex 19
-       ; VERTEX   32,    4,  -32,     4,      4,    4,     4,          7 ; VERTEX   32,    4 ; Vertex 20
-       ; VERTEX   36,   -4,  -32,     4,      4,    4,     4,          7 ; VERTEX   36,   -4 ; Vertex 21
-       ; VERTEX  -36,   -4,  -32,     4,      4,    4,     4,          7 ; VERTEX  -36,   -4 ; Vertex 22
-       ; VERTEX  -38,    0,  -32,     4,      4,    4,     4,          5 ; VERTEX  -38,    0 ; Vertex 23
-       ; VERTEX   38,    0,  -32,     4,      4,    4,     4,          5 ; VERTEX   38,    0 ; Vertex 24
+       byte >00, >00, >40, >1f, >10, >32                   ; Vertex 0
+       byte >40, >08, >20, >ff, >20, >44                   ; Vertex 1
+       byte >20, >08, >20, >be, >21, >44                   ; Vertex 2
+       byte >20, >08, >20, >3e, >31, >44                   ; Vertex 3
+       byte >40, >08, >20, >7f, >30, >44                   ; Vertex 4
+       byte >04, >04, >10, >8e, >11, >11                   ; Vertex 5
+       byte >04, >04, >10, >0e, >11, >11                   ; Vertex 6
+       byte >08, >03, >1c, >0d, >11, >11                   ; Vertex 7
+       byte >08, >03, >1c, >8d, >11, >11                   ; Vertex 8
+       byte >14, >04, >10, >d4, >00, >00                   ; Vertex 9
+       byte >14, >04, >10, >54, >00, >00                   ; Vertex 10
+       byte >18, >07, >14, >f4, >00, >00                   ; Vertex 11
+       byte >10, >07, >14, >f0, >00, >00                   ; Vertex 12
+       byte >10, >07, >14, >70, >00, >00                   ; Vertex 13
+       byte >18, >07, >14, >74, >00, >00                   ; Vertex 14
+       byte >08, >04, >20, >ad, >44, >44                   ; Vertex 15
+       byte >08, >04, >20, >2d, >44, >44                   ; Vertex 16
+       byte >08, >04, >20, >6e, >44, >44                   ; Vertex 17
+       byte >08, >04, >20, >ee, >44, >44                   ; Vertex 18
+       byte >20, >04, >20, >a7, >44, >44                   ; Vertex 19
+       byte >20, >04, >20, >27, >44, >44                   ; Vertex 20
+       byte >24, >04, >20, >67, >44, >44                   ; Vertex 21
+       byte >24, >04, >20, >e7, >44, >44                   ; Vertex 22
+       byte >26, >00, >20, >a5, >44, >44                   ; Vertex 23
+       byte >26, >00, >20, >25, >44, >44                   ; Vertex 24
 
 SHIP_MAMBA_EDGES:
                                                            ; vertex1, vertex2, face1, face2, visibility
-       ; EDGE       0,       1,     0,     2,         31 ; EDGE       0,     ; Edge 0
-       ; EDGE       0,       4,     0,     3,         31 ; EDGE       0,     ; Edge 1
-       ; EDGE       1,       4,     0,     4,         31 ; EDGE       1,     ; Edge 2
-       ; EDGE       1,       2,     2,     4,         30 ; EDGE       1,     ; Edge 3
-       ; EDGE       2,       3,     1,     4,         30 ; EDGE       2,     ; Edge 4
-       ; EDGE       3,       4,     3,     4,         30 ; EDGE       3,     ; Edge 5
-       ; EDGE       5,       6,     1,     1,         14 ; EDGE       5,     ; Edge 6
-       ; EDGE       6,       7,     1,     1,         12 ; EDGE       6,     ; Edge 7
-       ; EDGE       7,       8,     1,     1,         13 ; EDGE       7,     ; Edge 8
-       ; EDGE       5,       8,     1,     1,         12 ; EDGE       5,     ; Edge 9
-       ; EDGE       9,      11,     0,     0,         20 ; EDGE       9,     ; Edge 10
-       ; EDGE       9,      12,     0,     0,         16 ; EDGE       9,     ; Edge 11
-       ; EDGE      10,      13,     0,     0,         16 ; EDGE      10,     ; Edge 12
-       ; EDGE      10,      14,     0,     0,         20 ; EDGE      10,     ; Edge 13
-       ; EDGE      13,      14,     0,     0,         14 ; EDGE      13,     ; Edge 14
-       ; EDGE      11,      12,     0,     0,         14 ; EDGE      11,     ; Edge 15
-       ; EDGE      15,      16,     4,     4,         13 ; EDGE      15,     ; Edge 16
-       ; EDGE      17,      18,     4,     4,         14 ; EDGE      17,     ; Edge 17
-       ; EDGE      15,      18,     4,     4,         12 ; EDGE      15,     ; Edge 18
-       ; EDGE      16,      17,     4,     4,         12 ; EDGE      16,     ; Edge 19
-       ; EDGE      20,      21,     4,     4,          7 ; EDGE      20,     ; Edge 20
-       ; EDGE      20,      24,     4,     4,          5 ; EDGE      20,     ; Edge 21
-       ; EDGE      21,      24,     4,     4,          5 ; EDGE      21,     ; Edge 22
-       ; EDGE      19,      22,     4,     4,          7 ; EDGE      19,     ; Edge 23
-       ; EDGE      19,      23,     4,     4,          5 ; EDGE      19,     ; Edge 24
-       ; EDGE      22,      23,     4,     4,          5 ; EDGE      22,     ; Edge 25
-       ; EDGE       0,       2,     1,     2,         30 ; EDGE       0,     ; Edge 26
-       ; EDGE       0,       3,     1,     3,         30 ; EDGE       0,     ; Edge 27
+       byte >1f, >20, >00, >04                             ; Edge 0
+       byte >1f, >30, >00, >10                             ; Edge 1
+       byte >1f, >40, >04, >10                             ; Edge 2
+       byte >1e, >42, >04, >08                             ; Edge 3
+       byte >1e, >41, >08, >0c                             ; Edge 4
+       byte >1e, >43, >0c, >10                             ; Edge 5
+       byte >0e, >11, >14, >18                             ; Edge 6
+       byte >0c, >11, >18, >1c                             ; Edge 7
+       byte >0d, >11, >1c, >20                             ; Edge 8
+       byte >0c, >11, >14, >20                             ; Edge 9
+       byte >14, >00, >24, >2c                             ; Edge 10
+       byte >10, >00, >24, >30                             ; Edge 11
+       byte >10, >00, >28, >34                             ; Edge 12
+       byte >14, >00, >28, >38                             ; Edge 13
+       byte >0e, >00, >34, >38                             ; Edge 14
+       byte >0e, >00, >2c, >30                             ; Edge 15
+       byte >0d, >44, >3c, >40                             ; Edge 16
+       byte >0e, >44, >44, >48                             ; Edge 17
+       byte >0c, >44, >3c, >48                             ; Edge 18
+       byte >0c, >44, >40, >44                             ; Edge 19
+       byte >07, >44, >50, >54                             ; Edge 20
+       byte >05, >44, >50, >60                             ; Edge 21
+       byte >05, >44, >54, >60                             ; Edge 22
+       byte >07, >44, >4c, >58                             ; Edge 23
+       byte >05, >44, >4c, >5c                             ; Edge 24
+       byte >05, >44, >58, >5c                             ; Edge 25
+       byte >1e, >21, >00, >08                             ; Edge 26
+       byte >1e, >31, >00, >0c                             ; Edge 27
 
 SHIP_MAMBA_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE        0,      -24,        2,         30 ; FACE        0,    ; Face 0
-       ; FACE        0,       24,        2,         30 ; FACE        0,    ; Face 1
-       ; FACE      -32,       64,       16,         30 ; FACE      -32,    ; Face 2
-       ; FACE       32,       64,       16,         30 ; FACE       32,    ; Face 3
-       ; FACE        0,        0,     -127,         30 ; FACE        0,    ; Face 4
+       byte >5e, >00, >18, >02                             ; Face 0
+       byte >1e, >00, >18, >02                             ; Face 1
+       byte >9e, >20, >40, >10                             ; Face 2
+       byte >1e, >20, >40, >10                             ; Face 3
+       byte >3e, >00, >00, >7f                             ; Face 4
 
 * ******************************************************************************
 * 
@@ -35897,10 +35947,10 @@ SHIP_MAMBA_FACES:
 
 SHIP_COBRA_MK_3:
        byte >03                                            ; Max. canisters on demise = 3
-       data >5f00                                          ; Targetable area          = 95 * 95
+       data 95 * 95                                        ; Targetable area          = 95 * 95
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_COBRA_MK_3_EDGES - SHIP_COBRA_MK_3).256  ; Edges data offset (low)
+       byte (SHIP_COBRA_MK_3_FACES - SHIP_COBRA_MK_3).256  ; Faces data offset (low)
 
        byte >99                                            ; Max. edge count          = (153 - 1) / 4 = 38
        byte >54                                            ; Gun vertex               = 84 / 4 = 21
@@ -35913,8 +35963,8 @@ SHIP_COBRA_MK_3:
        byte >96                                            ; Max. energy              = 150
        byte >1c                                            ; Max. speed               = 28
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_COBRA_MK_3_EDGES - SHIP_COBRA_MK_3)/256  ; Edges data offset (low)
+       byte (SHIP_COBRA_MK_3_FACES - SHIP_COBRA_MK_3)/256  ; Faces data offset (low)
 
        byte >01                                            ; Normals are scaled by    = 2^1 = 2
        byte >13                                            ; Laser power              = 2
@@ -35922,91 +35972,91 @@ SHIP_COBRA_MK_3:
 
 SHIP_COBRA_MK_3_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX   32,    0,   76,    15,     15,   15,    15,         31 ; VERTEX   32,    0 ; Vertex 0
-       ; VERTEX  -32,    0,   76,    15,     15,   15,    15,         31 ; VERTEX  -32,    0 ; Vertex 1
-       ; VERTEX    0,   26,   24,    15,     15,   15,    15,         31 ; VERTEX    0,   26 ; Vertex 2
-       ; VERTEX -120,   -3,   -8,     3,      7,   10,    10,         31 ; VERTEX -120,   -3 ; Vertex 3
-       ; VERTEX  120,   -3,   -8,     4,      8,   12,    12,         31 ; VERTEX  120,   -3 ; Vertex 4
-       ; VERTEX  -88,   16,  -40,    15,     15,   15,    15,         31 ; VERTEX  -88,   16 ; Vertex 5
-       ; VERTEX   88,   16,  -40,    15,     15,   15,    15,         31 ; VERTEX   88,   16 ; Vertex 6
-       ; VERTEX  128,   -8,  -40,     8,      9,   12,    12,         31 ; VERTEX  128,   -8 ; Vertex 7
-       ; VERTEX -128,   -8,  -40,     7,      9,   10,    10,         31 ; VERTEX -128,   -8 ; Vertex 8
-       ; VERTEX    0,   26,  -40,     5,      6,    9,     9,         31 ; VERTEX    0,   26 ; Vertex 9
-       ; VERTEX  -32,  -24,  -40,     9,     10,   11,    11,         31 ; VERTEX  -32,  -24 ; Vertex 10
-       ; VERTEX   32,  -24,  -40,     9,     11,   12,    12,         31 ; VERTEX   32,  -24 ; Vertex 11
-       ; VERTEX  -36,    8,  -40,     9,      9,    9,     9,         20 ; VERTEX  -36,    8 ; Vertex 12
-       ; VERTEX   -8,   12,  -40,     9,      9,    9,     9,         20 ; VERTEX   -8,   12 ; Vertex 13
-       ; VERTEX    8,   12,  -40,     9,      9,    9,     9,         20 ; VERTEX    8,   12 ; Vertex 14
-       ; VERTEX   36,    8,  -40,     9,      9,    9,     9,         20 ; VERTEX   36,    8 ; Vertex 15
-       ; VERTEX   36,  -12,  -40,     9,      9,    9,     9,         20 ; VERTEX   36,  -12 ; Vertex 16
-       ; VERTEX    8,  -16,  -40,     9,      9,    9,     9,         20 ; VERTEX    8,  -16 ; Vertex 17
-       ; VERTEX   -8,  -16,  -40,     9,      9,    9,     9,         20 ; VERTEX   -8,  -16 ; Vertex 18
-       ; VERTEX  -36,  -12,  -40,     9,      9,    9,     9,         20 ; VERTEX  -36,  -12 ; Vertex 19
-       ; VERTEX    0,    0,   76,     0,     11,   11,    11,          6 ; VERTEX    0,    0 ; Vertex 20
-       ; VERTEX    0,    0,   90,     0,     11,   11,    11,         31 ; VERTEX    0,    0 ; Vertex 21
-       ; VERTEX  -80,   -6,  -40,     9,      9,    9,     9,          8 ; VERTEX  -80,   -6 ; Vertex 22
-       ; VERTEX  -80,    6,  -40,     9,      9,    9,     9,          8 ; VERTEX  -80,    6 ; Vertex 23
-       ; VERTEX  -88,    0,  -40,     9,      9,    9,     9,          6 ; VERTEX  -88,    0 ; Vertex 24
-       ; VERTEX   80,    6,  -40,     9,      9,    9,     9,          8 ; VERTEX   80,    6 ; Vertex 25
-       ; VERTEX   88,    0,  -40,     9,      9,    9,     9,          6 ; VERTEX   88,    0 ; Vertex 26
-       ; VERTEX   80,   -6,  -40,     9,      9,    9,     9,          8 ; VERTEX   80,   -6 ; Vertex 27
+       byte >20, >00, >4c, >1f, >ff, >ff                   ; Vertex 0
+       byte >20, >00, >4c, >9f, >ff, >ff                   ; Vertex 1
+       byte >00, >1a, >18, >1f, >ff, >ff                   ; Vertex 2
+       byte >78, >03, >08, >ff, >73, >aa                   ; Vertex 3
+       byte >78, >03, >08, >7f, >84, >cc                   ; Vertex 4
+       byte >58, >10, >28, >bf, >ff, >ff                   ; Vertex 5
+       byte >58, >10, >28, >3f, >ff, >ff                   ; Vertex 6
+       byte >80, >08, >28, >7f, >98, >cc                   ; Vertex 7
+       byte >80, >08, >28, >ff, >97, >aa                   ; Vertex 8
+       byte >00, >1a, >28, >3f, >65, >99                   ; Vertex 9
+       byte >20, >18, >28, >ff, >a9, >bb                   ; Vertex 10
+       byte >20, >18, >28, >7f, >b9, >cc                   ; Vertex 11
+       byte >24, >08, >28, >b4, >99, >99                   ; Vertex 12
+       byte >08, >0c, >28, >b4, >99, >99                   ; Vertex 13
+       byte >08, >0c, >28, >34, >99, >99                   ; Vertex 14
+       byte >24, >08, >28, >34, >99, >99                   ; Vertex 15
+       byte >24, >0c, >28, >74, >99, >99                   ; Vertex 16
+       byte >08, >10, >28, >74, >99, >99                   ; Vertex 17
+       byte >08, >10, >28, >f4, >99, >99                   ; Vertex 18
+       byte >24, >0c, >28, >f4, >99, >99                   ; Vertex 19
+       byte >00, >00, >4c, >06, >b0, >bb                   ; Vertex 20
+       byte >00, >00, >5a, >1f, >b0, >bb                   ; Vertex 21
+       byte >50, >06, >28, >e8, >99, >99                   ; Vertex 22
+       byte >50, >06, >28, >a8, >99, >99                   ; Vertex 23
+       byte >58, >00, >28, >a6, >99, >99                   ; Vertex 24
+       byte >50, >06, >28, >28, >99, >99                   ; Vertex 25
+       byte >58, >00, >28, >26, >99, >99                   ; Vertex 26
+       byte >50, >06, >28, >68, >99, >99                   ; Vertex 27
 
 SHIP_COBRA_MK_3_EDGES:
                                                            ; vertex1, vertex2, face1, face2, visibility
-       ; EDGE       0,       1,     0,    11,         31 ; EDGE       0,     ; Edge 0
-       ; EDGE       0,       4,     4,    12,         31 ; EDGE       0,     ; Edge 1
-       ; EDGE       1,       3,     3,    10,         31 ; EDGE       1,     ; Edge 2
-       ; EDGE       3,       8,     7,    10,         31 ; EDGE       3,     ; Edge 3
-       ; EDGE       4,       7,     8,    12,         31 ; EDGE       4,     ; Edge 4
-       ; EDGE       6,       7,     8,     9,         31 ; EDGE       6,     ; Edge 5
-       ; EDGE       6,       9,     6,     9,         31 ; EDGE       6,     ; Edge 6
-       ; EDGE       5,       9,     5,     9,         31 ; EDGE       5,     ; Edge 7
-       ; EDGE       5,       8,     7,     9,         31 ; EDGE       5,     ; Edge 8
-       ; EDGE       2,       5,     1,     5,         31 ; EDGE       2,     ; Edge 9
-       ; EDGE       2,       6,     2,     6,         31 ; EDGE       2,     ; Edge 10
-       ; EDGE       3,       5,     3,     7,         31 ; EDGE       3,     ; Edge 11
-       ; EDGE       4,       6,     4,     8,         31 ; EDGE       4,     ; Edge 12
-       ; EDGE       1,       2,     0,     1,         31 ; EDGE       1,     ; Edge 13
-       ; EDGE       0,       2,     0,     2,         31 ; EDGE       0,     ; Edge 14
-       ; EDGE       8,      10,     9,    10,         31 ; EDGE       8,     ; Edge 15
-       ; EDGE      10,      11,     9,    11,         31 ; EDGE      10,     ; Edge 16
-       ; EDGE       7,      11,     9,    12,         31 ; EDGE       7,     ; Edge 17
-       ; EDGE       1,      10,    10,    11,         31 ; EDGE       1,     ; Edge 18
-       ; EDGE       0,      11,    11,    12,         31 ; EDGE       0,     ; Edge 19
-       ; EDGE       1,       5,     1,     3,         29 ; EDGE       1,     ; Edge 20
-       ; EDGE       0,       6,     2,     4,         29 ; EDGE       0,     ; Edge 21
-       ; EDGE      20,      21,     0,    11,          6 ; EDGE      20,     ; Edge 22
-       ; EDGE      12,      13,     9,     9,         20 ; EDGE      12,     ; Edge 23
-       ; EDGE      18,      19,     9,     9,         20 ; EDGE      18,     ; Edge 24
-       ; EDGE      14,      15,     9,     9,         20 ; EDGE      14,     ; Edge 25
-       ; EDGE      16,      17,     9,     9,         20 ; EDGE      16,     ; Edge 26
-       ; EDGE      15,      16,     9,     9,         19 ; EDGE      15,     ; Edge 27
-       ; EDGE      14,      17,     9,     9,         17 ; EDGE      14,     ; Edge 28
-       ; EDGE      13,      18,     9,     9,         19 ; EDGE      13,     ; Edge 29
-       ; EDGE      12,      19,     9,     9,         19 ; EDGE      12,     ; Edge 30
-       ; EDGE       2,       9,     5,     6,         30 ; EDGE       2,     ; Edge 31
-       ; EDGE      22,      24,     9,     9,          6 ; EDGE      22,     ; Edge 32
-       ; EDGE      23,      24,     9,     9,          6 ; EDGE      23,     ; Edge 33
-       ; EDGE      22,      23,     9,     9,          8 ; EDGE      22,     ; Edge 34
-       ; EDGE      25,      26,     9,     9,          6 ; EDGE      25,     ; Edge 35
-       ; EDGE      26,      27,     9,     9,          6 ; EDGE      26,     ; Edge 36
-       ; EDGE      25,      27,     9,     9,          8 ; EDGE      25,     ; Edge 37
+       byte >1f, >b0, >00, >04                             ; Edge 0
+       byte >1f, >c4, >00, >10                             ; Edge 1
+       byte >1f, >a3, >04, >0c                             ; Edge 2
+       byte >1f, >a7, >0c, >20                             ; Edge 3
+       byte >1f, >c8, >10, >1c                             ; Edge 4
+       byte >1f, >98, >18, >1c                             ; Edge 5
+       byte >1f, >96, >18, >24                             ; Edge 6
+       byte >1f, >95, >14, >24                             ; Edge 7
+       byte >1f, >97, >14, >20                             ; Edge 8
+       byte >1f, >51, >08, >14                             ; Edge 9
+       byte >1f, >62, >08, >18                             ; Edge 10
+       byte >1f, >73, >0c, >14                             ; Edge 11
+       byte >1f, >84, >10, >18                             ; Edge 12
+       byte >1f, >10, >04, >08                             ; Edge 13
+       byte >1f, >20, >00, >08                             ; Edge 14
+       byte >1f, >a9, >20, >28                             ; Edge 15
+       byte >1f, >b9, >28, >2c                             ; Edge 16
+       byte >1f, >c9, >1c, >2c                             ; Edge 17
+       byte >1f, >ba, >04, >28                             ; Edge 18
+       byte >1f, >cb, >00, >2c                             ; Edge 19
+       byte >1d, >31, >04, >14                             ; Edge 20
+       byte >1d, >42, >00, >18                             ; Edge 21
+       byte >06, >b0, >50, >54                             ; Edge 22
+       byte >14, >99, >30, >34                             ; Edge 23
+       byte >14, >99, >48, >4c                             ; Edge 24
+       byte >14, >99, >38, >3c                             ; Edge 25
+       byte >14, >99, >40, >44                             ; Edge 26
+       byte >13, >99, >3c, >40                             ; Edge 27
+       byte >11, >99, >38, >44                             ; Edge 28
+       byte >13, >99, >34, >48                             ; Edge 29
+       byte >13, >99, >30, >4c                             ; Edge 30
+       byte >1e, >65, >08, >24                             ; Edge 31
+       byte >06, >99, >58, >60                             ; Edge 32
+       byte >06, >99, >5c, >60                             ; Edge 33
+       byte >08, >99, >58, >5c                             ; Edge 34
+       byte >06, >99, >64, >68                             ; Edge 35
+       byte >06, >99, >68, >6c                             ; Edge 36
+       byte >08, >99, >64, >6c                             ; Edge 37
 
 SHIP_COBRA_MK_3_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE        0,       62,       31,         31 ; FACE        0,    ; Face 0
-       ; FACE      -18,       55,       16,         31 ; FACE      -18,    ; Face 1
-       ; FACE       18,       55,       16,         31 ; FACE       18,    ; Face 2
-       ; FACE      -16,       52,       14,         31 ; FACE      -16,    ; Face 3
-       ; FACE       16,       52,       14,         31 ; FACE       16,    ; Face 4
-       ; FACE      -14,       47,        0,         31 ; FACE      -14,    ; Face 5
-       ; FACE       14,       47,        0,         31 ; FACE       14,    ; Face 6
-       ; FACE      -61,      102,        0,         31 ; FACE      -61,    ; Face 7
-       ; FACE       61,      102,        0,         31 ; FACE       61,    ; Face 8
-       ; FACE        0,        0,      -80,         31 ; FACE        0,    ; Face 9
-       ; FACE       -7,      -42,        9,         31 ; FACE       -7,    ; Face 10
-       ; FACE        0,      -30,        6,         31 ; FACE        0,    ; Face 11
-       ; FACE        7,      -42,        9,         31 ; FACE        7,    ; Face 12
+       byte >1f, >00, >3e, >1f                             ; Face 0
+       byte >9f, >12, >37, >10                             ; Face 1
+       byte >1f, >12, >37, >10                             ; Face 2
+       byte >9f, >10, >34, >0e                             ; Face 3
+       byte >1f, >10, >34, >0e                             ; Face 4
+       byte >9f, >0e, >2f, >00                             ; Face 5
+       byte >1f, >0e, >2f, >00                             ; Face 6
+       byte >9f, >3d, >66, >00                             ; Face 7
+       byte >1f, >3d, >66, >00                             ; Face 8
+       byte >3f, >00, >00, >50                             ; Face 9
+       byte >df, >07, >2a, >09                             ; Face 10
+       byte >5f, >00, >1e, >06                             ; Face 11
+       byte >5f, >07, >2a, >09                             ; Face 12
 
 * ******************************************************************************
 * 
@@ -36020,10 +36070,10 @@ SHIP_COBRA_MK_3_FACES:
 
 SHIP_THARGOID:
        byte >00                                            ; Max. canisters on demise = 0
-       data >6300                                          ; Targetable area          = 99 * 99
+       data 99 * 99                                        ; Targetable area          = 99 * 99
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_THARGOID_EDGES - SHIP_THARGOID).256      ; Edges data offset (low)
+       byte (SHIP_THARGOID_FACES - SHIP_THARGOID).256      ; Faces data offset (low)
 
        byte >65                                            ; Max. edge count          = (101 - 1) / 4 = 25
        byte >3c                                            ; Gun vertex               = 60 / 4 = 15
@@ -36036,8 +36086,8 @@ SHIP_THARGOID:
        byte >f0                                            ; Max. energy              = 240
        byte >27                                            ; Max. speed               = 39
 
-       byte >00                                            ; Edges data offset (high)
-       byte >00                                            ; Faces data offset (high)
+       byte (SHIP_THARGOID_EDGES - SHIP_THARGOID)/256      ; Edges data offset (high)
+       byte (SHIP_THARGOID_FACES - SHIP_THARGOID)/256      ; Faces data offset (high)
 
        byte >02                                            ; Normals are scaled by    = 2^2 = 4
        byte >16                                            ; Laser power              = 2
@@ -36045,68 +36095,68 @@ SHIP_THARGOID:
 
 SHIP_THARGOID_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX   32,  -48,   48,     0,      4,    8,     8,         31 ; VERTEX   32,  -48 ; Vertex 0
-       ; VERTEX   32,  -68,    0,     0,      1,    4,     4,         31 ; VERTEX   32,  -68 ; Vertex 1
-       ; VERTEX   32,  -48,  -48,     1,      2,    4,     4,         31 ; VERTEX   32,  -48 ; Vertex 2
-       ; VERTEX   32,    0,  -68,     2,      3,    4,     4,         31 ; VERTEX   32,    0 ; Vertex 3
-       ; VERTEX   32,   48,  -48,     3,      4,    5,     5,         31 ; VERTEX   32,   48 ; Vertex 4
-       ; VERTEX   32,   68,    0,     4,      5,    6,     6,         31 ; VERTEX   32,   68 ; Vertex 5
-       ; VERTEX   32,   48,   48,     4,      6,    7,     7,         31 ; VERTEX   32,   48 ; Vertex 6
-       ; VERTEX   32,    0,   68,     4,      7,    8,     8,         31 ; VERTEX   32,    0 ; Vertex 7
-       ; VERTEX  -24, -116,  116,     0,      8,    9,     9,         31 ; VERTEX  -24, -116 ; Vertex 8
-       ; VERTEX  -24, -164,    0,     0,      1,    9,     9,         31 ; VERTEX  -24, -164 ; Vertex 9
-       ; VERTEX  -24, -116, -116,     1,      2,    9,     9,         31 ; VERTEX  -24, -116 ; Vertex 10
-       ; VERTEX  -24,    0, -164,     2,      3,    9,     9,         31 ; VERTEX  -24,    0 ; Vertex 11
-       ; VERTEX  -24,  116, -116,     3,      5,    9,     9,         31 ; VERTEX  -24,  116 ; Vertex 12
-       ; VERTEX  -24,  164,    0,     5,      6,    9,     9,         31 ; VERTEX  -24,  164 ; Vertex 13
-       ; VERTEX  -24,  116,  116,     6,      7,    9,     9,         31 ; VERTEX  -24,  116 ; Vertex 14
-       ; VERTEX  -24,    0,  164,     7,      8,    9,     9,         31 ; VERTEX  -24,    0 ; Vertex 15
-       ; VERTEX  -24,   64,   80,     9,      9,    9,     9,         30 ; VERTEX  -24,   64 ; Vertex 16
-       ; VERTEX  -24,   64,  -80,     9,      9,    9,     9,         30 ; VERTEX  -24,   64 ; Vertex 17
-       ; VERTEX  -24,  -64,  -80,     9,      9,    9,     9,         30 ; VERTEX  -24,  -64 ; Vertex 18
-       ; VERTEX  -24,  -64,   80,     9,      9,    9,     9,         30 ; VERTEX  -24,  -64 ; Vertex 19
+       byte >20, >30, >30, >5f, >40, >88                   ; Vertex 0
+       byte >20, >44, >00, >5f, >10, >44                   ; Vertex 1
+       byte >20, >30, >30, >7f, >21, >44                   ; Vertex 2
+       byte >20, >00, >44, >3f, >32, >44                   ; Vertex 3
+       byte >20, >30, >30, >3f, >43, >55                   ; Vertex 4
+       byte >20, >44, >00, >1f, >54, >66                   ; Vertex 5
+       byte >20, >30, >30, >1f, >64, >77                   ; Vertex 6
+       byte >20, >00, >44, >1f, >74, >88                   ; Vertex 7
+       byte >18, >74, >74, >df, >80, >99                   ; Vertex 8
+       byte >18, >a4, >00, >df, >10, >99                   ; Vertex 9
+       byte >18, >74, >74, >ff, >21, >99                   ; Vertex 10
+       byte >18, >00, >a4, >bf, >32, >99                   ; Vertex 11
+       byte >18, >74, >74, >bf, >53, >99                   ; Vertex 12
+       byte >18, >a4, >00, >9f, >65, >99                   ; Vertex 13
+       byte >18, >74, >74, >9f, >76, >99                   ; Vertex 14
+       byte >18, >00, >a4, >9f, >87, >99                   ; Vertex 15
+       byte >18, >40, >50, >9e, >99, >99                   ; Vertex 16
+       byte >18, >40, >50, >be, >99, >99                   ; Vertex 17
+       byte >18, >40, >50, >fe, >99, >99                   ; Vertex 18
+       byte >18, >40, >50, >de, >99, >99                   ; Vertex 19
 
 SHIP_THARGOID_EDGES:
                                                            ; vertex1, vertex2, face1, face2, visibility
-       ; EDGE       0,       7,     4,     8,         31 ; EDGE       0,     ; Edge 0
-       ; EDGE       0,       1,     0,     4,         31 ; EDGE       0,     ; Edge 1
-       ; EDGE       1,       2,     1,     4,         31 ; EDGE       1,     ; Edge 2
-       ; EDGE       2,       3,     2,     4,         31 ; EDGE       2,     ; Edge 3
-       ; EDGE       3,       4,     3,     4,         31 ; EDGE       3,     ; Edge 4
-       ; EDGE       4,       5,     4,     5,         31 ; EDGE       4,     ; Edge 5
-       ; EDGE       5,       6,     4,     6,         31 ; EDGE       5,     ; Edge 6
-       ; EDGE       6,       7,     4,     7,         31 ; EDGE       6,     ; Edge 7
-       ; EDGE       0,       8,     0,     8,         31 ; EDGE       0,     ; Edge 8
-       ; EDGE       1,       9,     0,     1,         31 ; EDGE       1,     ; Edge 9
-       ; EDGE       2,      10,     1,     2,         31 ; EDGE       2,     ; Edge 10
-       ; EDGE       3,      11,     2,     3,         31 ; EDGE       3,     ; Edge 11
-       ; EDGE       4,      12,     3,     5,         31 ; EDGE       4,     ; Edge 12
-       ; EDGE       5,      13,     5,     6,         31 ; EDGE       5,     ; Edge 13
-       ; EDGE       6,      14,     6,     7,         31 ; EDGE       6,     ; Edge 14
-       ; EDGE       7,      15,     7,     8,         31 ; EDGE       7,     ; Edge 15
-       ; EDGE       8,      15,     8,     9,         31 ; EDGE       8,     ; Edge 16
-       ; EDGE       8,       9,     0,     9,         31 ; EDGE       8,     ; Edge 17
-       ; EDGE       9,      10,     1,     9,         31 ; EDGE       9,     ; Edge 18
-       ; EDGE      10,      11,     2,     9,         31 ; EDGE      10,     ; Edge 19
-       ; EDGE      11,      12,     3,     9,         31 ; EDGE      11,     ; Edge 20
-       ; EDGE      12,      13,     5,     9,         31 ; EDGE      12,     ; Edge 21
-       ; EDGE      13,      14,     6,     9,         31 ; EDGE      13,     ; Edge 22
-       ; EDGE      14,      15,     7,     9,         31 ; EDGE      14,     ; Edge 23
-       ; EDGE      16,      17,     9,     9,         30 ; EDGE      16,     ; Edge 24
-       ; EDGE      18,      19,     9,     9,         30 ; EDGE      18,     ; Edge 25
+       byte >1f, >84, >00, >1c                             ; Edge 0
+       byte >1f, >40, >00, >04                             ; Edge 1
+       byte >1f, >41, >04, >08                             ; Edge 2
+       byte >1f, >42, >08, >0c                             ; Edge 3
+       byte >1f, >43, >0c, >10                             ; Edge 4
+       byte >1f, >54, >10, >14                             ; Edge 5
+       byte >1f, >64, >14, >18                             ; Edge 6
+       byte >1f, >74, >18, >1c                             ; Edge 7
+       byte >1f, >80, >00, >20                             ; Edge 8
+       byte >1f, >10, >04, >24                             ; Edge 9
+       byte >1f, >21, >08, >28                             ; Edge 10
+       byte >1f, >32, >0c, >2c                             ; Edge 11
+       byte >1f, >53, >10, >30                             ; Edge 12
+       byte >1f, >65, >14, >34                             ; Edge 13
+       byte >1f, >76, >18, >38                             ; Edge 14
+       byte >1f, >87, >1c, >3c                             ; Edge 15
+       byte >1f, >98, >20, >3c                             ; Edge 16
+       byte >1f, >90, >20, >24                             ; Edge 17
+       byte >1f, >91, >24, >28                             ; Edge 18
+       byte >1f, >92, >28, >2c                             ; Edge 19
+       byte >1f, >93, >2c, >30                             ; Edge 20
+       byte >1f, >95, >30, >34                             ; Edge 21
+       byte >1f, >96, >34, >38                             ; Edge 22
+       byte >1f, >97, >38, >3c                             ; Edge 23
+       byte >1e, >99, >40, >44                             ; Edge 24
+       byte >1e, >99, >48, >4c                             ; Edge 25
 
 SHIP_THARGOID_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE      103,      -60,       25,         31 ; FACE      103,    ; Face 0
-       ; FACE      103,      -60,      -25,         31 ; FACE      103,    ; Face 1
-       ; FACE      103,      -25,      -60,         31 ; FACE      103,    ; Face 2
-       ; FACE      103,       25,      -60,         31 ; FACE      103,    ; Face 3
-       ; FACE       64,        0,        0,         31 ; FACE       64,    ; Face 4
-       ; FACE      103,       60,      -25,         31 ; FACE      103,    ; Face 5
-       ; FACE      103,       60,       25,         31 ; FACE      103,    ; Face 6
-       ; FACE      103,       25,       60,         31 ; FACE      103,    ; Face 7
-       ; FACE      103,      -25,       60,         31 ; FACE      103,    ; Face 8
-       ; FACE      -48,        0,        0,         31 ; FACE      -48,    ; Face 9
+       byte >5f, >67, >3c, >19                             ; Face 0
+       byte >7f, >67, >3c, >19                             ; Face 1
+       byte >7f, >67, >19, >3c                             ; Face 2
+       byte >3f, >67, >19, >3c                             ; Face 3
+       byte >1f, >40, >00, >00                             ; Face 4
+       byte >3f, >67, >3c, >19                             ; Face 5
+       byte >1f, >67, >3c, >19                             ; Face 6
+       byte >1f, >67, >19, >3c                             ; Face 7
+       byte >5f, >67, >19, >3c                             ; Face 8
+       byte >9f, >30, >00, >00                             ; Face 9
 
 * ******************************************************************************
 * 
@@ -36120,10 +36170,10 @@ SHIP_THARGOID_FACES:
 
 SHIP_CORIOLIS:
        byte >00                                            ; Max. canisters on demise = 0
-       data >a000                                          ; Targetable area          = 160 * 160
+       data 160 * 160                                      ; Targetable area          = 160 * 160
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_CORIOLIS_EDGES - SHIP_CORIOLIS).256      ; Edges data offset (low)
+       byte (SHIP_CORIOLIS_FACES - SHIP_CORIOLIS).256      ; Faces data offset (low)
 
        byte >55                                            ; Max. edge count          = (85 - 1) / 4 = 21
        byte >00                                            ; Gun vertex               = 0
@@ -36136,8 +36186,8 @@ SHIP_CORIOLIS:
        byte >f0                                            ; Max. energy              = 240
        byte >00                                            ; Max. speed               = 0
 
-       byte >00                                            ; Edges data offset (high)
-       byte >00                                            ; Faces data offset (high)
+       byte (SHIP_CORIOLIS_EDGES - SHIP_CORIOLIS)/256      ; Edges data offset (high)
+       byte (SHIP_CORIOLIS_FACES - SHIP_CORIOLIS)/256      ; Faces data offset (high)
 
        byte >00                                            ; Normals are scaled by    = 2^0 = 1
        byte >06                                            ; Laser power              = 0
@@ -36145,70 +36195,70 @@ SHIP_CORIOLIS:
 
 SHIP_CORIOLIS_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX  160,    0,  160,     0,      1,    2,     6,         31 ; VERTEX  160,    0 ; Vertex 0
-       ; VERTEX    0,  160,  160,     0,      2,    3,     8,         31 ; VERTEX    0,  160 ; Vertex 1
-       ; VERTEX -160,    0,  160,     0,      3,    4,     7,         31 ; VERTEX -160,    0 ; Vertex 2
-       ; VERTEX    0, -160,  160,     0,      1,    4,     5,         31 ; VERTEX    0, -160 ; Vertex 3
-       ; VERTEX  160, -160,    0,     1,      5,    6,    10,         31 ; VERTEX  160, -160 ; Vertex 4
-       ; VERTEX  160,  160,    0,     2,      6,    8,    11,         31 ; VERTEX  160,  160 ; Vertex 5
-       ; VERTEX -160,  160,    0,     3,      7,    8,    12,         31 ; VERTEX -160,  160 ; Vertex 6
-       ; VERTEX -160, -160,    0,     4,      5,    7,     9,         31 ; VERTEX -160, -160 ; Vertex 7
-       ; VERTEX  160,    0, -160,     6,     10,   11,    13,         31 ; VERTEX  160,    0 ; Vertex 8
-       ; VERTEX    0,  160, -160,     8,     11,   12,    13,         31 ; VERTEX    0,  160 ; Vertex 9
-       ; VERTEX -160,    0, -160,     7,      9,   12,    13,         31 ; VERTEX -160,    0 ; Vertex 10
-       ; VERTEX    0, -160, -160,     5,      9,   10,    13,         31 ; VERTEX    0, -160 ; Vertex 11
-       ; VERTEX   10,  -30,  160,     0,      0,    0,     0,         30 ; VERTEX   10,  -30 ; Vertex 12
-       ; VERTEX   10,   30,  160,     0,      0,    0,     0,         30 ; VERTEX   10,   30 ; Vertex 13
-       ; VERTEX  -10,   30,  160,     0,      0,    0,     0,         30 ; VERTEX  -10,   30 ; Vertex 14
-       ; VERTEX  -10,  -30,  160,     0,      0,    0,     0,         30 ; VERTEX  -10,  -30 ; Vertex 15
+       byte >a0, >00, >a0, >1f, >10, >62                   ; Vertex 0
+       byte >00, >a0, >a0, >1f, >20, >83                   ; Vertex 1
+       byte >a0, >00, >a0, >9f, >30, >74                   ; Vertex 2
+       byte >00, >a0, >a0, >5f, >10, >54                   ; Vertex 3
+       byte >a0, >a0, >00, >5f, >51, >a6                   ; Vertex 4
+       byte >a0, >a0, >00, >1f, >62, >b8                   ; Vertex 5
+       byte >a0, >a0, >00, >9f, >73, >c8                   ; Vertex 6
+       byte >a0, >a0, >00, >df, >54, >97                   ; Vertex 7
+       byte >a0, >00, >a0, >3f, >a6, >db                   ; Vertex 8
+       byte >00, >a0, >a0, >3f, >b8, >dc                   ; Vertex 9
+       byte >a0, >00, >a0, >bf, >97, >dc                   ; Vertex 10
+       byte >00, >a0, >a0, >7f, >95, >da                   ; Vertex 11
+       byte >0a, >1e, >a0, >5e, >00, >00                   ; Vertex 12
+       byte >0a, >1e, >a0, >1e, >00, >00                   ; Vertex 13
+       byte >0a, >1e, >a0, >9e, >00, >00                   ; Vertex 14
+       byte >0a, >1e, >a0, >de, >00, >00                   ; Vertex 15
 
 SHIP_CORIOLIS_EDGES:
                                                            ; vertex1, vertex2, face1, face2, visibility
-       ; EDGE       0,       3,     0,     1,         31 ; EDGE       0,     ; Edge 0
-       ; EDGE       0,       1,     0,     2,         31 ; EDGE       0,     ; Edge 1
-       ; EDGE       1,       2,     0,     3,         31 ; EDGE       1,     ; Edge 2
-       ; EDGE       2,       3,     0,     4,         31 ; EDGE       2,     ; Edge 3
-       ; EDGE       3,       4,     1,     5,         31 ; EDGE       3,     ; Edge 4
-       ; EDGE       0,       4,     1,     6,         31 ; EDGE       0,     ; Edge 5
-       ; EDGE       0,       5,     2,     6,         31 ; EDGE       0,     ; Edge 6
-       ; EDGE       5,       1,     2,     8,         31 ; EDGE       5,     ; Edge 7
-       ; EDGE       1,       6,     3,     8,         31 ; EDGE       1,     ; Edge 8
-       ; EDGE       2,       6,     3,     7,         31 ; EDGE       2,     ; Edge 9
-       ; EDGE       2,       7,     4,     7,         31 ; EDGE       2,     ; Edge 10
-       ; EDGE       3,       7,     4,     5,         31 ; EDGE       3,     ; Edge 11
-       ; EDGE       8,      11,    10,    13,         31 ; EDGE       8,     ; Edge 12
-       ; EDGE       8,       9,    11,    13,         31 ; EDGE       8,     ; Edge 13
-       ; EDGE       9,      10,    12,    13,         31 ; EDGE       9,     ; Edge 14
-       ; EDGE      10,      11,     9,    13,         31 ; EDGE      10,     ; Edge 15
-       ; EDGE       4,      11,     5,    10,         31 ; EDGE       4,     ; Edge 16
-       ; EDGE       4,       8,     6,    10,         31 ; EDGE       4,     ; Edge 17
-       ; EDGE       5,       8,     6,    11,         31 ; EDGE       5,     ; Edge 18
-       ; EDGE       5,       9,     8,    11,         31 ; EDGE       5,     ; Edge 19
-       ; EDGE       6,       9,     8,    12,         31 ; EDGE       6,     ; Edge 20
-       ; EDGE       6,      10,     7,    12,         31 ; EDGE       6,     ; Edge 21
-       ; EDGE       7,      10,     7,     9,         31 ; EDGE       7,     ; Edge 22
-       ; EDGE       7,      11,     5,     9,         31 ; EDGE       7,     ; Edge 23
-       ; EDGE      12,      13,     0,     0,         30 ; EDGE      12,     ; Edge 24
-       ; EDGE      13,      14,     0,     0,         30 ; EDGE      13,     ; Edge 25
-       ; EDGE      14,      15,     0,     0,         30 ; EDGE      14,     ; Edge 26
-       ; EDGE      15,      12,     0,     0,         30 ; EDGE      15,     ; Edge 27
+       byte >1f, >10, >00, >0c                             ; Edge 0
+       byte >1f, >20, >00, >04                             ; Edge 1
+       byte >1f, >30, >04, >08                             ; Edge 2
+       byte >1f, >40, >08, >0c                             ; Edge 3
+       byte >1f, >51, >0c, >10                             ; Edge 4
+       byte >1f, >61, >00, >10                             ; Edge 5
+       byte >1f, >62, >00, >14                             ; Edge 6
+       byte >1f, >82, >14, >04                             ; Edge 7
+       byte >1f, >83, >04, >18                             ; Edge 8
+       byte >1f, >73, >08, >18                             ; Edge 9
+       byte >1f, >74, >08, >1c                             ; Edge 10
+       byte >1f, >54, >0c, >1c                             ; Edge 11
+       byte >1f, >da, >20, >2c                             ; Edge 12
+       byte >1f, >db, >20, >24                             ; Edge 13
+       byte >1f, >dc, >24, >28                             ; Edge 14
+       byte >1f, >d9, >28, >2c                             ; Edge 15
+       byte >1f, >a5, >10, >2c                             ; Edge 16
+       byte >1f, >a6, >10, >20                             ; Edge 17
+       byte >1f, >b6, >14, >20                             ; Edge 18
+       byte >1f, >b8, >14, >24                             ; Edge 19
+       byte >1f, >c8, >18, >24                             ; Edge 20
+       byte >1f, >c7, >18, >28                             ; Edge 21
+       byte >1f, >97, >1c, >28                             ; Edge 22
+       byte >1f, >95, >1c, >2c                             ; Edge 23
+       byte >1e, >00, >30, >34                             ; Edge 24
+       byte >1e, >00, >34, >38                             ; Edge 25
+       byte >1e, >00, >38, >3c                             ; Edge 26
+       byte >1e, >00, >3c, >30                             ; Edge 27
 
 SHIP_CORIOLIS_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE        0,        0,      160,         31 ; FACE        0,    ; Face 0
-       ; FACE      107,     -107,      107,         31 ; FACE      107,    ; Face 1
-       ; FACE      107,      107,      107,         31 ; FACE      107,    ; Face 2
-       ; FACE     -107,      107,      107,         31 ; FACE     -107,    ; Face 3
-       ; FACE     -107,     -107,      107,         31 ; FACE     -107,    ; Face 4
-       ; FACE        0,     -160,        0,         31 ; FACE        0,    ; Face 5
-       ; FACE      160,        0,        0,         31 ; FACE      160,    ; Face 6
-       ; FACE     -160,        0,        0,         31 ; FACE     -160,    ; Face 7
-       ; FACE        0,      160,        0,         31 ; FACE        0,    ; Face 8
-       ; FACE     -107,     -107,     -107,         31 ; FACE     -107,    ; Face 9
-       ; FACE      107,     -107,     -107,         31 ; FACE      107,    ; Face 10
-       ; FACE      107,      107,     -107,         31 ; FACE      107,    ; Face 11
-       ; FACE     -107,      107,     -107,         31 ; FACE     -107,    ; Face 12
-       ; FACE        0,        0,     -160,         31 ; FACE        0,    ; Face 13
+       byte >1f, >00, >00, >a0                             ; Face 0
+       byte >5f, >6b, >6b, >6b                             ; Face 1
+       byte >1f, >6b, >6b, >6b                             ; Face 2
+       byte >9f, >6b, >6b, >6b                             ; Face 3
+       byte >df, >6b, >6b, >6b                             ; Face 4
+       byte >5f, >00, >a0, >00                             ; Face 5
+       byte >1f, >a0, >00, >00                             ; Face 6
+       byte >9f, >a0, >00, >00                             ; Face 7
+       byte >1f, >00, >a0, >00                             ; Face 8
+       byte >ff, >6b, >6b, >6b                             ; Face 9
+       byte >7f, >6b, >6b, >6b                             ; Face 10
+       byte >3f, >6b, >6b, >6b                             ; Face 11
+       byte >bf, >6b, >6b, >6b                             ; Face 12
+       byte >3f, >00, >00, >a0                             ; Face 13
 
 * ******************************************************************************
 * 
@@ -36222,10 +36272,10 @@ SHIP_CORIOLIS_FACES:
 
 SHIP_MISSILE:
        byte >00                                            ; Max. canisters on demise = 0
-       data >2800                                          ; Targetable area          = 40 * 40
+       data 40 * 40                                        ; Targetable area          = 40 * 40
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_MISSILE_EDGES - SHIP_MISSILE).256        ; Edges data offset (low)
+       byte (SHIP_MISSILE_FACES - SHIP_MISSILE).256        ; Faces data offset (low)
 
        byte >51                                            ; Max. edge count          = (81 - 1) / 4 = 20
        byte >00                                            ; Gun vertex               = 0
@@ -36238,8 +36288,8 @@ SHIP_MISSILE:
        byte >02                                            ; Max. energy              = 2
        byte >2c                                            ; Max. speed               = 44
 
-       byte >00                                            ; Edges data offset (high)
-       byte >00                                            ; Faces data offset (high)
+       byte (SHIP_MISSILE_EDGES - SHIP_MISSILE)/256        ; Edges data offset (high)
+       byte (SHIP_MISSILE_FACES - SHIP_MISSILE)/256        ; Faces data offset (high)
 
        byte >02                                            ; Normals are scaled by    = 2^2 = 4
        byte >00                                            ; Laser power              = 0
@@ -36247,62 +36297,62 @@ SHIP_MISSILE:
 
 SHIP_MISSILE_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX    0,    0,   68,     0,      1,    2,     3,         31 ; VERTEX    0,    0 ; Vertex 0
-       ; VERTEX    8,   -8,   36,     1,      2,    4,     5,         31 ; VERTEX    8,   -8 ; Vertex 1
-       ; VERTEX    8,    8,   36,     2,      3,    4,     7,         31 ; VERTEX    8,    8 ; Vertex 2
-       ; VERTEX   -8,    8,   36,     0,      3,    6,     7,         31 ; VERTEX   -8,    8 ; Vertex 3
-       ; VERTEX   -8,   -8,   36,     0,      1,    5,     6,         31 ; VERTEX   -8,   -8 ; Vertex 4
-       ; VERTEX    8,    8,  -44,     4,      7,    8,     8,         31 ; VERTEX    8,    8 ; Vertex 5
-       ; VERTEX    8,   -8,  -44,     4,      5,    8,     8,         31 ; VERTEX    8,   -8 ; Vertex 6
-       ; VERTEX   -8,   -8,  -44,     5,      6,    8,     8,         31 ; VERTEX   -8,   -8 ; Vertex 7
-       ; VERTEX   -8,    8,  -44,     6,      7,    8,     8,         31 ; VERTEX   -8,    8 ; Vertex 8
-       ; VERTEX   12,   12,  -44,     4,      7,    8,     8,          8 ; VERTEX   12,   12 ; Vertex 9
-       ; VERTEX   12,  -12,  -44,     4,      5,    8,     8,          8 ; VERTEX   12,  -12 ; Vertex 10
-       ; VERTEX  -12,  -12,  -44,     5,      6,    8,     8,          8 ; VERTEX  -12,  -12 ; Vertex 11
-       ; VERTEX  -12,   12,  -44,     6,      7,    8,     8,          8 ; VERTEX  -12,   12 ; Vertex 12
-       ; VERTEX   -8,    8,  -12,     6,      7,    7,     7,          8 ; VERTEX   -8,    8 ; Vertex 13
-       ; VERTEX   -8,   -8,  -12,     5,      6,    6,     6,          8 ; VERTEX   -8,   -8 ; Vertex 14
-       ; VERTEX    8,    8,  -12,     4,      7,    7,     7,          8 ; VERTEX    8,    8 ; Vertex 15
-       ; VERTEX    8,   -8,  -12,     4,      5,    5,     5,          8 ; VERTEX    8,   -8 ; Vertex 16
+       byte >00, >00, >44, >1f, >10, >32                   ; Vertex 0
+       byte >08, >08, >24, >5f, >21, >54                   ; Vertex 1
+       byte >08, >08, >24, >1f, >32, >74                   ; Vertex 2
+       byte >08, >08, >24, >9f, >30, >76                   ; Vertex 3
+       byte >08, >08, >24, >df, >10, >65                   ; Vertex 4
+       byte >08, >08, >2c, >3f, >74, >88                   ; Vertex 5
+       byte >08, >08, >2c, >7f, >54, >88                   ; Vertex 6
+       byte >08, >08, >2c, >ff, >65, >88                   ; Vertex 7
+       byte >08, >08, >2c, >bf, >76, >88                   ; Vertex 8
+       byte >0c, >0c, >2c, >28, >74, >88                   ; Vertex 9
+       byte >0c, >0c, >2c, >68, >54, >88                   ; Vertex 10
+       byte >0c, >0c, >2c, >e8, >65, >88                   ; Vertex 11
+       byte >0c, >0c, >2c, >a8, >76, >88                   ; Vertex 12
+       byte >08, >08, >0c, >a8, >76, >77                   ; Vertex 13
+       byte >08, >08, >0c, >e8, >65, >66                   ; Vertex 14
+       byte >08, >08, >0c, >28, >74, >77                   ; Vertex 15
+       byte >08, >08, >0c, >68, >54, >55                   ; Vertex 16
 
 SHIP_MISSILE_EDGES:
                                                            ; vertex1, vertex2, face1, face2, visibility
-       ; EDGE       0,       1,     1,     2,         31 ; EDGE       0,     ; Edge 0
-       ; EDGE       0,       2,     2,     3,         31 ; EDGE       0,     ; Edge 1
-       ; EDGE       0,       3,     0,     3,         31 ; EDGE       0,     ; Edge 2
-       ; EDGE       0,       4,     0,     1,         31 ; EDGE       0,     ; Edge 3
-       ; EDGE       1,       2,     4,     2,         31 ; EDGE       1,     ; Edge 4
-       ; EDGE       1,       4,     1,     5,         31 ; EDGE       1,     ; Edge 5
-       ; EDGE       3,       4,     0,     6,         31 ; EDGE       3,     ; Edge 6
-       ; EDGE       2,       3,     3,     7,         31 ; EDGE       2,     ; Edge 7
-       ; EDGE       2,       5,     4,     7,         31 ; EDGE       2,     ; Edge 8
-       ; EDGE       1,       6,     4,     5,         31 ; EDGE       1,     ; Edge 9
-       ; EDGE       4,       7,     5,     6,         31 ; EDGE       4,     ; Edge 10
-       ; EDGE       3,       8,     6,     7,         31 ; EDGE       3,     ; Edge 11
-       ; EDGE       7,       8,     6,     8,         31 ; EDGE       7,     ; Edge 12
-       ; EDGE       5,       8,     7,     8,         31 ; EDGE       5,     ; Edge 13
-       ; EDGE       5,       6,     4,     8,         31 ; EDGE       5,     ; Edge 14
-       ; EDGE       6,       7,     5,     8,         31 ; EDGE       6,     ; Edge 15
-       ; EDGE       6,      10,     5,     8,          8 ; EDGE       6,     ; Edge 16
-       ; EDGE       5,       9,     7,     8,          8 ; EDGE       5,     ; Edge 17
-       ; EDGE       8,      12,     7,     8,          8 ; EDGE       8,     ; Edge 18
-       ; EDGE       7,      11,     5,     8,          8 ; EDGE       7,     ; Edge 19
-       ; EDGE       9,      15,     4,     7,          8 ; EDGE       9,     ; Edge 20
-       ; EDGE      10,      16,     4,     5,          8 ; EDGE      10,     ; Edge 21
-       ; EDGE      12,      13,     6,     7,          8 ; EDGE      12,     ; Edge 22
-       ; EDGE      11,      14,     5,     6,          8 ; EDGE      11,     ; Edge 23
+       byte >1f, >21, >00, >04                             ; Edge 0
+       byte >1f, >32, >00, >08                             ; Edge 1
+       byte >1f, >30, >00, >0c                             ; Edge 2
+       byte >1f, >10, >00, >10                             ; Edge 3
+       byte >1f, >24, >04, >08                             ; Edge 4
+       byte >1f, >51, >04, >10                             ; Edge 5
+       byte >1f, >60, >0c, >10                             ; Edge 6
+       byte >1f, >73, >08, >0c                             ; Edge 7
+       byte >1f, >74, >08, >14                             ; Edge 8
+       byte >1f, >54, >04, >18                             ; Edge 9
+       byte >1f, >65, >10, >1c                             ; Edge 10
+       byte >1f, >76, >0c, >20                             ; Edge 11
+       byte >1f, >86, >1c, >20                             ; Edge 12
+       byte >1f, >87, >14, >20                             ; Edge 13
+       byte >1f, >84, >14, >18                             ; Edge 14
+       byte >1f, >85, >18, >1c                             ; Edge 15
+       byte >08, >85, >18, >28                             ; Edge 16
+       byte >08, >87, >14, >24                             ; Edge 17
+       byte >08, >87, >20, >30                             ; Edge 18
+       byte >08, >85, >1c, >2c                             ; Edge 19
+       byte >08, >74, >24, >3c                             ; Edge 20
+       byte >08, >54, >28, >40                             ; Edge 21
+       byte >08, >76, >30, >34                             ; Edge 22
+       byte >08, >65, >2c, >38                             ; Edge 23
 
 SHIP_MISSILE_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE      -64,        0,       16,         31 ; FACE      -64,    ; Face 0
-       ; FACE        0,      -64,       16,         31 ; FACE        0,    ; Face 1
-       ; FACE       64,        0,       16,         31 ; FACE       64,    ; Face 2
-       ; FACE        0,       64,       16,         31 ; FACE        0,    ; Face 3
-       ; FACE       32,        0,        0,         31 ; FACE       32,    ; Face 4
-       ; FACE        0,      -32,        0,         31 ; FACE        0,    ; Face 5
-       ; FACE      -32,        0,        0,         31 ; FACE      -32,    ; Face 6
-       ; FACE        0,       32,        0,         31 ; FACE        0,    ; Face 7
-       ; FACE        0,        0,     -176,         31 ; FACE        0,    ; Face 8
+       byte >9f, >40, >00, >10                             ; Face 0
+       byte >5f, >00, >40, >10                             ; Face 1
+       byte >1f, >40, >00, >10                             ; Face 2
+       byte >1f, >00, >40, >10                             ; Face 3
+       byte >1f, >20, >00, >00                             ; Face 4
+       byte >5f, >00, >20, >00                             ; Face 5
+       byte >9f, >20, >00, >00                             ; Face 6
+       byte >1f, >00, >20, >00                             ; Face 7
+       byte >3f, >00, >00, >b0                             ; Face 8
 
 * ******************************************************************************
 * 
@@ -36316,10 +36366,10 @@ SHIP_MISSILE_FACES:
 
 SHIP_ASTEROID:
        byte >00                                            ; Max. canisters on demise = 0
-       data >5000                                          ; Targetable area          = 80 * 80
+       data 80 * 80                                        ; Targetable area          = 80 * 80
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_ASTEROID_EDGES - SHIP_ASTEROID).256      ; Edges data offset (low)
+       byte (SHIP_ASTEROID_FACES - SHIP_ASTEROID).256      ; Faces data offset (low)
 
        byte >41                                            ; Max. edge count          = (65 - 1) / 4 = 16
        byte >00                                            ; Gun vertex               = 0
@@ -36332,8 +36382,8 @@ SHIP_ASTEROID:
        byte >3c                                            ; Max. energy              = 60
        byte >1e                                            ; Max. speed               = 30
 
-       byte >00                                            ; Edges data offset (high)
-       byte >00                                            ; Faces data offset (high)
+       byte (SHIP_ASTEROID_EDGES - SHIP_ASTEROID)/256      ; Edges data offset (high)
+       byte (SHIP_ASTEROID_FACES - SHIP_ASTEROID)/256      ; Faces data offset (high)
 
        byte >01                                            ; Normals are scaled by    = 2^1 = 2
        byte >00                                            ; Laser power              = 0
@@ -36341,56 +36391,56 @@ SHIP_ASTEROID:
 
 SHIP_ASTEROID_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX    0,   80,    0,    15,     15,   15,    15,         31 ; VERTEX    0,   80 ; Vertex 0
-       ; VERTEX  -80,  -10,    0,    15,     15,   15,    15,         31 ; VERTEX  -80,  -10 ; Vertex 1
-       ; VERTEX    0,  -80,    0,    15,     15,   15,    15,         31 ; VERTEX    0,  -80 ; Vertex 2
-       ; VERTEX   70,  -40,    0,    15,     15,   15,    15,         31 ; VERTEX   70,  -40 ; Vertex 3
-       ; VERTEX   60,   50,    0,     5,      6,   12,    13,         31 ; VERTEX   60,   50 ; Vertex 4
-       ; VERTEX   50,    0,   60,    15,     15,   15,    15,         31 ; VERTEX   50,    0 ; Vertex 5
-       ; VERTEX  -40,    0,   70,     0,      1,    2,     3,         31 ; VERTEX  -40,    0 ; Vertex 6
-       ; VERTEX    0,   30,  -75,    15,     15,   15,    15,         31 ; VERTEX    0,   30 ; Vertex 7
-       ; VERTEX    0,  -50,  -60,     8,      9,   10,    11,         31 ; VERTEX    0,  -50 ; Vertex 8
+       byte >00, >50, >00, >1f, >ff, >ff                   ; Vertex 0
+       byte >50, >0a, >00, >df, >ff, >ff                   ; Vertex 1
+       byte >00, >50, >00, >5f, >ff, >ff                   ; Vertex 2
+       byte >46, >28, >00, >5f, >ff, >ff                   ; Vertex 3
+       byte >3c, >32, >00, >1f, >65, >dc                   ; Vertex 4
+       byte >32, >00, >3c, >1f, >ff, >ff                   ; Vertex 5
+       byte >28, >00, >46, >9f, >10, >32                   ; Vertex 6
+       byte >00, >1e, >4b, >3f, >ff, >ff                   ; Vertex 7
+       byte >00, >32, >3c, >7f, >98, >ba                   ; Vertex 8
 
 SHIP_ASTEROID_EDGES:
                                                            ; vertex1, vertex2, face1, face2, visibility
-       ; EDGE       0,       1,     2,     7,         31 ; EDGE       0,     ; Edge 0
-       ; EDGE       0,       4,     6,    13,         31 ; EDGE       0,     ; Edge 1
-       ; EDGE       3,       4,     5,    12,         31 ; EDGE       3,     ; Edge 2
-       ; EDGE       2,       3,     4,    11,         31 ; EDGE       2,     ; Edge 3
-       ; EDGE       1,       2,     3,    10,         31 ; EDGE       1,     ; Edge 4
-       ; EDGE       1,       6,     2,     3,         31 ; EDGE       1,     ; Edge 5
-       ; EDGE       2,       6,     1,     3,         31 ; EDGE       2,     ; Edge 6
-       ; EDGE       2,       5,     1,     4,         31 ; EDGE       2,     ; Edge 7
-       ; EDGE       5,       6,     0,     1,         31 ; EDGE       5,     ; Edge 8
-       ; EDGE       0,       5,     0,     6,         31 ; EDGE       0,     ; Edge 9
-       ; EDGE       3,       5,     4,     5,         31 ; EDGE       3,     ; Edge 10
-       ; EDGE       0,       6,     0,     2,         31 ; EDGE       0,     ; Edge 11
-       ; EDGE       4,       5,     5,     6,         31 ; EDGE       4,     ; Edge 12
-       ; EDGE       1,       8,     8,    10,         31 ; EDGE       1,     ; Edge 13
-       ; EDGE       1,       7,     7,     8,         31 ; EDGE       1,     ; Edge 14
-       ; EDGE       0,       7,     7,    13,         31 ; EDGE       0,     ; Edge 15
-       ; EDGE       4,       7,    12,    13,         31 ; EDGE       4,     ; Edge 16
-       ; EDGE       3,       7,     9,    12,         31 ; EDGE       3,     ; Edge 17
-       ; EDGE       3,       8,     9,    11,         31 ; EDGE       3,     ; Edge 18
-       ; EDGE       2,       8,    10,    11,         31 ; EDGE       2,     ; Edge 19
-       ; EDGE       7,       8,     8,     9,         31 ; EDGE       7,     ; Edge 20
+       byte >1f, >72, >00, >04                             ; Edge 0
+       byte >1f, >d6, >00, >10                             ; Edge 1
+       byte >1f, >c5, >0c, >10                             ; Edge 2
+       byte >1f, >b4, >08, >0c                             ; Edge 3
+       byte >1f, >a3, >04, >08                             ; Edge 4
+       byte >1f, >32, >04, >18                             ; Edge 5
+       byte >1f, >31, >08, >18                             ; Edge 6
+       byte >1f, >41, >08, >14                             ; Edge 7
+       byte >1f, >10, >14, >18                             ; Edge 8
+       byte >1f, >60, >00, >14                             ; Edge 9
+       byte >1f, >54, >0c, >14                             ; Edge 10
+       byte >1f, >20, >00, >18                             ; Edge 11
+       byte >1f, >65, >10, >14                             ; Edge 12
+       byte >1f, >a8, >04, >20                             ; Edge 13
+       byte >1f, >87, >04, >1c                             ; Edge 14
+       byte >1f, >d7, >00, >1c                             ; Edge 15
+       byte >1f, >dc, >10, >1c                             ; Edge 16
+       byte >1f, >c9, >0c, >1c                             ; Edge 17
+       byte >1f, >b9, >0c, >20                             ; Edge 18
+       byte >1f, >ba, >08, >20                             ; Edge 19
+       byte >1f, >98, >1c, >20                             ; Edge 20
 
 SHIP_ASTEROID_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE        9,       66,       81,         31 ; FACE        9,    ; Face 0
-       ; FACE        9,      -66,       81,         31 ; FACE        9,    ; Face 1
-       ; FACE      -72,       64,       31,         31 ; FACE      -72,    ; Face 2
-       ; FACE      -64,      -73,       47,         31 ; FACE      -64,    ; Face 3
-       ; FACE       45,      -79,       65,         31 ; FACE       45,    ; Face 4
-       ; FACE      135,       15,       35,         31 ; FACE      135,    ; Face 5
-       ; FACE       38,       76,       70,         31 ; FACE       38,    ; Face 6
-       ; FACE      -66,       59,      -39,         31 ; FACE      -66,    ; Face 7
-       ; FACE      -67,      -15,      -80,         31 ; FACE      -67,    ; Face 8
-       ; FACE       66,      -14,      -75,         31 ; FACE       66,    ; Face 9
-       ; FACE      -70,      -80,      -40,         31 ; FACE      -70,    ; Face 10
-       ; FACE       58,     -102,      -51,         31 ; FACE       58,    ; Face 11
-       ; FACE       81,        9,      -67,         31 ; FACE       81,    ; Face 12
-       ; FACE       47,       94,      -63,         31 ; FACE       47,    ; Face 13
+       byte >1f, >09, >42, >51                             ; Face 0
+       byte >5f, >09, >42, >51                             ; Face 1
+       byte >9f, >48, >40, >1f                             ; Face 2
+       byte >df, >40, >49, >2f                             ; Face 3
+       byte >5f, >2d, >4f, >41                             ; Face 4
+       byte >1f, >87, >0f, >23                             ; Face 5
+       byte >1f, >26, >4c, >46                             ; Face 6
+       byte >bf, >42, >3b, >27                             ; Face 7
+       byte >ff, >43, >0f, >50                             ; Face 8
+       byte >7f, >42, >0e, >4b                             ; Face 9
+       byte >ff, >46, >50, >28                             ; Face 10
+       byte >7f, >3a, >66, >33                             ; Face 11
+       byte >3f, >51, >09, >43                             ; Face 12
+       byte >3f, >2f, >5e, >3f                             ; Face 13
 
 * ******************************************************************************
 * 
@@ -36404,10 +36454,10 @@ SHIP_ASTEROID_FACES:
 
 SHIP_CANISTER:
        byte >00                                            ; Max. canisters on demise = 0
-       data >1400                                          ; Targetable area          = 20 * 20
+       data 20 * 20                                        ; Targetable area          = 20 * 20
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_CANISTER_EDGES - SHIP_CANISTER).256      ; Edges data offset (low)
+       byte (SHIP_CANISTER_FACES - SHIP_CANISTER).256      ; Faces data offset (low)
 
        byte >31                                            ; Max. edge count          = (49 - 1) / 4 = 12
        byte >00                                            ; Gun vertex               = 0
@@ -36420,8 +36470,8 @@ SHIP_CANISTER:
        byte >11                                            ; Max. energy              = 17
        byte >0f                                            ; Max. speed               = 15
 
-       byte >00                                            ; Edges data offset (high)
-       byte >00                                            ; Faces data offset (high)
+       byte (SHIP_CANISTER_EDGES - SHIP_CANISTER)/256      ; Edges data offset (high)
+       byte (SHIP_CANISTER_FACES - SHIP_CANISTER)/256      ; Faces data offset (high)
 
        byte >02                                            ; Normals are scaled by    = 2^2 = 4
        byte >00                                            ; Laser power              = 0
@@ -36429,44 +36479,44 @@ SHIP_CANISTER:
 
 SHIP_CANISTER_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX   24,   16,    0,     0,      1,    5,     5,         31 ; VERTEX   24,   16 ; Vertex 0
-       ; VERTEX   24,    5,   15,     0,      1,    2,     2,         31 ; VERTEX   24,    5 ; Vertex 1
-       ; VERTEX   24,  -13,    9,     0,      2,    3,     3,         31 ; VERTEX   24,  -13 ; Vertex 2
-       ; VERTEX   24,  -13,   -9,     0,      3,    4,     4,         31 ; VERTEX   24,  -13 ; Vertex 3
-       ; VERTEX   24,    5,  -15,     0,      4,    5,     5,         31 ; VERTEX   24,    5 ; Vertex 4
-       ; VERTEX  -24,   16,    0,     1,      5,    6,     6,         31 ; VERTEX  -24,   16 ; Vertex 5
-       ; VERTEX  -24,    5,   15,     1,      2,    6,     6,         31 ; VERTEX  -24,    5 ; Vertex 6
-       ; VERTEX  -24,  -13,    9,     2,      3,    6,     6,         31 ; VERTEX  -24,  -13 ; Vertex 7
-       ; VERTEX  -24,  -13,   -9,     3,      4,    6,     6,         31 ; VERTEX  -24,  -13 ; Vertex 8
-       ; VERTEX  -24,    5,  -15,     4,      5,    6,     6,         31 ; VERTEX  -24,    5 ; Vertex 9
+       byte >18, >10, >00, >1f, >10, >55                   ; Vertex 0
+       byte >18, >05, >0f, >1f, >10, >22                   ; Vertex 1
+       byte >18, >0d, >09, >5f, >20, >33                   ; Vertex 2
+       byte >18, >0d, >09, >7f, >30, >44                   ; Vertex 3
+       byte >18, >05, >0f, >3f, >40, >55                   ; Vertex 4
+       byte >18, >10, >00, >9f, >51, >66                   ; Vertex 5
+       byte >18, >05, >0f, >9f, >21, >66                   ; Vertex 6
+       byte >18, >0d, >09, >df, >32, >66                   ; Vertex 7
+       byte >18, >0d, >09, >ff, >43, >66                   ; Vertex 8
+       byte >18, >05, >0f, >bf, >54, >66                   ; Vertex 9
 
 SHIP_CANISTER_EDGES:
                                                            ; vertex1, vertex2, face1, face2, visibility
-       ; EDGE       0,       1,     0,     1,         31 ; EDGE       0,     ; Edge 0
-       ; EDGE       1,       2,     0,     2,         31 ; EDGE       1,     ; Edge 1
-       ; EDGE       2,       3,     0,     3,         31 ; EDGE       2,     ; Edge 2
-       ; EDGE       3,       4,     0,     4,         31 ; EDGE       3,     ; Edge 3
-       ; EDGE       0,       4,     0,     5,         31 ; EDGE       0,     ; Edge 4
-       ; EDGE       0,       5,     1,     5,         31 ; EDGE       0,     ; Edge 5
-       ; EDGE       1,       6,     1,     2,         31 ; EDGE       1,     ; Edge 6
-       ; EDGE       2,       7,     2,     3,         31 ; EDGE       2,     ; Edge 7
-       ; EDGE       3,       8,     3,     4,         31 ; EDGE       3,     ; Edge 8
-       ; EDGE       4,       9,     4,     5,         31 ; EDGE       4,     ; Edge 9
-       ; EDGE       5,       6,     1,     6,         31 ; EDGE       5,     ; Edge 10
-       ; EDGE       6,       7,     2,     6,         31 ; EDGE       6,     ; Edge 11
-       ; EDGE       7,       8,     3,     6,         31 ; EDGE       7,     ; Edge 12
-       ; EDGE       8,       9,     4,     6,         31 ; EDGE       8,     ; Edge 13
-       ; EDGE       9,       5,     5,     6,         31 ; EDGE       9,     ; Edge 14
+       byte >1f, >10, >00, >04                             ; Edge 0
+       byte >1f, >20, >04, >08                             ; Edge 1
+       byte >1f, >30, >08, >0c                             ; Edge 2
+       byte >1f, >40, >0c, >10                             ; Edge 3
+       byte >1f, >50, >00, >10                             ; Edge 4
+       byte >1f, >51, >00, >14                             ; Edge 5
+       byte >1f, >21, >04, >18                             ; Edge 6
+       byte >1f, >32, >08, >1c                             ; Edge 7
+       byte >1f, >43, >0c, >20                             ; Edge 8
+       byte >1f, >54, >10, >24                             ; Edge 9
+       byte >1f, >61, >14, >18                             ; Edge 10
+       byte >1f, >62, >18, >1c                             ; Edge 11
+       byte >1f, >63, >1c, >20                             ; Edge 12
+       byte >1f, >64, >20, >24                             ; Edge 13
+       byte >1f, >65, >24, >14                             ; Edge 14
 
 SHIP_CANISTER_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE       96,        0,        0,         31 ; FACE       96,    ; Face 0
-       ; FACE        0,       41,       30,         31 ; FACE        0,    ; Face 1
-       ; FACE        0,      -18,       48,         31 ; FACE        0,    ; Face 2
-       ; FACE        0,      -51,        0,         31 ; FACE        0,    ; Face 3
-       ; FACE        0,      -18,      -48,         31 ; FACE        0,    ; Face 4
-       ; FACE        0,       41,      -30,         31 ; FACE        0,    ; Face 5
-       ; FACE      -96,        0,        0,         31 ; FACE      -96,    ; Face 6
+       byte >1f, >60, >00, >00                             ; Face 0
+       byte >1f, >00, >29, >1e                             ; Face 1
+       byte >5f, >00, >12, >30                             ; Face 2
+       byte >5f, >00, >33, >00                             ; Face 3
+       byte >7f, >00, >12, >30                             ; Face 4
+       byte >3f, >00, >29, >1e                             ; Face 5
+       byte >9f, >60, >00, >00                             ; Face 6
 
 * ******************************************************************************
 * 
@@ -36485,10 +36535,10 @@ SHIP_CANISTER_FACES:
 
 SHIP_THARGON:
        byte >00                                            ; Max. canisters on demise = 0
-       data >2800                                          ; Targetable area          = 40 * 40
+       data 40 * 40                                        ; Targetable area          = 40 * 40
 
-       byte >00                                            ; Edges from canister
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_CANISTER_EDGES - SHIP_THARGON).256       ; Edges from canister
+       byte (SHIP_THARGON_FACES - SHIP_THARGON).256        ; Faces data offset (low)
 
        byte >41                                            ; Max. edge count          = (65 - 1) / 4 = 16
        byte >00                                            ; Gun vertex               = 0
@@ -36501,8 +36551,8 @@ SHIP_THARGON:
        byte >14                                            ; Max. energy              = 20
        byte >1e                                            ; Max. speed               = 30
 
-       byte >00                                            ; Edges from canister
-       byte >00                                            ; Faces data offset (high)
+       byte (SHIP_CANISTER_EDGES - SHIP_THARGON)/256       ; Edges from canister
+       byte (SHIP_THARGON_FACES - SHIP_THARGON)/256        ; Faces data offset (high)
 
        byte >02                                            ; Normals are scaled by    = 2^2 = 4
        byte >10                                            ; Laser power              = 2
@@ -36510,26 +36560,26 @@ SHIP_THARGON:
 
 SHIP_THARGON_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX   -9,    0,   40,     1,      0,    5,     5,         31 ; VERTEX   -9,    0 ; Vertex 0
-       ; VERTEX   -9,  -38,   12,     1,      0,    2,     2,         31 ; VERTEX   -9,  -38 ; Vertex 1
-       ; VERTEX   -9,  -24,  -32,     2,      0,    3,     3,         31 ; VERTEX   -9,  -24 ; Vertex 2
-       ; VERTEX   -9,   24,  -32,     3,      0,    4,     4,         31 ; VERTEX   -9,   24 ; Vertex 3
-       ; VERTEX   -9,   38,   12,     4,      0,    5,     5,         31 ; VERTEX   -9,   38 ; Vertex 4
-       ; VERTEX    9,    0,   -8,     5,      1,    6,     6,         31 ; VERTEX    9,    0 ; Vertex 5
-       ; VERTEX    9,  -10,  -15,     2,      1,    6,     6,         31 ; VERTEX    9,  -10 ; Vertex 6
-       ; VERTEX    9,   -6,  -26,     3,      2,    6,     6,         31 ; VERTEX    9,   -6 ; Vertex 7
-       ; VERTEX    9,    6,  -26,     4,      3,    6,     6,         31 ; VERTEX    9,    6 ; Vertex 8
-       ; VERTEX    9,   10,  -15,     5,      4,    6,     6,         31 ; VERTEX    9,   10 ; Vertex 9
+       byte >09, >00, >28, >9f, >01, >55                   ; Vertex 0
+       byte >09, >26, >0c, >df, >01, >22                   ; Vertex 1
+       byte >09, >18, >20, >ff, >02, >33                   ; Vertex 2
+       byte >09, >18, >20, >bf, >03, >44                   ; Vertex 3
+       byte >09, >26, >0c, >9f, >04, >55                   ; Vertex 4
+       byte >09, >00, >08, >3f, >15, >66                   ; Vertex 5
+       byte >09, >0a, >0f, >7f, >12, >66                   ; Vertex 6
+       byte >09, >06, >1a, >7f, >23, >66                   ; Vertex 7
+       byte >09, >06, >1a, >3f, >34, >66                   ; Vertex 8
+       byte >09, >0a, >0f, >3f, >45, >66                   ; Vertex 9
 
 SHIP_THARGON_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE      -36,        0,        0,         31 ; FACE      -36,    ; Face 0
-       ; FACE       20,       -5,        7,         31 ; FACE       20,    ; Face 1
-       ; FACE       46,      -42,      -14,         31 ; FACE       46,    ; Face 2
-       ; FACE       36,        0,     -104,         31 ; FACE       36,    ; Face 3
-       ; FACE       46,       42,      -14,         31 ; FACE       46,    ; Face 4
-       ; FACE       20,        5,        7,         31 ; FACE       20,    ; Face 5
-       ; FACE       36,        0,        0,         31 ; FACE       36,    ; Face 6
+       byte >9f, >24, >00, >00                             ; Face 0
+       byte >5f, >14, >05, >07                             ; Face 1
+       byte >7f, >2e, >2a, >0e                             ; Face 2
+       byte >3f, >24, >00, >68                             ; Face 3
+       byte >3f, >2e, >2a, >0e                             ; Face 4
+       byte >1f, >14, >05, >07                             ; Face 5
+       byte >1f, >24, >00, >00                             ; Face 6
 
 * ******************************************************************************
 * 
@@ -36543,10 +36593,10 @@ SHIP_THARGON_FACES:
 
 SHIP_ESCAPE_POD:
        byte >00                                            ; Max. canisters on demise = 0
-       data >1000                                          ; Targetable area          = 16 * 16
+       data 16 * 16                                        ; Targetable area          = 16 * 16
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_ESCAPE_POD_EDGES - SHIP_ESCAPE_POD).256  ; Edges data offset (low)
+       byte (SHIP_ESCAPE_POD_FACES - SHIP_ESCAPE_POD).256  ; Faces data offset (low)
 
        byte >19                                            ; Max. edge count          = (25 - 1) / 4 = 6
        byte >00                                            ; Gun vertex               = 0
@@ -36559,8 +36609,8 @@ SHIP_ESCAPE_POD:
        byte >11                                            ; Max. energy              = 17
        byte >08                                            ; Max. speed               = 8
 
-       byte >00                                            ; Edges data offset (high)
-       byte >00                                            ; Faces data offset (high)
+       byte (SHIP_ESCAPE_POD_EDGES - SHIP_ESCAPE_POD)/256  ; Edges data offset (high)
+       byte (SHIP_ESCAPE_POD_FACES - SHIP_ESCAPE_POD)/256  ; Faces data offset (high)
 
        byte >03                                            ; Normals are scaled by    =  2^3 = 8
        byte >00                                            ; Laser power              = 0
@@ -36568,26 +36618,26 @@ SHIP_ESCAPE_POD:
 
 SHIP_ESCAPE_POD_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX   -7,    0,   36,     2,      1,    3,     3,         31 ; VERTEX   -7,    0 ; Vertex 0
-       ; VERTEX   -7,  -14,  -12,     2,      0,    3,     3,         31 ; VERTEX   -7,  -14 ; Vertex 1
-       ; VERTEX   -7,   14,  -12,     1,      0,    3,     3,         31 ; VERTEX   -7,   14 ; Vertex 2
-       ; VERTEX   21,    0,    0,     1,      0,    2,     2,         31 ; VERTEX   21,    0 ; Vertex 3
+       byte >07, >00, >24, >9f, >12, >33                   ; Vertex 0
+       byte >07, >0e, >0c, >ff, >02, >33                   ; Vertex 1
+       byte >07, >0e, >0c, >bf, >01, >33                   ; Vertex 2
+       byte >15, >00, >00, >1f, >01, >22                   ; Vertex 3
 
 SHIP_ESCAPE_POD_EDGES:
                                                            ; vertex1, vertex2, face1, face2, visibility
-       ; EDGE       0,       1,     3,     2,         31 ; EDGE       0,     ; Edge 0
-       ; EDGE       1,       2,     3,     0,         31 ; EDGE       1,     ; Edge 1
-       ; EDGE       2,       3,     1,     0,         31 ; EDGE       2,     ; Edge 2
-       ; EDGE       3,       0,     2,     1,         31 ; EDGE       3,     ; Edge 3
-       ; EDGE       0,       2,     3,     1,         31 ; EDGE       0,     ; Edge 4
-       ; EDGE       3,       1,     2,     0,         31 ; EDGE       3,     ; Edge 5
+       byte >1f, >23, >00, >04                             ; Edge 0
+       byte >1f, >03, >04, >08                             ; Edge 1
+       byte >1f, >01, >08, >0c                             ; Edge 2
+       byte >1f, >12, >0c, >00                             ; Edge 3
+       byte >1f, >13, >00, >08                             ; Edge 4
+       byte >1f, >02, >0c, >04                             ; Edge 5
 
 SHIP_ESCAPE_POD_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE       26,        0,      -61,         31 ; FACE       26,    ; Face 0
-       ; FACE       19,       51,       15,         31 ; FACE       19,    ; Face 1
-       ; FACE       19,      -51,       15,         31 ; FACE       19,    ; Face 2
-       ; FACE      -56,        0,        0,         31 ; FACE      -56,    ; Face 3
+       byte >3f, >1a, >00, >3d                             ; Face 0
+       byte >1f, >13, >33, >0f                             ; Face 1
+       byte >5f, >13, >33, >0f                             ; Face 2
+       byte >9f, >38, >00, >00                             ; Face 3
 
 * ******************************************************************************
 * 
@@ -36626,10 +36676,10 @@ LOAD_PYTHON.:
 
 SHIP_PYTHON:
        byte >03                                            ; Max. canisters on demise = 3
-       data >7800                                          ; Targetable area          = 120 * 120
+       data 120 * 120                                      ; Targetable area          = 120 * 120
 
-       byte >00                                            ; Edges data offset (low)
-       byte >00                                            ; Faces data offset (low)
+       byte (SHIP_PYTHON_EDGES - SHIP_PYTHON).256          ; Edges data offset (low)
+       byte (SHIP_PYTHON_FACES - SHIP_PYTHON).256          ; Faces data offset (low)
 
        byte >55                                            ; Max. edge count          = (85 - 1) / 4 = 21
        byte >00                                            ; Gun vertex               = 0
@@ -36642,8 +36692,8 @@ SHIP_PYTHON:
        byte >fa                                            ; Max. energy              = 250
        byte >14                                            ; Max. speed               = 20
 
-       byte >00                                            ; Edges data offset (high)
-       byte >00                                            ; Faces data offset (high)
+       byte (SHIP_PYTHON_EDGES - SHIP_PYTHON)/256          ; Edges data offset (high)
+       byte (SHIP_PYTHON_FACES - SHIP_PYTHON)/256          ; Faces data offset (high)
 
        byte >00                                            ; Normals are scaled by    = 2^0 = 1
        byte >1b                                            ; Laser power              = 3
@@ -36651,62 +36701,62 @@ SHIP_PYTHON:
 
 SHIP_PYTHON_VERTICES:
                                                            ; x,    y,    z, face1, face2, face3, face4, visibility
-       ; VERTEX    0,    0,  224,     0,      1,    2,     3,         31 ; VERTEX    0,    0 ; Vertex 0
-       ; VERTEX    0,   48,   48,     0,      1,    4,     5,         30 ; VERTEX    0,   48 ; Vertex 1
-       ; VERTEX   96,    0,  -16,    15,     15,   15,    15,         31 ; VERTEX   96,    0 ; Vertex 2
-       ; VERTEX  -96,    0,  -16,    15,     15,   15,    15,         31 ; VERTEX  -96,    0 ; Vertex 3
-       ; VERTEX    0,   48,  -32,     4,      5,    8,     9,         30 ; VERTEX    0,   48 ; Vertex 4
-       ; VERTEX    0,   24, -112,     9,      8,   12,    12,         31 ; VERTEX    0,   24 ; Vertex 5
-       ; VERTEX  -48,    0, -112,     8,     11,   12,    12,         31 ; VERTEX  -48,    0 ; Vertex 6
-       ; VERTEX   48,    0, -112,     9,     10,   12,    12,         31 ; VERTEX   48,    0 ; Vertex 7
-       ; VERTEX    0,  -48,   48,     2,      3,    6,     7,         30 ; VERTEX    0,  -48 ; Vertex 8
-       ; VERTEX    0,  -48,  -32,     6,      7,   10,    11,         30 ; VERTEX    0,  -48 ; Vertex 9
-       ; VERTEX    0,  -24, -112,    10,     11,   12,    12,         30 ; VERTEX    0,  -24 ; Vertex 10
+       byte >00, >00, >e0, >1f, >10, >32                   ; Vertex 0
+       byte >00, >30, >30, >1e, >10, >54                   ; Vertex 1
+       byte >60, >00, >10, >3f, >ff, >ff                   ; Vertex 2
+       byte >60, >00, >10, >bf, >ff, >ff                   ; Vertex 3
+       byte >00, >30, >20, >3e, >54, >98                   ; Vertex 4
+       byte >00, >18, >70, >3f, >89, >cc                   ; Vertex 5
+       byte >30, >00, >70, >bf, >b8, >cc                   ; Vertex 6
+       byte >30, >00, >70, >3f, >a9, >cc                   ; Vertex 7
+       byte >00, >30, >30, >5e, >32, >76                   ; Vertex 8
+       byte >00, >30, >20, >7e, >76, >ba                   ; Vertex 9
+       byte >00, >18, >70, >7e, >ba, >cc                   ; Vertex 10
 
 SHIP_PYTHON_EDGES:
                                                            ; vertex1, vertex2, face1, face2, visibility
-       ; EDGE       0,       8,     2,     3,         30 ; EDGE       0,     ; Edge 0
-       ; EDGE       0,       3,     0,     2,         31 ; EDGE       0,     ; Edge 1
-       ; EDGE       0,       2,     1,     3,         31 ; EDGE       0,     ; Edge 2
-       ; EDGE       0,       1,     0,     1,         30 ; EDGE       0,     ; Edge 3
-       ; EDGE       2,       4,     9,     5,         29 ; EDGE       2,     ; Edge 4
-       ; EDGE       1,       2,     1,     5,         29 ; EDGE       1,     ; Edge 5
-       ; EDGE       2,       8,     7,     3,         29 ; EDGE       2,     ; Edge 6
-       ; EDGE       1,       3,     0,     4,         29 ; EDGE       1,     ; Edge 7
-       ; EDGE       3,       8,     2,     6,         29 ; EDGE       3,     ; Edge 8
-       ; EDGE       2,       9,     7,    10,         29 ; EDGE       2,     ; Edge 9
-       ; EDGE       3,       4,     4,     8,         29 ; EDGE       3,     ; Edge 10
-       ; EDGE       3,       9,     6,    11,         29 ; EDGE       3,     ; Edge 11
-       ; EDGE       3,       5,     8,     8,          5 ; EDGE       3,     ; Edge 12
-       ; EDGE       3,      10,    11,    11,          5 ; EDGE       3,     ; Edge 13
-       ; EDGE       2,       5,     9,     9,          5 ; EDGE       2,     ; Edge 14
-       ; EDGE       2,      10,    10,    10,          5 ; EDGE       2,     ; Edge 15
-       ; EDGE       2,       7,     9,    10,         31 ; EDGE       2,     ; Edge 16
-       ; EDGE       3,       6,     8,    11,         31 ; EDGE       3,     ; Edge 17
-       ; EDGE       5,       6,     8,    12,         31 ; EDGE       5,     ; Edge 18
-       ; EDGE       5,       7,     9,    12,         31 ; EDGE       5,     ; Edge 19
-       ; EDGE       7,      10,    12,    10,         29 ; EDGE       7,     ; Edge 20
-       ; EDGE       6,      10,    11,    12,         29 ; EDGE       6,     ; Edge 21
-       ; EDGE       4,       5,     8,     9,         29 ; EDGE       4,     ; Edge 22
-       ; EDGE       9,      10,    10,    11,         29 ; EDGE       9,     ; Edge 23
-       ; EDGE       1,       4,     4,     5,         29 ; EDGE       1,     ; Edge 24
-       ; EDGE       8,       9,     6,     7,         29 ; EDGE       8,     ; Edge 25
+       byte >1e, >32, >00, >20                             ; Edge 0
+       byte >1f, >20, >00, >0c                             ; Edge 1
+       byte >1f, >31, >00, >08                             ; Edge 2
+       byte >1e, >10, >00, >04                             ; Edge 3
+       byte >1d, >59, >08, >10                             ; Edge 4
+       byte >1d, >51, >04, >08                             ; Edge 5
+       byte >1d, >37, >08, >20                             ; Edge 6
+       byte >1d, >40, >04, >0c                             ; Edge 7
+       byte >1d, >62, >0c, >20                             ; Edge 8
+       byte >1d, >a7, >08, >24                             ; Edge 9
+       byte >1d, >84, >0c, >10                             ; Edge 10
+       byte >1d, >b6, >0c, >24                             ; Edge 11
+       byte >05, >88, >0c, >14                             ; Edge 12
+       byte >05, >bb, >0c, >28                             ; Edge 13
+       byte >05, >99, >08, >14                             ; Edge 14
+       byte >05, >aa, >08, >28                             ; Edge 15
+       byte >1f, >a9, >08, >1c                             ; Edge 16
+       byte >1f, >b8, >0c, >18                             ; Edge 17
+       byte >1f, >c8, >14, >18                             ; Edge 18
+       byte >1f, >c9, >14, >1c                             ; Edge 19
+       byte >1d, >ac, >1c, >28                             ; Edge 20
+       byte >1d, >cb, >18, >28                             ; Edge 21
+       byte >1d, >98, >10, >14                             ; Edge 22
+       byte >1d, >ba, >24, >28                             ; Edge 23
+       byte >1d, >54, >04, >10                             ; Edge 24
+       byte >1d, >76, >20, >24                             ; Edge 25
 
 SHIP_PYTHON_FACES:
                                                            ; normal_x, normal_y, normal_z, visibility
-       ; FACE      -27,       40,       11,         30 ; FACE      -27,    ; Face 0
-       ; FACE       27,       40,       11,         30 ; FACE       27,    ; Face 1
-       ; FACE      -27,      -40,       11,         30 ; FACE      -27,    ; Face 2
-       ; FACE       27,      -40,       11,         30 ; FACE       27,    ; Face 3
-       ; FACE      -19,       38,        0,         30 ; FACE      -19,    ; Face 4
-       ; FACE       19,       38,        0,         30 ; FACE       19,    ; Face 5
-       ; FACE      -19,      -38,        0,         30 ; FACE      -19,    ; Face 6
-       ; FACE       19,      -38,        0,         30 ; FACE       19,    ; Face 7
-       ; FACE      -25,       37,      -11,         30 ; FACE      -25,    ; Face 8
-       ; FACE       25,       37,      -11,         30 ; FACE       25,    ; Face 9
-       ; FACE       25,      -37,      -11,         30 ; FACE       25,    ; Face 10
-       ; FACE      -25,      -37,      -11,         30 ; FACE      -25,    ; Face 11
-       ; FACE        0,        0,     -112,         30 ; FACE        0,    ; Face 12
+       byte >9e, >1b, >28, >0b                             ; Face 0
+       byte >1e, >1b, >28, >0b                             ; Face 1
+       byte >de, >1b, >28, >0b                             ; Face 2
+       byte >5e, >1b, >28, >0b                             ; Face 3
+       byte >9e, >13, >26, >00                             ; Face 4
+       byte >1e, >13, >26, >00                             ; Face 5
+       byte >de, >13, >26, >00                             ; Face 6
+       byte >5e, >13, >26, >00                             ; Face 7
+       byte >be, >19, >25, >0b                             ; Face 8
+       byte >3e, >19, >25, >0b                             ; Face 9
+       byte >7e, >19, >25, >0b                             ; Face 10
+       byte >fe, >19, >25, >0b                             ; Face 11
+       byte >3e, >00, >00, >70                             ; Face 12
 
        bss 11                                              ; This space appears to be unused
 
