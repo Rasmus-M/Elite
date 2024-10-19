@@ -6827,18 +6827,19 @@ UNIV:
 
        ; NEXT
 
-       data K. + 0 * NI.
-       data K. + 1 * NI.
-       data K. + 2 * NI.
-       data K. + 3 * NI.
-       data K. + 4 * NI.
-       data K. + 5 * NI.
-       data K. + 6 * NI.
-       data K. + 7 * NI.
-       data K. + 8 * NI.
-       data K. + 9 * NI.
-       data K. + 10 * NI.
-       data K. + 11 * NI.
+       byte (K. + 0 * NI.) % 256, (K. + 0 * NI.) / 256
+       byte (K. + 1 * NI.) % 256, (K. + 1 * NI.) / 256
+       byte (K. + 2 * NI.) % 256, (K. + 2 * NI.) / 256
+       byte (K. + 3 * NI.) % 256, (K. + 3 * NI.) / 256
+       byte (K. + 4 * NI.) % 256, (K. + 4 * NI.) / 256
+       byte (K. + 5 * NI.) % 256, (K. + 5 * NI.) / 256
+       byte (K. + 6 * NI.) % 256, (K. + 6 * NI.) / 256
+       byte (K. + 7 * NI.) % 256, (K. + 7 * NI.) / 256
+       byte (K. + 8 * NI.) % 256, (K. + 8 * NI.) / 256
+       byte (K. + 9 * NI.) % 256, (K. + 9 * NI.) / 256
+       byte (K. + 10 * NI.) % 256, (K. + 10 * NI.) / 256
+       byte (K. + 11 * NI.) % 256, (K. + 11 * NI.) / 256
+       byte (K. + 12 * NI.) % 256, (K. + 12 * NI.) / 256
 
 * ******************************************************************************
 * 
@@ -13411,6 +13412,39 @@ SNE:
 
        ; NEXT
 
+       byte >00
+       byte >19
+       byte >32
+       byte >4a
+       byte >62
+       byte >79
+       byte >8e
+       byte >a2
+       byte >b5
+       byte >c6
+       byte >d5
+       byte >e2
+       byte >ed
+       byte >f5
+       byte >fb
+       byte >ff
+       byte >ff
+       byte >ff
+       byte >fb
+       byte >f5
+       byte >ed
+       byte >e2
+       byte >d5
+       byte >c6
+       byte >b5
+       byte >a2
+       byte >8e
+       byte >79
+       byte >62
+       byte >4a
+       byte >32
+       byte >19
+
 * ******************************************************************************
 * 
 * Name: MU5
@@ -15395,6 +15429,39 @@ ACT:
        ; EQUB INT((128 / PI) * ATN(I% / 32) + 0.5) ;                   
 
        ; NEXT
+
+       byte >12
+       byte >13
+       byte >14
+       byte >15
+       byte >16
+       byte >17
+       byte >18
+       byte >19
+       byte >1a
+       byte >1b
+       byte >1b
+       byte >1c
+       byte >1d
+       byte >1d
+       byte >1e
+       byte >1f
+       byte >20
+       byte >20
+       byte >21
+       byte >21
+       byte >22
+       byte >22
+       byte >23
+       byte >24
+       byte >24
+       byte >24
+       byte >25
+       byte >25
+       byte >26
+       byte >26
+       byte >27
+       byte >27
 
 * ******************************************************************************
 * 

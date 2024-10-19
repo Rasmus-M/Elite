@@ -89,6 +89,7 @@ public class BBCSourceConverter {
                 case ForEnd:
                     tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, bbcLine.getComment(), "; " + bbcLine.getDirective()));
                     insideFor = false;
+                    convertForLoop(tms9900Lines);
                     break;
                 default:
                     if (!insideMacro && !insideFor) {
@@ -711,6 +712,38 @@ public class BBCSourceConverter {
         return new TMS9900Line(TMS9900Line.Type.Data, comment, "byte " + Util.tiHexByte(s) + ", " + Util.tiHexByte(ax) + ", " + Util.tiHexByte(ay) + ", " + Util.tiHexByte(az));
     }
 
+    private void convertForLoop(List<TMS9900Line> tms9900Lines) {
+        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Empty));
+        String label = getLastLabel(tms9900Lines);
+        if (label != null) {
+            switch (label) {
+                case "UNIV":
+                    for (int i = 0; i <= 12; i++) {
+                        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Data, null, "byte (K. + " + i + " * NI.) % 256, (K. + " + i + " * NI.) / 256"));
+                    }
+                    break;
+                case "SNE":
+                    for (int i = 0; i <= 31; i++) {
+                        double n = Math.abs(Math.sin((i / 64.0) * 2 * Math.PI));
+                        int b;
+                        if (n >= 1) {
+                            b = 255;
+                        } else {
+                            b = (int) Math.floor(256 * n + 0.5);
+                        }
+                        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Data, null, "byte " + Util.tiHexByte(b)));
+                    }
+                    break;
+                case "ACT":
+                    for (int i = 0; i <= 31; i++) {
+                        int b = (int) Math.floor((128 / Math.PI) * Math.atan((i / 32.0) + 0.5));
+                        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Data, null, "byte " + Util.tiHexByte(b)));
+                    }
+                    break;
+            }
+        }
+    }
+
     private boolean lastLineWasALabel(List<TMS9900Line> tms9900Lines) {
         for (int i = tms9900Lines.size() - 1; i >= 0; i--) {
             TMS9900Line tms9900Line = tms9900Lines.get(i);
@@ -722,6 +755,16 @@ public class BBCSourceConverter {
             }
         }
         return false;
+    }
+
+    private String getLastLabel(List<TMS9900Line> tms9900Lines) {
+        for (int i = tms9900Lines.size() - 1; i >= 0; i--) {
+            TMS9900Line tms9900Line = tms9900Lines.get(i);
+            if (tms9900Line.getType() == TMS9900Line.Type.Label) {
+                return tms9900Line.getLabel();
+            }
+        }
+        return null;
     }
 
     private List<BBCLine> readBBCFile(File bbcFile) throws IOException {

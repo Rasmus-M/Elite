@@ -7051,19 +7051,6 @@ ENDIF
 
  NEXT
 
-EQUW K% + 0 * NI%
-EQUW K% + 1 * NI%
-EQUW K% + 2 * NI%
-EQUW K% + 3 * NI%
-EQUW K% + 4 * NI%
-EQUW K% + 5 * NI%
-EQUW K% + 6 * NI%
-EQUW K% + 7 * NI%
-EQUW K% + 8 * NI%
-EQUW K% + 9 * NI%
-EQUW K% + 10 * NI%
-EQUW K% + 11 * NI%
-
 \ ******************************************************************************
 \
 \       Name: TWOS
