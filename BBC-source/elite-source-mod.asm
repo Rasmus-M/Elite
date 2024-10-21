@@ -12065,7 +12065,9 @@ ENDIF
 .TACTICS
 
  CPX #MSL               \ If this is a missile, jump up to TA18 to implement
- BEQ TA18               \ missile tactics
+ BNE FIX001             \ missile tactics
+ JMP TA18
+.FIX001
 
  CPX #ESC               \ If this is not an escape pod, skip the following two
  BNE B34                \ instructions
@@ -12770,10 +12772,12 @@ ENDIF
                         \
                         \   (A R) = (S R) + (A P) = x_lo^2 + y_lo^2
 
- BCS FR1-2              \ If the addition just overflowed then there is no way
+ BCC FIX002             \ If the addition just overflowed then there is no way
                         \ our crosshairs are within the ship's targetable area,
                         \ so return from the subroutine with the C flag clear
                         \ (as FR1-2 contains a CLC then an RTS)
+ JMP FR1-2
+.FIX002
 
  STA S                  \ Set (S R) = (A P) = x_lo^2 + y_lo^2
 
@@ -14077,9 +14081,10 @@ ENDIF
  TXA                    \ Set A = |A|
  AND #127
 
- BEQ MU6                \ If A = 0, jump to MU6 to set P(1 0) = 0 and return
+ BNE FIX003             \ If A = 0, jump to MU6 to set P(1 0) = 0 and return
                         \ from the subroutine using a tail call
-
+ JMP MU6
+.FIX003
  TAX                    \ Set T1 = X - 1
  DEX                    \
  STX T1                 \ We subtract 1 as the C flag will be set when we want
@@ -17122,11 +17127,11 @@ ENDIF
 
  TAX                    \ Copy the stick height into X
 
- BEQ RTS                \ If the stick height is zero, then there is no stick to
+ BEQ RTS1               \ If the stick height is zero, then there is no stick to
                         \ draw, so return from the subroutine (as RTS contains
                         \ an RTS)
 
- BCC RTS+1              \ If the C flag is clear then the stick height in A is
+ BCC RTS3               \ If the C flag is clear then the stick height in A is
                         \ negative, so jump down to RTS+1
 
 .VLL1
@@ -17165,7 +17170,7 @@ ENDIF
  BNE VLL1               \ If we still have more stick to draw, jump up to VLL1
                         \ to draw the next pixel
 
-.RTS
+.RTS1
 
  RTS                    \ Return from the subroutine
 
@@ -17173,6 +17178,8 @@ ENDIF
                         \ the dot is above the ellipse and the stick is below
                         \ the dot, and we need to draw the stick downwards from
                         \ the dot)
+
+.RTS3
 
  INY                    \ We want to draw the stick downwards, so we first
                         \ increment the row counter so that it's pointing to the
@@ -21479,13 +21486,15 @@ ENDIF
                         \ the C flag if the number is bigger than the highest
                         \ item number in QQ25
 
- BEQ bay                \ If no number was entered, jump up to bay to go to the
+ BNE FIX004             \ If no number was entered, jump up to bay to go to the
                         \ docking bay (i.e. show the Status Mode screen)
-
- BCS bay                \ If the number entered was too big, jump up to bay to
+ JMP bay
+.FIX004
+ BCC FIX005             \ If the number entered was too big, jump up to bay to
                         \ go to the docking bay (i.e. show the Status Mode
                         \ screen)
-
+ JMP bay
+.FIX005
  SBC #0                 \ Set A to the number entered - 1 (because the C flag is
                         \ clear), which will be the actual item number we want
                         \ to buy
@@ -22750,8 +22759,10 @@ ENDIF
                         \ letter in lower case
 
  CPX #255               \ If QQ17 = 255 then printing is disabled, so return
- BEQ TT48               \ from the subroutine (as TT48 contains an RTS)
+ BNE FIX006             \ from the subroutine (as TT48 contains an RTS)
+ JMP TT48
 
+.FIX006
  CMP #'A'               \ If A >= ASCII "A", then jump to TT42, which will
  BCS TT42               \ print the letter in lowercase
 
@@ -22869,10 +22880,11 @@ ENDIF
  LDA QQ16+1,Y           \ Get the second letter of the token
 
  CMP #'?'               \ If the second letter of the token is a question mark
- BEQ TT48               \ then this is a one-letter token, so just return from
+ BNE FIX007             \ then this is a one-letter token, so just return from
                         \ the subroutine without printing (as TT48 contains an
                         \ RTS)
-
+ JMP TT48
+.FIX007
  JMP TT27               \ Print the second letter and return from the
                         \ subroutine
 
@@ -23139,9 +23151,10 @@ ENDIF
  STA INWK+31
 
  AND #%00001000         \ If bit 3 of the ship's byte #31 is clear, then nothing
- BEQ TT48               \ is being drawn on-screen for this ship anyway, so
-                        \ return from the subroutine (as TT48 contains an RTS)
+ BNE FIX008             \ is being drawn on-screen for this ship anyway, so
+ JMP TT48               \ return from the subroutine (as TT48 contains an RTS)
 
+.FIX008
  LDY #2                 \ Otherwise it's time to draw an explosion cloud, so
  LDA (XX19),Y           \ fetch byte #2 of the ship line heap into Y, which we
  TAY                    \ set to the explosion count for this ship (i.e. the
@@ -28078,10 +28091,10 @@ ENDIF
  LDA FRIN,X             \ Copy the contents of the source slot into the
  STA FRIN-1,X           \ destination slot
 
- BEQ KS2                \ If the slot we just shuffled down contains 0, then
-                        \ the source slot is empty and we are done shuffling,
+ BNE FIX009             \ If the slot we just shuffled down contains 0, then
+ JMP KS2                \ the source slot is empty and we are done shuffling,
                         \ so jump to KS2 to move on to processing missiles
-
+.FIX009
  ASL A                  \ Otherwise we have a source ship to shuffle down into
  TAY                    \ the destination, so set Y = A * 2 so it can act as an
                         \ index into the two-byte ship blueprint lookup table
@@ -28213,10 +28226,11 @@ ENDIF
  TYA                    \ Loop back to KSL3 to copy the next byte, until we
  BNE KSL3               \ have done them all
 
- BEQ KSL1               \ We have now shuffled everything down one slot, so
-                        \ jump back up to KSL1 to see if there is another slot
+ BNE FIX010             \ We have now shuffled everything down one slot, so
+ JMP KSL1               \ jump back up to KSL1 to see if there is another slot
                         \ that needs shuffling down (this BEQ is effectively a
                         \ JMP as A will always be zero)
+.FIX010
 
 \ ******************************************************************************
 \
@@ -35416,10 +35430,10 @@ ENDMACRO
                         \ edge is not shown
 
  CMP XX4                \ If XX4 > the visibility distance, where XX4 contains
- BCC LL78               \ the ship's z-distance reduced to 0-31 (which we set in
-                        \ part 2), then this edge is too far away to be visible,
+ BCS FIX011             \ the ship's z-distance reduced to 0-31 (which we set in
+ JMP LL78               \ part 2), then this edge is too far away to be visible,
                         \ so jump down to LL78 to move on to the next edge
-
+.FIX011
  INY                    \ Increment Y to point to byte #1
 
  LDA (V),Y              \ Fetch byte #1 for this edge into A, so:

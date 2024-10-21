@@ -383,7 +383,8 @@ public class BBCSourceConverter {
                 }
                 break;
             case "JSR":
-                tms9900Line.setInstruction(".jsr " + convertOperand(operand));
+                tms9900Line.setInstruction("li   " + regTmp + "," + convertOperand(operand).replaceFirst("@", ""));
+                additionalLines.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "bl   @jsr"));
                 break;
             case "LDA":
                     if (operand.getType() == Operand.Type.Immediate) {
@@ -457,22 +458,22 @@ public class BBCSourceConverter {
                 break;
             case "ROL":
                 if (operand.getType() == Operand.Type.Accumulator) {
-                    tms9900Line.setInstruction(".rola");
+                    tms9900Line.setInstruction("bl   @rola");
                 } else {
-                    tms9900Line.setInstruction(".rol " + convertOperand(operand));
+                    tms9900Line.setInstruction("li   rarg1," + convertExpression(operand.getExpression()));
+                    additionalLines.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "bl   @rol"));
                 }
                 break;
             case "ROR":
                 if (operand.getType() == Operand.Type.Accumulator) {
-                    tms9900Line.setInstruction(".rora");
+                    tms9900Line.setInstruction("bl   @rora");
                 } else {
-                    // tms9900Line.setInstruction(".ror " + convertOperand(operand));
                     tms9900Line.setInstruction("li   rarg1," + convertExpression(operand.getExpression()));
                     additionalLines.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "bl   @ror"));
                 }
                 break;
             case "RTS":
-                tms9900Line.setInstruction(".rts");
+                tms9900Line.setInstruction("b    @rts");
                 break;
             case "SBC":
                 if (operand.getType() == Operand.Type.Immediate) {
@@ -583,28 +584,32 @@ public class BBCSourceConverter {
             if (expression.startsWith("%")) {
                 expression = expression.replaceFirst("%", ":");
             }
-            expression = convertLo(expression);
-            expression = convertHi(expression);
-            StringBuilder result = new StringBuilder();
-            StringTokenizer tokenizer = new StringTokenizer(expression, " +-*/", true);
-            while (tokenizer.hasMoreTokens()) {
-                String token = tokenizer.nextToken();
-                if (token.equals("AND")) {
-                    token = "&";
-                } else if (token.equals("OR")) {
-                    token = "|";
-                } else if (token.equals("EOR")) {
-                    token = "^";
-                } else if (token.matches(Operand.symbolRegEx)) {
-                    token = convertSymbol(token);
-                } else {
-                    token = convertLo(token);
-                    token = convertHi(token);
+            if (loFunctionPattern.matcher(expression).matches()) {
+                expression = convertLo(expression);
+            } else if (hiFunctionPattern.matcher(expression).matches()) {
+                expression = convertHi(expression);
+            } else {
+                StringBuilder result = new StringBuilder();
+                StringTokenizer tokenizer = new StringTokenizer(expression, " +-*/", true);
+                while (tokenizer.hasMoreTokens()) {
+                    String token = tokenizer.nextToken();
+                    token = token.replace("%", ".");
+                    if (token.equals("AND")) {
+                        token = "&";
+                    } else if (token.equals("OR")) {
+                        token = "|";
+                    } else if (token.equals("EOR")) {
+                        token = "^";
+                    } else if (token.matches(Operand.symbolRegEx)) {
+                        token = convertSymbol(token);
+                    } else {
+                        token = convertLo(token);
+                        token = convertHi(token);
+                    }
+                    result.append(token);
                 }
-                token = token.replace("%", ".");
-                result.append(token);
+                expression = result.toString();
             }
-            expression = result.toString();
         }
         return expression;
     }

@@ -1,3 +1,53 @@
+jsr:
+       movb r11,*rsp
+       dec  rsp
+       swpb r11
+       movb r11,*rsp
+       dec  rsp
+       b    *rtmp
+
+rts:
+       inc  rsp
+       movb *rsp+,r11
+       swpb r11
+       movb *rsp,r11
+       b    *r11
+
+rola:
+       jnc  !
+       ori  ra,>0080
+!:
+       jmp  !
+       andi ra,>ff7f
+!:
+       sla  ra,1
+       rt
+
+rol:
+       movb *rarg1,rtmp
+       jnc  !
+       ori  rtmp,>0080
+!:
+       jmp  !
+       andi rtmp,>ff7f
+!:
+       sla  rtmp,1
+       mov  rtmp,*rarg1
+       rt
+
+rora:
+       jnc  !
+       ori  ra,>0001
+!:
+       jmp  !
+       andi ra,>fffe
+!:
+       src  ra,1
+       andi ra,>0080
+       mov  ra,rtmp
+       sla  rtmp,9
+       rt
+
 ror:
        movb *rarg1,rtmp
        jnc  !

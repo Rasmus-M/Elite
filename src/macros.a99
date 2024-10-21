@@ -19,6 +19,55 @@
        b    *r11
        .endm
 
+       .defm rola
+       jnc  !
+       ori  ra,>0080
+!:
+       jmp  !
+       andi ra,>ff7f
+!:
+       sla  ra,1
+       .endm
+
+       .defm rol
+       movb #1,rtmp
+       jnc  !
+       ori  rtmp,>0080
+!:
+       jmp  !
+       andi rtmp,>ff7f
+!:
+       sla  rtmp,1
+       mov  rtmp,#1
+       .endm
+
+       .defm rora
+       jnc  !
+       ori  ra,>0001
+!:
+       jmp  !
+       andi ra,>fffe
+!:
+       src  ra,1
+       andi ra,>0080
+       mov  ra,rtmp
+       sla  rtmp,9
+       .endm
+
+       .defm ror
+       movb #1,rtmp
+       jnc  !
+       ori  rtmp,>0001
+!:
+       jmp  !
+       andi rtmp,>fffe
+!:
+       src  rtmp,1
+       movb rtmp,#1
+       andi rtmp,>0080
+       sla  rtmp,9
+       .endm
+
        .defm pha
        movb ra,*rsp
        dec  rsp
@@ -86,14 +135,6 @@
        szcb rtmp,ra
        .endm
 
-       .defm cmp_ind_y_idx
-       movb #1,@rtmplb
-       movb #1+1,rtmp
-       a    ry,rtmp
-       movb *rtmp,rtmp
-       cb   ra,rtmp
-       .endm
-
        .defm and_ind_y_idx
        movb #1,@rtmplb
        movb #1+1,rtmp
@@ -103,12 +144,12 @@
        szcb rtmp,#2
        .endm
 
-       .defm bit
-       movb #1,rtmp
-       inv  rtmp
-       movb rone,rtmp2
-       szcb rtmp2,rtmp
-       ; todo: bit 6 and 7
+       .defm cmp_ind_y_idx
+       movb #1,@rtmplb
+       movb #1+1,rtmp
+       a    ry,rtmp
+       movb *rtmp,rtmp
+       cb   ra,rtmp
        .endm
 
        .defm ld_x_idx_ind
@@ -147,59 +188,18 @@
        xor  rtmp,ra
        .endm
 
+       .defm bit
+       movb #1,rtmp
+       inv  rtmp
+       movb rone,rtmp2
+       szcb rtmp2,rtmp
+       ; todo: bit 6 and 7
+       .endm
+
        .defm lsr
        movb #1,rtmp
        srl  rtmp,1
        movb rtmp,#1
-       .endm
-
-       .defm rola
-       jnc  !
-       ori  ra,>0080
-!:
-       jmp  !
-       andi ra,>ff7f
-!:
-       sla  ra,1
-       .endm
-
-       .defm rol
-       movb #1,rtmp
-       jnc  !
-       ori  rtmp,>0080
-!:
-       jmp  !
-       andi rtmp,>ff7f
-!:
-       sla  rtmp,1
-       mov  rtmp,#1
-       .endm
-
-       .defm rora
-       jnc  !
-       ori  ra,>0001
-!:
-       jmp  !
-       andi ra,>fffe
-!:
-       src  ra,1
-       andi ra,>0080
-       mov  ra,rtmp
-       sla  rtmp,9
-       .endm
-
-       .defm ror
-       movb #1,rtmp
-       jnc  !
-       ori  rtmp,>0001
-!:
-       jmp  !
-       andi rtmp,>fffe
-!:
-       src  rtmp,1
-       movb rtmp,#1
-       andi rtmp,>0080
-       sla  rtmp,9
        .endm
 
        .defm asla
@@ -221,9 +221,12 @@
        .endm
 
        .defm bvs
-       joc  4
+       joc  !
        jmp  #1
+!:
        .endm
+
+
 
        .defm sec
        sla  rmone,1
