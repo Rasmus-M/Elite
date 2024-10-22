@@ -124,7 +124,7 @@ public class BBCSourceConverter {
                             case Variable:
                                 String[] variableAndValue = bbcLine.getInstruction().split("=", 2);
                                 if (variableAndValue.length == 2) {
-                                    createEquate(tms9900Lines, variableAndValue[0].trim(), variableAndValue[1].trim(), bbcLine.getComment());
+                                    createEquate(tms9900Lines, variableAndValue[0].trim(), variableAndValue[1], bbcLine.getComment());
                                 }
                                 break;
                         }
@@ -147,7 +147,7 @@ public class BBCSourceConverter {
 
     private void createEquate(List<TMS9900Line> tms9900Lines, String symbol, String value, String comment) {
         tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Label, comment, convertSymbol(symbol)));
-        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, null, "equ " + convertExpression(value)));
+        tms9900Lines.add(new TMS9900Line(TMS9900Line.Type.Directive, null, "equ " + convertExpression(value).trim()));
     }
 
     private int convertDirective(BBCLine bbcLine, List<TMS9900Line> tms9900Lines) {
@@ -579,7 +579,8 @@ public class BBCSourceConverter {
 
     private String convertExpression(String expression) {
         if (expression != null) {
-            expression = expression.replace("P%", "$");
+            // expression = expression.replace("P%", "$");
+            expression = expression.replaceAll("([ +-])P%", "$1\\$");
             expression = expression.replace("&", ">");
             if (expression.startsWith("%")) {
                 expression = expression.replaceFirst("%", ":");
@@ -617,7 +618,7 @@ public class BBCSourceConverter {
     String convertLo(String expression) {
         Matcher loMatcher = loFunctionPattern.matcher(expression);
         if (loMatcher.find()) {
-            expression = "(" + loMatcher.group(1) + ")%256";
+            expression = "(" + convertExpression(loMatcher.group(1)) + ")%256";
         }
         return expression;
     }
@@ -625,7 +626,7 @@ public class BBCSourceConverter {
     String convertHi(String expression) {
         Matcher hiMatcher = hiFunctionPattern.matcher(expression);
         if (hiMatcher.find()) {
-            expression = "(" + hiMatcher.group(1) + ")/256";
+            expression = "(" + convertExpression(hiMatcher.group(1)) + ")/256";
         }
         return expression;
     }

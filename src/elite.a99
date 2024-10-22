@@ -51,26 +51,27 @@ _STH_CASSETTE:                                             ; (_VARIANT = 3)
 * 
 * ******************************************************************************
 
-ZERO_PAGE.:
-       equ >0000
+* ZERO_PAGE% = &0000
 
-STACK.:
-       equ >0100
+* STACK% = &0100
 
-CODE.:                                                     ; The address where the code will be run
-       equ >0F40
+* CODE% = &0F40         \ The address where the code will be run
 
 LOAD.:                                                     ; The address where the code will be loaded
        equ >1128
 
-T.:                                                        ; Current commander data and stardust data blocks
-       equ >0300
+* T% = &0300            \ Current commander data and stardust data blocks
 
-CODE_WORDS.:                                               ; The address where the text data will be run
-       equ >0400
+* CODE_WORDS% = &0400   \ The address where the text data will be run
 
 LOAD_WORDS.:                                               ; The address where the text data will be loaded
        equ >1100
+
+* K% = &0900
+
+* WP% = &0D40
+
+* CODE_PYTHON% = &7F00
 
 Q.:                                                        ; Set Q% to TRUE to max out the default commander, FALSE
        equ _MAX_COMMANDER
@@ -814,7 +815,7 @@ K2:
 
 * RM: At &00B0 = 176
 
-       aorg >00D1
+       aorg ZERO_PAGE.+>00D1
 
 T:
        bss 1                                               ; Temporary storage, used in a number of places
@@ -2558,9 +2559,8 @@ QQ18:
 * 
 * ******************************************************************************
 
-       aorg >0900
+       aorg K.
 
-K.:
        bss NOSH * NI.                                      ; Ship data blocks and ship line heap
 
 * ******************************************************************************
@@ -2573,9 +2573,8 @@ K.:
 * 
 * ******************************************************************************
 
-       aorg >0D40
+       aorg WP.
 
-WP:
        bss 0                                               ; The start of the WP workspace
 
 FRIN:
@@ -11669,7 +11668,7 @@ CODE_C.:
        equ $
 
 LOAD_C.:
-       equ LOAD. +$ - CODE.
+       equ LOAD. + $ - CODE.
 
 * ******************************************************************************
 * 
@@ -28227,9 +28226,9 @@ yu_:
                                                            ; slots for the local bubble of universe, and various
                                                            ; flight and ship status variables
 
-       li   ra,((WP-1)%256)*256        ; LDA #LO(WP-1)     ; We have reset the ship line heap, so we now point
+       li   ra,((WP.-1)%256)*256       ; LDA #LO(WP%-1)    ; We have reset the ship line heap, so we now point
        movb ra,@SLSP                   ; STA SLSP          ; SLSP to the byte before the WP workspace to indicate
-       li   ra,((WP-1)/256)*256        ; LDA #HI(WP-1)     ; that the heap is empty
+       li   ra,((WP.-1)/256)*256       ; LDA #HI(WP%-1)    ; that the heap is empty
        movb ra,@SLSP+1                 ; STA SLSP+1        
 
        li   rtmp,DIALS                 ; JSR DIALS         ; Update the dashboard
@@ -37679,8 +37678,6 @@ SHIP_ESCAPE_POD_FACES:
 
        ; CLEAR 0, &7F00                ; CLEAR 0, &7F00    
 
-CODE_PYTHON.:
-       equ >7F00
 LOAD_PYTHON.:
        equ >1B00
 

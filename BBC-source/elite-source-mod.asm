@@ -48,19 +48,25 @@
 \
 \ ******************************************************************************
 
- ZERO_PAGE% = &0000
+\ ZERO_PAGE% = &0000
 
- STACK% = &0100
+\ STACK% = &0100
 
- CODE% = &0F40          \ The address where the code will be run
+\ CODE% = &0F40         \ The address where the code will be run
 
  LOAD% = &1128          \ The address where the code will be loaded
 
- T% = &0300             \ Current commander data and stardust data blocks
+\ T% = &0300            \ Current commander data and stardust data blocks
 
- CODE_WORDS% = &0400    \ The address where the text data will be run
+\ CODE_WORDS% = &0400   \ The address where the text data will be run
 
  LOAD_WORDS% = &1100    \ The address where the text data will be loaded
+
+\ K% = &0900
+
+\ WP% = &0D40
+
+\ CODE_PYTHON% = &7F00
 
  Q% = _MAX_COMMANDER    \ Set Q% to TRUE to max out the default commander, FALSE
                         \ for the standard default commander
@@ -861,7 +867,7 @@
 
 \ RM: At &00B0 = 176
 
- ORG &00D1
+ ORG ZERO_PAGE%+&00D1
 
 .T
 
@@ -2636,9 +2642,7 @@ ENDMACRO
 \
 \ ******************************************************************************
 
- ORG &0900
-
-.K%
+ ORG K%
 
  SKIP NOSH * NI%        \ Ship data blocks and ship line heap
 
@@ -2652,9 +2656,7 @@ ENDMACRO
 \
 \ ******************************************************************************
 
- ORG &0D40
-
-.WP
+ ORG WP%
 
  SKIP 0                 \ The start of the WP workspace
 
@@ -11847,7 +11849,7 @@ ENDIF
 
  CODE_C% = P%
 
- LOAD_C% = LOAD% +P% - CODE%
+ LOAD_C% = LOAD% + P% - CODE%
 
 \ ******************************************************************************
 \
@@ -28447,9 +28449,9 @@ ENDIF
                         \ slots for the local bubble of universe, and various
                         \ flight and ship status variables
 
- LDA #LO(WP-1)          \ We have reset the ship line heap, so we now point
+ LDA #LO(WP%-1)         \ We have reset the ship line heap, so we now point
  STA SLSP               \ SLSP to the byte before the WP workspace to indicate
- LDA #HI(WP-1)          \ that the heap is empty
+ LDA #HI(WP%-1)         \ that the heap is empty
  STA SLSP+1
 
  JSR DIALS              \ Update the dashboard
@@ -38014,7 +38016,6 @@ ENDMACRO
 
  CLEAR 0, &7F00
 
- CODE_PYTHON% = &7F00
  LOAD_PYTHON% = &1B00
 
  ORG CODE_PYTHON%

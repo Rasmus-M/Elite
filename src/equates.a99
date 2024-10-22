@@ -35,3 +35,20 @@ _MAX_COMMANDER:
        equ  0
 _REMOVE_CHECKSUMS:
        equ  1
+
+ZERO_PAGE.:
+       equ >0000
+STACK.:
+       equ >0100
+T.:
+       equ >0300
+CODE_WORDS.:
+       equ >0400
+K.:
+       equ >0900
+WP.:
+       equ >0D40
+CODE.:
+       equ >0F40
+CODE_PYTHON.:
+       equ >7F00
