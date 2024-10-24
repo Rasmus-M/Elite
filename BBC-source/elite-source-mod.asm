@@ -20915,6 +20915,8 @@ ENDIF
 \
 \ ******************************************************************************
 
+ORG CODE_UPPER%         \ TI-99/4A upper RAM code
+
 .GTHG
 
  JSR Ze                 \ Call Ze to initialise INWK
@@ -21010,7 +21012,7 @@ ENDIF
  EOR #%00011111         \ QQ1 and flip bits 0-5, so we end up somewhere in the
  STA QQ1                \ vicinity of our original destination, but above or
                         \ below it in the galactic chart
-
+.ptg1
  RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
@@ -21086,7 +21088,7 @@ ENDIF
 
  LDA QQ11               \ If the current view in QQ11 is not a space view (0) or
  AND #%00111111         \ one of the charts (64 or 128), return from the
- BNE hyR                \ subroutine (as hyR contains an RTS)
+ BNE ptg1               \ subroutine (as hyR contains an RTS)
 
  JSR TTX66              \ Otherwise clear the screen and draw a white border
 
@@ -38018,7 +38020,7 @@ ENDMACRO
 
  LOAD_PYTHON% = &1B00
 
- ORG CODE_PYTHON%
+\ ORG CODE_PYTHON%
 
 \ ******************************************************************************
 \
@@ -38148,7 +38150,7 @@ ENDMACRO
 
 .VEC
 
- SKIP 2                 \ VEC = &7FFE
+\ SKIP 2                 \ VEC = &7FFE
                         \
                         \ This gets set to the value of the original IRQ1 vector
                         \ by the loading process

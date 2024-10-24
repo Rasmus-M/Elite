@@ -1,4 +1,6 @@
        copy "equates.a99"
        copy "macros.a99"
        copy "elite.a99"
+       aorg >FF00
+       copy "entry.a99"
        copy "subroutines.a99"

@@ -50,5 +50,7 @@ WP.:
        equ >0D40
 CODE.:
        equ >0F40
+CODE_UPPER.:
+       equ >A000
 CODE_PYTHON.:
-       equ >7F00
+       equ >F200

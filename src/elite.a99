@@ -20763,6 +20763,8 @@ hyR:
 * 
 * ******************************************************************************
 
+       aorg CODE_UPPER.                                    ; TI-99/4A upper RAM code
+
 GTHG:
        li   rtmp,Ze                    ; JSR Ze            ; Call Ze to initialise INWK
        bl   @jsr                       ;                   
@@ -20861,7 +20863,7 @@ MJP1:
        .eoi (>1f*256)                  ; EOR #%00011111    ; QQ1 and flip bits 0-5, so we end up somewhere in the
        movb ra,@QQ1                    ; STA QQ1           ; vicinity of our original destination, but above or
                                                            ; below it in the galactic chart
-
+ptg1_:
        b    @rts                       ; RTS               ; Return from the subroutine
 
 * ******************************************************************************
@@ -20943,7 +20945,7 @@ ee5_:
 
        movb @QQ11,ra                   ; LDA QQ11          ; If the current view in QQ11 is not a space view (0) or
        andi ra,>3f*256                 ; AND #%00111111    ; one of the charts (64 or 128), return from the
-       jne  hyR                        ; BNE hyR           ; subroutine (as hyR contains an RTS)
+       jne  ptg1_                      ; BNE ptg1          ; subroutine (as hyR contains an RTS)
 
        li   rtmp,TTX66                 ; JSR TTX66         ; Otherwise clear the screen and draw a white border
        bl   @jsr                       ;                   
@@ -37681,7 +37683,7 @@ SHIP_ESCAPE_POD_FACES:
 LOAD_PYTHON.:
        equ >1B00
 
-       aorg CODE_PYTHON.
+* ORG CODE_PYTHON%
 
 * ******************************************************************************
 * 
@@ -37805,17 +37807,15 @@ SVN:
 * ******************************************************************************
 
 VEC:
-       bss 2                                               ; VEC = &7FFE
+* SKIP 2                 \ VEC = &7FFE
                                                            ; 
                                                            ; This gets set to the value of the original IRQ1 vector
                                                            ; by the loading process
-
 * ******************************************************************************
 * 
 * Save PYTHON.bin
 * 
 * ******************************************************************************
-
        ; PRINT "PYTHON"
        ; PRINT "Assembled at ", ~CODE_PYTHON%
        ; PRINT "Ends at ", ~P%
