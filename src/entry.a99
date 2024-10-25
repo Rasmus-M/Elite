@@ -1,4 +1,5 @@
        limi 0
+       lwpi workspace
        li   rsp,STACK.
        b    @TT170
 

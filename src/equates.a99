@@ -1,7 +1,10 @@
+workspace:
+       equ  8300
+
 ra:
        requ 0
 ralb:
-       equ  >8301
+       equ  workspace + >01
 rx:
        requ 1
 ry:
@@ -15,11 +18,11 @@ rmone:
 rtmp:
        requ 6
 rtmplb:
-       equ >830d
+       equ workspace + >0d
 rtmp2:
        requ 7
 tmp2lb:
-       equ >830f
+       equ workspace + >0f
 rarg1:
        requ 8
 rarg2:
@@ -27,9 +30,9 @@ rarg2:
 rsp:
        requ 10
 rsplb:
-       equ >8315
+       equ workspace + >15
 r11lb:
-       equ  >8317
+       equ workspace + >17
 
 _MAX_COMMANDER:
        equ  0
