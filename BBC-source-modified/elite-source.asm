@@ -135,13 +135,13 @@
                         \ such as the video ULA, 6845 CRTC and 6522 VIAs (also
                         \ known as SHEILA)
 
- OSBYTE = &FFF4         \ The address for the OSBYTE routine, which is used
+\ OSBYTE = &FFF4        \ The address for the OSBYTE routine, which is used
                         \ three times in the main game code
 
- OSWORD = &FFF1         \ The address for the OSWORD routine, which is used
+\ OSWORD = &FFF1        \ The address for the OSWORD routine, which is used
                         \ twice in the main game code
 
- OSFILE = &FFDD         \ The address for the OSFILE routine, which is used
+\ OSFILE = &FFDD        \ The address for the OSFILE routine, which is used
                         \ once in the main game code
 
 \ ******************************************************************************

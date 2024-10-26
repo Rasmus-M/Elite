@@ -170,16 +170,13 @@ VIA:                                                       ; Memory-mapped space
                                                            ; such as the video ULA, 6845 CRTC and 6522 VIAs (also
                                                            ; known as SHEILA)
 
-OSBYTE:                                                    ; The address for the OSBYTE routine, which is used
-       equ >FFF4
+* OSBYTE = &FFF4        \ The address for the OSBYTE routine, which is used
                                                            ; three times in the main game code
 
-OSWORD:                                                    ; The address for the OSWORD routine, which is used
-       equ >FFF1
+* OSWORD = &FFF1        \ The address for the OSWORD routine, which is used
                                                            ; twice in the main game code
 
-OSFILE:                                                    ; The address for the OSFILE routine, which is used
-       equ >FFDD
+* OSFILE = &FFDD        \ The address for the OSFILE routine, which is used
                                                            ; once in the main game code
 
 * ******************************************************************************

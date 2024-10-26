@@ -1,3 +1,10 @@
+OSBYTE:
+       jmp rts
+OSWORD:
+       jmp rts
+OSFILE:
+       jmp rts
+
 jsr:
        movb r11,*rsp
        dec  rsp
