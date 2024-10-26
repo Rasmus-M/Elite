@@ -17,6 +17,10 @@ public class JSONGenerator {
         sb.append("{\n");
         sb.append("    \"name\": \"").append("Elite").append("\",\n");
         sb.append("    \"startAddress\": \"0x").append(toHexString(startAddress, 4)).append("\",\n");
+        sb.append("    \"ramAt0000\": true,\n");
+        sb.append("    \"ramAt4000\": true,\n");
+        sb.append("    \"ramAt6000\": true,\n");
+        sb.append("    \"ramAt7000\": true,\n");
         sb.append("    \"memoryBlocks\": [\n");
         String filePath = inputFilePath;
         File inputFile = new File(inputFilePath);
