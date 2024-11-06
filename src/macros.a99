@@ -269,12 +269,12 @@
        .endm
 
        .defm proc
-       mov  r11,*rsp+
+       dect rsp
+       mov  r11,*rsp
        .endm
 
        .defm endproc
-       dect rsp
-       mov  *rsp,r11
+       mov  *rsp+,r11
        b    *r11
        .endm
 

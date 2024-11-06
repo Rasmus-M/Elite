@@ -1,44 +1,89 @@
+**
+* Memory mapped addresses
+*
+vdpwd:                                 ; VDP write data
+       equ  >8c00
+vdpwa:                                 ; VDP set read/write address
+       equ  >8c02
+vdprd:                                 ; VDP read data
+       equ  >8800
+vdpsta:                                ; VDP status
+       equ  >8802
+sound:                                 ; Sound
+       equ  >8400
+spchwt:
+       equ  >9400
+spchrd:
+       equ  >9000
+
 workspace:
        equ  8300
 
-ra:
-       requ 0
-ralb:
-       equ  workspace + >01
-rx:
-       requ 1
-ry:
-       requ 2
-rzero:
-       requ 3
-rone:
-       requ 4
-rmone:
-       requ 5
+**
+* VDP memory map
+*
+pattern_table:                         ; Pattern table
+       equ  >0000
+sprite_pattern_table:                  ; Sprite pattern table
+       equ  >1800
+name_table:                            ; Name table
+       equ  >3800
+sprite_attr_table:                     ; Sprite attribute table
+       equ  >3b00
+color_table:                           ; Color table
+       equ  >2000
+
+**
+* Register map
+*
 rtmp:
-       requ 6
+       requ 0
 rtmplb:
-       equ workspace + >0d
+       equ workspace + 1
 rtmp2:
-       requ 7
-tmp2lb:
-       equ workspace + >0f
+       requ 1
+rtmp2lb:
+       equ workspace + 3
+rtmp3:
+       requ 2
+rtmp3lb:
+       equ workspace + 5
+rtmp4:
+       requ 3
 rarg1:
-       requ 8
+       requ 4
 rarg2:
+       requ 5
+rzero:
+       requ 6
+rone:
+       requ 7
+rmone:
+       requ 8
+rvdpwd:
        requ 9
 rsp:
        requ 10
 rsplb:
-       equ workspace + >15
+       equ workspace + 21
 r11lb:
-       equ workspace + >17
+       equ workspace + 23
+ra:
+       requ 13
+ralb:
+       equ workspace + 27
+rx:
+       requ 14
+ry:
+       requ 15
 
+**
+* Constants
+*
 _MAX_COMMANDER:
        equ  0
 _REMOVE_CHECKSUMS:
        equ  1
-
 ZERO_PAGE.:
        equ >0000
 STACK.:
@@ -57,3 +102,6 @@ CODE_UPPER.:
        equ >A000
 CODE_PYTHON.:
        equ >F200
+
+scr_buffer:
+       equ >6000

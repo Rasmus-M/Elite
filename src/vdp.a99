@@ -1,0 +1,163 @@
+*********************************************************************************
+*
+* Set graphics mode
+*
+graphics_mode:
+       .proc
+       li   rtmp2,vregs2
+graphics_mode_1:
+       mov  *rtmp2+,rtmp
+       jlt  graphics_mode_2
+       bl   @vwtr                      ; Set register
+       jmp  graphics_mode_1
+*      Init name table
+       li   rtmp,name_table
+       bl   @vwad
+       clr  rtmp2
+       li   rtmp3,>300
+init_vdp_ram_1:
+       movb rtmp2,*rvdpwd
+       ai   rtmp,>0100
+       dec  rtmp3
+       jne   init_vdp_ram_1
+*      Init patterms
+       li   rtmp,pattern_table
+       li   rtmp,>0000
+       li   rtmp3,>1800
+       bl   @vsmw
+*      Init colors
+       li   rtmp,color_table
+       li   rtmp2,>f100
+       li   rtmp3,>1800
+       bl   @vsmw
+*      Return
+graphics_mode_2:
+       .endproc
+*      VDP registers
+vregs2:
+       byte >00,>02                        ; Graphics II mode
+       byte >01,>e2                        ; 16K, display on, interrupts enabled
+       byte >02,name_table/>400            ; Name table
+       byte >03,>ff                        ; Color table
+       byte >04,pattern_table/>800+>03     ; Pattern table
+       byte >05,sprite_attr_table/>80      ; Sprite attribute table
+       byte >06,sprite_pattern_table/>800  ; Sprite pattern table
+       byte >07,>01                        ; Backdrop color
+       data -1
+*// graphics_mode
+
+*********************************************************************
+*
+* VDP Write To Register
+*
+* rtmp MSB: VDP register to write to
+* rtmp LSB: Value to write
+*
+vwtr:
+       swpb rtmp
+       movb rtmp,@vdpwa                ; Send low byte (value) to write to VDP register
+       swpb rtmp
+       ori  rtmp,>8000                 ; Set up a VDP register write operation (10)
+       movb rtmp,@vdpwa                ; Send high byte (address) of VDP register
+       rt
+*// vwtr
+
+*********************************************************************
+*
+* VDP Set Write Address
+*
+* rtmp: Write address in VDP RAM
+*
+vwad:
+       swpb rtmp
+       movb rtmp,@vdpwa                ; Send low byte of VDP RAM write address
+       swpb rtmp
+       ori  rtmp,>4000                 ; Set read/write bits 14 and 15 to write (01)
+       movb rtmp,@vdpwa                ; Send high byte of VDP RAM write address
+       rt
+*// vwad
+
+*********************************************************************
+*
+* VDP Single Byte Write
+*
+* rtmp: Write address in VDP RAM
+* rtmp2: MSB of rtmp2 sent to VDP RAM
+*
+vsbw:
+       swpb rtmp
+       movb rtmp,@vdpwa                ; Send low byte of VDP RAM write address
+       swpb rtmp
+       ori  rtmp,>4000                 ; Set read/write bits 14 and 15 to write (01)
+       movb rtmp,@vdpwa                ; Send high byte of VDP RAM write address
+       movb rtmp2,*rvdpwd              ; Write byte to VDP RAM
+       rt
+*// vsbw
+
+*********************************************************************
+*
+* VDP multiple Byte Write
+*
+* rtmp: Write address in VDP RAM
+* rtmp2: Starting read address in CPU RAM
+* rtmp3: Number of bytes to send
+*
+vmbw:
+       swpb rtmp
+       movb rtmp,@vdpwa                ; Send low byte of VDP RAM write address
+       swpb rtmp
+       ori  rtmp,>4000                 ; Set read/write bits 14 and 15 to write (01)
+       movb rtmp,@vdpwa                ; Send high byte of VDP RAM write address
+vmbw_1:
+       movb *rtmp+,*rvdpwd             ; Write byte to VDP RAM
+       dec  rtmp3
+       jne  vmbw_1
+       rt
+*// vmbw
+
+*********************************************************************
+*
+* VDP Single Byte Multiple Write
+*
+* rtmp: Write address in VDP RAM
+* rtmp2: MSB of  sent to VDP RAM
+* rtmp3: Number of bytes to write to VDP RAM
+*
+vsmw:
+       swpb rtmp
+       movb  rtmp,@vdpwa               ; Send low byte of VDP RAM write address
+       swpb rtmp
+       ori  rtmp,>4000                 ; Set read/write bits 14 and 15 to write (01)
+       movb rtmp,@vdpwa                ; Send high byte of VDP RAM write address
+vsmw_1:
+       movb rtmp2,*rvdpwd              ; Write byte to VDP RAM
+       dec  rtmp3                      ; Byte counter
+       jne  vsmw_1
+       rt
+*// vsmw
+
+*********************************************************************
+*
+* Copy screen buffer to VDP
+*
+display_scr_buffer:
+       clr  @vdpwa                     ; Send low byte of VDP RAM write address
+       li   rtmp,pattern_table+>4000
+       movb rtmp,@vdpwa                ; Send high byte of VDP RAM write address
+       li   rtmp2,scr_buffer
+       li   rtmp3,>1800/8
+display_scr_buffer_1:
+       movb *rtmp2+,*rvdpwd            ; Send by to VDP
+       movb *rtmp2+,*rvdpwd            ; ...
+       movb *rtmp2+,*rvdpwd            ; ...
+       movb *rtmp2+,*rvdpwd            ; ...
+       movb *rtmp2+,*rvdpwd            ; ...
+       movb *rtmp2+,*rvdpwd            ; ...
+       movb *rtmp2+,*rvdpwd            ; ...
+       movb *rtmp2+,*rvdpwd            ; ...
+       dec  rtmp3                      ; Counter
+       jne  display_scr_buffer_1       ; Loop
+       rt
+display_scr_buffer_end:
+       equ  $
+*// display_scr_buffer

@@ -1,5 +1,7 @@
        limi 0
        lwpi workspace
        li   rsp,STACK.
+       li   rvdpwd,vdpwd
+       bl   @graphics_mode
        b    @TT170
 
