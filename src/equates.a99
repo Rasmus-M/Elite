@@ -17,7 +17,7 @@ spchrd:
        equ  >9000
 
 workspace:
-       equ  8300
+       equ  >8300
 
 **
 * VDP memory map
@@ -42,12 +42,8 @@ rtmplb:
        equ workspace + 1
 rtmp2:
        requ 1
-rtmp2lb:
-       equ workspace + 3
 rtmp3:
        requ 2
-rtmp3lb:
-       equ workspace + 5
 rtmp4:
        requ 3
 rarg1:
@@ -66,12 +62,8 @@ rsp:
        requ 10
 rsplb:
        equ workspace + 21
-r11lb:
-       equ workspace + 23
 ra:
        requ 13
-ralb:
-       equ workspace + 27
 rx:
        requ 14
 ry:

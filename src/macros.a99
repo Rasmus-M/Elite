@@ -1,73 +1,6 @@
 **
 * Macros
 *
-       .defm jsr
-       li   r11,$+18
-       movb r11,*rsp
-       dec  rsp
-       swpb r11
-       movb r11,*rsp
-       dec  rsp
-       b    #1
-       .endm
-
-       .defm rts
-       inc  rsp
-       movb *rsp+,r11
-       swpb r11
-       movb *rsp,r11
-       b    *r11
-       .endm
-
-       .defm rola
-       jnc  !
-       ori  ra,>0080
-!:
-       jmp  !
-       andi ra,>ff7f
-!:
-       sla  ra,1
-       .endm
-
-       .defm rol
-       movb #1,rtmp
-       jnc  !
-       ori  rtmp,>0080
-!:
-       jmp  !
-       andi rtmp,>ff7f
-!:
-       sla  rtmp,1
-       mov  rtmp,#1
-       .endm
-
-       .defm rora
-       jnc  !
-       ori  ra,>0001
-!:
-       jmp  !
-       andi ra,>fffe
-!:
-       src  ra,1
-       andi ra,>0080
-       mov  ra,rtmp
-       sla  rtmp,9
-       .endm
-
-       .defm ror
-       movb #1,rtmp
-       jnc  !
-       ori  rtmp,>0001
-!:
-       jmp  !
-       andi rtmp,>fffe
-!:
-       src  rtmp,1
-       movb rtmp,#1
-       andi rtmp,>0080
-       sla  rtmp,9
-       .endm
-
        .defm pha
        movb ra,*rsp
        dec  rsp
@@ -85,7 +18,7 @@
        .endm
 
        .defm plp
-       INC  rsp
+       inc  rsp
        movb *rsp,rtmp
        ; todo: restore status
        .endm
@@ -111,7 +44,9 @@
 !:
        movb #1,@rtmplb
        movb #1+1,rtmp
+       swpb ry
        a    ry,rtmp
+       swpb ry
        ab   *rtmp,ra
        .endm
 
@@ -138,7 +73,9 @@
        .defm and_ind_y_idx
        movb #1,@rtmplb
        movb #1+1,rtmp
+       swpb ry
        a    ry,rtmp
+       swpb ry
        movb *rtmp,rtmp
        inv  rtmp
        szcb rtmp,#2
@@ -147,7 +84,9 @@
        .defm cmp_ind_y_idx
        movb #1,@rtmplb
        movb #1+1,rtmp
+       swpb ry
        a    ry,rtmp
+       swpb ry
        movb *rtmp,rtmp
        cb   ra,rtmp
        .endm
@@ -167,14 +106,18 @@
        .defm ld_ind_y_idx
        movb #1,@rtmplb
        movb #1+1,rtmp
+       swpb ry
        a    ry,rtmp
+       swpb ry
        movb *rtmp,#2
        .endm
 
        .defm st_ind_y_idx
        movb #1,@rtmplb
        movb #1+1,rtmp
+       swpb ry
        a    ry,rtmp
+       swpb ry
        movb #2,*rtmp
         .endm
 
@@ -226,8 +169,6 @@
 !:
        .endm
 
-
-
        .defm sec
        sla  rmone,1
        .endm
@@ -267,14 +208,3 @@
        .defm cont
        byte #1 ^ RE
        .endm
-
-       .defm proc
-       dect rsp
-       mov  r11,*rsp
-       .endm
-
-       .defm endproc
-       mov  *rsp+,r11
-       b    *r11
-       .endm
-

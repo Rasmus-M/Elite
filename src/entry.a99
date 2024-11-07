@@ -2,6 +2,9 @@
        lwpi workspace
        li   rsp,STACK.
        li   rvdpwd,vdpwd
+       clr  rzero
+       li   rone,>0100
+       li   rmone,>ff00
        bl   @graphics_mode
        b    @TT170
 

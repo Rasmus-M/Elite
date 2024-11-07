@@ -3,7 +3,7 @@
 * Set graphics mode
 *
 graphics_mode:
-       .proc
+       mov  r11,rtmp4
        li   rtmp2,vregs2
 graphics_mode_1:
        mov  *rtmp2+,rtmp
@@ -32,7 +32,7 @@ init_vdp_ram_1:
        bl   @vsmw
 *      Return
 graphics_mode_2:
-       .endproc
+       b    *rtmp4
 *      VDP registers
 vregs2:
        byte >00,>02                        ; Graphics II mode
