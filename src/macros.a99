@@ -92,14 +92,18 @@
        .endm
 
        .defm ld_x_idx_ind
+       swpb rx
        movb #1(rx),@rtmplb
        movb #1+1(rx),rtmp
+       swpb rx
        movb *rtmp,#2
        .endm
 
        .defm st_x_idx_ind
+       swpb rx
        movb #1(rx),@rtmplb
        movb #1+1(rx),rtmp
+       swpb rx
        movb #2,*rtmp
        .endm
 
@@ -158,8 +162,10 @@
        .endm
 
        .defm jmpi
+       swpb rx
        movb #1(rx),@rtmplb
        movb #1+1(rx),rtmp
+       swpb rx
        b    *rtmp
        .endm
 
