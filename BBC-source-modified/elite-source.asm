@@ -19362,10 +19362,10 @@ ENDIF
 .TT184
 
  CMP #20                \ If the horizontal distance in A is >= 20, then this
- BCS TT187              \ system is too far away from the current system to
-                        \ appear in the Short-range Chart, so jump to TT187 to
+ BCC TT184A             \ system is too far away from the current system to
+ JMP TT187              \ appear in the Short-range Chart, so jump to TT187 to
                         \ move on to the next system
-
+.TT184A
  LDA QQ15+1             \ Set A = s0_hi - QQ1, the vertical distance between
  SEC                    \ (s1_hi, s0_hi) and (QQ0, QQ1)
  SBC QQ1
@@ -19520,7 +19520,7 @@ ENDIF
 
  INC XX20               \ Increment the counter
 
- BEQ TT111-1            \ If X = 0 then we have done all 256 systems, so return
+ RTS                    \ If X = 0 then we have done all 256 systems, so return
                         \ from the subroutine (as TT111-1 contains an RTS)
 
  JMP TT182              \ Otherwise jump back up to TT182 to process the next
@@ -19599,6 +19599,8 @@ ENDIF
 \   TT111-1             Contains an RTS
 \
 \ ******************************************************************************
+
+ORG CODE_UPPER%         \ TI-99/4A upper RAM code
 
 .TT111
 
@@ -20914,8 +20916,6 @@ ENDIF
 \  Deep dive: Fixing ship positions
 \
 \ ******************************************************************************
-
-ORG CODE_UPPER%         \ TI-99/4A upper RAM code
 
 .GTHG
 
@@ -35467,7 +35467,8 @@ ENDMACRO
  TAX
 
  LDA XX2,X              \ If XX2+X is zero then we decided in part 5 that
- BEQ LL78               \ face 2 is hidden, so jump to LL78
+ BNE LL79               \ face 2 is hidden, so jump to LL78
+ JMP LL78
 
 .LL79
 

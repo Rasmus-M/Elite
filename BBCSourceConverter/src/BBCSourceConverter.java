@@ -231,6 +231,18 @@ public class BBCSourceConverter {
                     case Immediate:
                         tms9900Line.setInstruction(".adi (" + convertOperand(operand) + ")");
                         break;
+                    case AbsoluteXIndexed:
+                    case ZeroPageXIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        tms9900Line.setInstruction(".adc " + convertOperand(operand) + "," + regA);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        break;
+                    case AbsoluteYIndexed:
+                    case ZeroPageYIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        tms9900Line.setInstruction(".adc " + convertOperand(operand) + "," + regA);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        break;
                     case XIndexedIndirect:
                         tms9900Line.setInstruction(".adc_x_idx_ind " + convertOperand(operand) + "," + regA);
                         break;
@@ -252,6 +264,18 @@ public class BBCSourceConverter {
                         break;
                     case IndirectYIndexed:
                         tms9900Line.setInstruction(".and_ind_y_idx " + convertOperand(operand) + "," + regA);
+                        break;
+                    case AbsoluteXIndexed:
+                    case ZeroPageXIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        tms9900Line.setInstruction(".and " + convertOperand(operand));
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        break;
+                    case AbsoluteYIndexed:
+                    case ZeroPageYIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        tms9900Line.setInstruction(".and " + convertOperand(operand));
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
                         break;
                     default:
                         tms9900Line.setInstruction(".and " + convertOperand(operand));
@@ -309,6 +333,18 @@ public class BBCSourceConverter {
                     case IndirectYIndexed:
                         tms9900Line.setInstruction(".cmp_ind_y_idx " + convertOperand(operand) + "," + regA);
                         break;
+                    case AbsoluteXIndexed:
+                    case ZeroPageXIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        tms9900Line.setInstruction("cb   " + convertOperand(operand) + "," + regA);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        break;
+                    case AbsoluteYIndexed:
+                    case ZeroPageYIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        tms9900Line.setInstruction("cb   " + convertOperand(operand) + "," + regA);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        break;
                     default:
                         tms9900Line.setInstruction("cb   " + convertOperand(operand) + "," + regA);
                         break;
@@ -356,10 +392,25 @@ public class BBCSourceConverter {
                 tms9900Line.setInstruction("sb   " + regOne + "," + regY);
                 break;
             case "EOR":
-                if (operand.getType() == Operand.Type.Immediate) {
-                    tms9900Line.setInstruction(".eoi (" + convertOperand(operand) + ")");
-                } else {
-                    tms9900Line.setInstruction(".eor " + convertOperand(operand));
+                switch (operand.getType()) {
+                    case Immediate:
+                        tms9900Line.setInstruction(".eoi (" + convertOperand(operand) + ")");
+                        break;
+                    case AbsoluteXIndexed:
+                    case ZeroPageXIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        tms9900Line.setInstruction(".eor " + convertOperand(operand));
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        break;
+                    case AbsoluteYIndexed:
+                    case ZeroPageYIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        tms9900Line.setInstruction(".eor " + convertOperand(operand));
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        break;
+                    default:
+                        tms9900Line.setInstruction(".eor " + convertOperand(operand));
+                        break;
                 }
                 break;
             case "INC":
@@ -387,6 +438,18 @@ public class BBCSourceConverter {
                     case Immediate:
                         tms9900Line.setInstruction("li   " + regA + "," + convertOperand(operand));
                         break;
+                    case AbsoluteXIndexed:
+                    case ZeroPageXIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        tms9900Line.setInstruction("movb " + convertOperand(operand) + "," + regA);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        break;
+                    case AbsoluteYIndexed:
+                    case ZeroPageYIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        tms9900Line.setInstruction("movb " + convertOperand(operand) + "," + regA);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        break;
                     case XIndexedIndirect:
                         tms9900Line.setInstruction(".ld_x_idx_ind " + convertOperand(operand) + "," + regA);
                         break;
@@ -399,17 +462,35 @@ public class BBCSourceConverter {
                 }
                 break;
             case "LDX":
-                if (operand.getType() == Operand.Type.Immediate) {
-                    tms9900Line.setInstruction("li   " + regX + "," + convertOperand(operand));
-                } else {
-                    tms9900Line.setInstruction("movb " + convertOperand(operand) + "," + regX);
+                switch (operand.getType())  {
+                    case Immediate:
+                        tms9900Line.setInstruction("li   " + regX + "," + convertOperand(operand));
+                        break;
+                    case AbsoluteYIndexed:
+                    case ZeroPageYIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        tms9900Line.setInstruction("movb " + convertOperand(operand) + "," + regX);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        break;
+                    default:
+                        tms9900Line.setInstruction("movb " + convertOperand(operand) + "," + regX);
+                        break;
                 }
                 break;
             case "LDY":
-                if (operand.getType() == Operand.Type.Immediate) {
-                    tms9900Line.setInstruction("li   " + regY + "," + convertOperand(operand));
-                } else {
-                    tms9900Line.setInstruction("movb " + convertOperand(operand) + "," + regY);
+                switch (operand.getType())  {
+                    case Immediate:
+                        tms9900Line.setInstruction("li   " + regY + "," + convertOperand(operand));
+                        break;
+                    case AbsoluteXIndexed:
+                    case ZeroPageXIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        tms9900Line.setInstruction("movb " + convertOperand(operand) + "," + regX);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        break;
+                    default:
+                        tms9900Line.setInstruction("movb " + convertOperand(operand) + "," + regY);
+                        break;
                 }
                 break;
             case "LSR":
@@ -432,6 +513,18 @@ public class BBCSourceConverter {
                         break;
                     case IndirectYIndexed:
                         tms9900Line.setInstruction(".or_ind_y_idx " + convertOperand(operand) + "," + regA);
+                        break;
+                    case AbsoluteXIndexed:
+                    case ZeroPageXIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        tms9900Line.setInstruction("socb " + convertOperand(operand) + "," + regA);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        break;
+                    case AbsoluteYIndexed:
+                    case ZeroPageYIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        tms9900Line.setInstruction("socb " + convertOperand(operand) + "," + regA);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
                         break;
                     default:
                         tms9900Line.setInstruction("socb " + convertOperand(operand) + "," + regA);
@@ -480,6 +573,18 @@ public class BBCSourceConverter {
                     case IndirectYIndexed:
                         tms9900Line.setInstruction(".sbc_ind_y_idx " + convertOperand(operand) + "," + regA);
                         break;
+                    case AbsoluteXIndexed:
+                    case ZeroPageXIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        tms9900Line.setInstruction(".sbc " + convertOperand(operand) + "," + regA);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        break;
+                    case AbsoluteYIndexed:
+                    case ZeroPageYIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        tms9900Line.setInstruction(".sbc " + convertOperand(operand) + "," + regA);
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        break;
                     default:
                         tms9900Line.setInstruction(".sbc " + convertOperand(operand) + "," + regA);
                         break;
@@ -498,6 +603,18 @@ public class BBCSourceConverter {
                         break;
                     case IndirectYIndexed:
                         tms9900Line.setInstruction(".st_ind_y_idx " + convertOperand(operand) + "," + regA);
+                        break;
+                    case AbsoluteXIndexed:
+                    case ZeroPageXIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        tms9900Line.setInstruction("movb " + regA + "," + convertOperand(operand));
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb rx"));
+                        break;
+                    case AbsoluteYIndexed:
+                    case ZeroPageYIndexed:
+                        linesBefore.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
+                        tms9900Line.setInstruction("movb " + regA + "," + convertOperand(operand));
+                        linesAfter.add(new TMS9900Line(TMS9900Line.Type.Instruction, null, "swpb ry"));
                         break;
                     default:
                         tms9900Line.setInstruction("movb " + regA + "," + convertOperand(operand));

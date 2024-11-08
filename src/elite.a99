@@ -3523,7 +3523,9 @@ MA68:
        joc  MA3                        ; BCS MA3           
 
        movb @VIEW,rx                   ; LDX VIEW          ; If the current space view has a laser fitted (i.e. the
+       swpb rx                         ;                   
        movb @LASER(rx),ra              ; LDA LASER,X       ; laser power for this view is greater than zero), then
+       swpb rx                         ;                   
        jeq  MA3                        ; BEQ MA3           ; keep going, otherwise jump down to MA3 to skip the
                                                            ; following
 
@@ -3606,7 +3608,9 @@ MA3:
 MAL1:
        movb rx,@XSAV                   ; STX XSAV          ; Store the current slot number in XSAV
 
+       swpb rx                         ;                   
        movb @FRIN(rx),ra               ; LDA FRIN,X        ; Fetch the contents of this slot into A. If it is 0
+       swpb rx                         ;                   
        jne  B07                        ; BNE B07           ; then this slot is empty and we have no more ships to
        b    @MA18                      ; JMP MA18          ; process, so jump to MA18 below, otherwise A contains
                                                            ; the type of ship that's in this slot, so skip over the
@@ -3631,7 +3635,9 @@ B07:
 
 MAL2:
        .ld_ind_y_idx @INF,ra           ; LDA (INF),Y       ; Load the Y-th byte of INF and store it in the Y-th
+       swpb ry                         ;                   
        movb ra,@INWK(ry)               ; STA INWK,Y        ; byte of INWK
+       swpb ry                         ;                   
 
        sb   rone,ry                    ; DEY               ; Decrement the loop counter
 
@@ -3647,12 +3653,16 @@ MAL2:
        .asla                           ; ASL A             ; Set Y = ship type * 2
        movb ra,ry                      ; TAY               
 
+       swpb ry                         ;                   
        movb @XX21-2(ry),ra             ; LDA XX21-2,Y      ; The ship blueprints at XX21 start with a lookup
+       swpb ry                         ;                   
        movb ra,@XX0                    ; STA XX0           ; table that points to the individual ship blueprints,
                                                            ; so this fetches the low byte of this particular ship
                                                            ; type's blueprint and stores it in XX0
 
+       swpb ry                         ;                   
        movb @XX21-1(ry),ra             ; LDA XX21-1,Y      ; Fetch the high byte of this particular ship type's
+       swpb ry                         ;                   
        movb ra,@XX0+1                  ; STA XX0+1         ; blueprint and store it in XX0+1
 
 * ******************************************************************************
@@ -3737,7 +3747,9 @@ MA21:
                                                            ; bytes in the ship data block
 
 MAL3:
+       swpb ry                         ;                   
        movb @INWK(ry),ra               ; LDA INWK,Y        ; Load the Y-th byte of INWK and store it in the Y-th
+       swpb ry                         ;                   
        .st_ind_y_idx @INF,ra           ; STA (INF),Y       ; byte of INF
 
        sb   rone,ry                    ; DEY               ; Decrement the loop counter
@@ -3891,8 +3903,12 @@ slvy2_:
        movb @QQ29,ry                   ; LDY QQ29          ; Scooping was successful, so set Y to the type of
                                                            ; item we just scooped, which we stored in QQ29 above
 
+       swpb ry                         ;                   
        .adc @QQ20(ry),ra               ; ADC QQ20,Y        ; Add A (which we set to 1 above) to the number of items
+       swpb ry                         ;                   
+       swpb ry                         ;                   
        movb ra,@QQ20(ry)               ; STA QQ20,Y        ; of type Y in the cargo hold, as we just successfully
+       swpb ry                         ;                   
                                                            ; scooped one canister of type Y
 
        movb ry,ra                      ; TYA               ; Print recursive token 48 + Y as an in-flight token,
@@ -4436,8 +4452,12 @@ B09:
                                                            ; to K%+28
 
 MAL4:
+       swpb rx                         ;                   
        movb @K.(rx),ra                 ; LDA K%,X          ; Load the X-th byte of K% and store in the X-th byte
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@INWK(rx)               ; STA INWK,X        ; of the INWK workspace
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -4869,10 +4889,14 @@ MA66:
 * ******************************************************************************
 
 MAS1:
+       swpb ry                         ;                   
        movb @INWK(ry),ra               ; LDA INWK,Y        ; Set K(2 1) = (nosev_y_hi nosev_y_lo) * 2
+       swpb ry                         ;                   
        .asla                           ; ASL A             
        movb ra,@K+1                    ; STA K+1           
+       swpb ry                         ;                   
        movb @INWK+1(ry),ra             ; LDA INWK+1,Y      
+       swpb ry                         ;                   
        bl   @rola                      ; ROL A             
        movb ra,@K+2                    ; STA K+2           
 
@@ -4883,7 +4907,9 @@ MAS1:
        li   rtmp,MVT3                  ; JSR MVT3          ; Add (x_sign x_hi x_lo) to K(3 2 1)
        bl   @jsr                       ;                   
 
+       swpb rx                         ;                   
        movb ra,@INWK+2(rx)             ; STA INWK+2,X      ; Store the sign of the result in x_sign
+       swpb rx                         ;                   
 
        movb @K+1,ry                    ; LDY K+1           ; Store K(2 1) in (x_hi x_lo)
        movb ry,@INWK(rx)               ; STY INWK,X        
@@ -4948,9 +4974,15 @@ m_:
                                                            ; OR of the three bytes at K%+2+Y, K%+5+Y and K%+8+Y
 
 MAS2:
+       swpb ry                         ;                   
        socb @K.+2(ry),ra               ; ORA K%+2,Y        ; Set A = A OR x_sign OR y_sign OR z_sign
+       swpb ry                         ;                   
+       swpb ry                         ;                   
        socb @K.+5(ry),ra               ; ORA K%+5,Y        
+       swpb ry                         ;                   
+       swpb ry                         ;                   
        socb @K.+8(ry),ra               ; ORA K%+8,Y        
+       swpb ry                         ;                   
 
        andi ra,>7f*256                 ; AND #%01111111    ; Clear bit 7 in A
 
@@ -4990,13 +5022,17 @@ MAS2:
 * ******************************************************************************
 
 MAS3:
+       swpb ry                         ;                   
        movb @K.+1(ry),ra               ; LDA K%+1,Y        ; Set (A P) = x_hi * x_hi
+       swpb ry                         ;                   
        li   rtmp,SQUA2                 ; JSR SQUA2         
        bl   @jsr                       ;                   
 
        movb ra,@R                      ; STA R             ; Store A (high byte of result) in R
 
+       swpb ry                         ;                   
        movb @K.+4(ry),ra               ; LDA K%+4,Y        ; Set (A P) = y_hi * y_hi
+       swpb ry                         ;                   
        li   rtmp,SQUA2                 ; JSR SQUA2         
        bl   @jsr                       ;                   
 
@@ -5007,7 +5043,9 @@ MAS3:
 
        movb ra,@R                      ; STA R             ; Store A (sum of the two high bytes) in R
 
+       swpb ry                         ;                   
        movb @K.+7(ry),ra               ; LDA K%+7,Y        ; Set (A P) = z_hi * z_hi
+       swpb ry                         ;                   
        li   rtmp,SQUA2                 ; JSR SQUA2         
        bl   @jsr                       ;                   
 
@@ -5780,7 +5818,9 @@ MVT1:
                                                            ; This also clear the C flag, as we know that bit 0 of
                                                            ; S was clear before the LSR
 
+       swpb rx                         ;                   
        .eor @INWK+2(rx)                ; EOR INWK+2,X      ; If T EOR x_sign has bit 7 set, then x_sign and delta
+       swpb rx                         ;                   
        jlt  MV10                       ; BMI MV10          ; have different signs, so jump to MV10
 
                                                            ; At this point, we know x_sign and delta have the same
@@ -5793,17 +5833,29 @@ MVT1:
                                                            ; as x_sign and delta
 
        movb @R,ra                      ; LDA R             ; First we add the low bytes, so:
+       swpb rx                         ;                   
        .adc @INWK(rx),ra               ; ADC INWK,X        ; 
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@INWK(rx)               ; STA INWK,X        ; x_lo = x_lo + R
+       swpb rx                         ;                   
 
        movb @S,ra                      ; LDA S             ; Then we add the high bytes:
+       swpb rx                         ;                   
        .adc @INWK+1(rx),ra             ; ADC INWK+1,X      ; 
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@INWK+1(rx)             ; STA INWK+1,X      ; x_hi = x_hi + S
+       swpb rx                         ;                   
 
+       swpb rx                         ;                   
        movb @INWK+2(rx),ra             ; LDA INWK+2,X      ; And finally we add any carry into x_sign, and if the
+       swpb rx                         ;                   
        .adi (>00*256)                  ; ADC #0            ; sign of x_sign and delta in T is negative, make sure
        socb @T,ra                      ; ORA T             ; the result is negative (by OR'ing with T)
+       swpb rx                         ;                   
        movb ra,@INWK+2(rx)             ; STA INWK+2,X      
+       swpb rx                         ;                   
 
        b    @rts                       ; RTS               ; Return from the subroutine
 
@@ -5816,21 +5868,33 @@ MV10:
                                                            ; 
                                                            ; and then set the sign of the result according to
                                                            ; the signs of x_sign and delta
+       swpb rx                         ;                   
        movb @INWK(rx),ra               ; LDA INWK,X        ; First we subtract the low bytes, so:
+       swpb rx                         ;                   
        .sec                            ; SEC               ; 
        .sbc @R,ra                      ; SBC R             ; x_lo = x_lo - R
+       swpb rx                         ;                   
        movb ra,@INWK(rx)               ; STA INWK,X        
+       swpb rx                         ;                   
 
+       swpb rx                         ;                   
        movb @INWK+1(rx),ra             ; LDA INWK+1,X      ; Then we subtract the high bytes:
+       swpb rx                         ;                   
        .sbc @S,ra                      ; SBC S             ; 
+       swpb rx                         ;                   
        movb ra,@INWK+1(rx)             ; STA INWK+1,X      ; x_hi = x_hi - S
+       swpb rx                         ;                   
 
+       swpb rx                         ;                   
        movb @INWK+2(rx),ra             ; LDA INWK+2,X      ; And finally we subtract any borrow from bits 0-6 of
+       swpb rx                         ;                   
        andi ra,>7f*256                 ; AND #%01111111    ; x_sign, and give the result the opposite sign bit to T
        .sbi (>00*256)                  ; SBC #0            ; (i.e. give it the sign of the original x_sign)
        ori  ra,>80*256                 ; ORA #%10000000    
        .eor @T                         ; EOR T             
+       swpb rx                         ;                   
        movb ra,@INWK+2(rx)             ; STA INWK+2,X      
+       swpb rx                         ;                   
 
        joc  MV11                       ; BCS MV11          ; If the C flag is set by the above SBC, then our sum
                                                            ; above didn't underflow and is correct - to put it
@@ -5849,20 +5913,32 @@ MV10:
                                                            ; sum
 
        li   ra,>01*256                 ; LDA #1            ; First we subtract the low bytes, so:
+       swpb rx                         ;                   
        .sbc @INWK(rx),ra               ; SBC INWK,X        ; 
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@INWK(rx)               ; STA INWK,X        ; x_lo = 1 - x_lo
+       swpb rx                         ;                   
 
        li   ra,>00*256                 ; LDA #0            ; Then we subtract the high bytes:
+       swpb rx                         ;                   
        .sbc @INWK+1(rx),ra             ; SBC INWK+1,X      ; 
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@INWK+1(rx)             ; STA INWK+1,X      ; x_hi = 0 - x_hi
+       swpb rx                         ;                   
 
        li   ra,>00*256                 ; LDA #0            ; And then we subtract the sign bytes:
+       swpb rx                         ;                   
        .sbc @INWK+2(rx),ra             ; SBC INWK+2,X      ; 
+       swpb rx                         ;                   
                                                            ; x_sign = 0 - x_sign
 
        andi ra,>7f*256                 ; AND #%01111111    ; Finally, we set the sign bit to the sign in T, the
        socb @T,ra                      ; ORA T             ; sign of the original delta, as the delta is the
+       swpb rx                         ;                   
        movb ra,@INWK+2(rx)             ; STA INWK+2,X      ; dominant figure in the sum
+       swpb rx                         ;                   
 
 MV11:
        b    @rts                       ; RTS               ; Return from the subroutine
@@ -5911,20 +5987,28 @@ MVT3:
        andi ra,>80*256                 ; AND #%10000000    ; Set T = sign bit of K(3 2 1)
        movb ra,@T                      ; STA T             
 
+       swpb rx                         ;                   
        .eor @INWK+2(rx)                ; EOR INWK+2,X      ; If x_sign has a different sign to K(3 2 1), jump to
+       swpb rx                         ;                   
        jlt  MV13                       ; BMI MV13          ; MV13 to process the addition as a subtraction
 
        movb @K+1,ra                    ; LDA K+1           ; Set K(3 2 1) = K(3 2 1) + (x_sign x_hi x_lo)
        .clc                            ; CLC               ; starting with the low bytes
+       swpb rx                         ;                   
        .adc @INWK(rx),ra               ; ADC INWK,X        
+       swpb rx                         ;                   
        movb ra,@K+1                    ; STA K+1           
 
        movb @K+2,ra                    ; LDA K+2           ; Then the middle bytes
+       swpb rx                         ;                   
        .adc @INWK+1(rx),ra             ; ADC INWK+1,X      
+       swpb rx                         ;                   
        movb ra,@K+2                    ; STA K+2           
 
        movb @K+3,ra                    ; LDA K+3           ; And finally the high bytes
+       swpb rx                         ;                   
        .adc @INWK+2(rx),ra             ; ADC INWK+2,X      
+       swpb rx                         ;                   
 
        andi ra,>7f*256                 ; AND #%01111111    ; Setting the sign bit of K+3 to T, the original sign
        socb @T,ra                      ; ORA T             ; of K(3 2 1)
@@ -5937,16 +6021,22 @@ MV13:
        andi ra,>7f*256                 ; AND #%01111111    
        movb ra,@S                      ; STA S             
 
+       swpb rx                         ;                   
        movb @INWK(rx),ra               ; LDA INWK,X        ; Set K(3 2 1) = (x_sign x_hi x_lo) - K(3 2 1)
+       swpb rx                         ;                   
        .sec                            ; SEC               ; starting with the low bytes
        .sbc @K+1,ra                    ; SBC K+1           
        movb ra,@K+1                    ; STA K+1           
 
+       swpb rx                         ;                   
        movb @INWK+1(rx),ra             ; LDA INWK+1,X      ; Then the middle bytes
+       swpb rx                         ;                   
        .sbc @K+2,ra                    ; SBC K+2           
        movb ra,@K+2                    ; STA K+2           
 
+       swpb rx                         ;                   
        movb @INWK+2(rx),ra             ; LDA INWK+2,X      ; And finally the high bytes, doing A = |x_sign| - |K+3|
+       swpb rx                         ;                   
        andi ra,>7f*256                 ; AND #%01111111    ; and setting the C flag for testing below
        .sbc @S,ra                      ; SBC S             
 
@@ -6022,20 +6112,30 @@ MVS4:
        movb @ALPHA,ra                  ; LDA ALPHA         ; Set Q = alpha (the roll angle to rotate through)
        movb ra,@Q                      ; STA Q             
 
+       swpb ry                         ;                   
        movb @INWK+2(ry),rx             ; LDX INWK+2,Y      ; Set (S R) = nosev_y
+       swpb ry                         ;                   
        movb rx,@R                      ; STX R             
+       swpb ry                         ;                   
        movb @INWK+3(ry),rx             ; LDX INWK+3,Y      
+       swpb ry                         ;                   
        movb rx,@S                      ; STX S             
 
+       swpb ry                         ;                   
        movb @INWK(ry),rx               ; LDX INWK,Y        ; These instructions have no effect as MAD overwrites
+       swpb ry                         ;                   
        movb rx,@P                      ; STX P             ; X and P when called, but they set X = P = nosev_x_lo
 
+       swpb ry                         ;                   
        movb @INWK+1(ry),ra             ; LDA INWK+1,Y      ; Set A = -nosev_x_hi
+       swpb ry                         ;                   
        .eoi (>80*256)                  ; EOR #%10000000    
 
        li   rtmp,MAD                   ; JSR MAD           ; Set (A X) = Q * A + (S R)
        bl   @jsr                       ;                   
+       swpb ry                         ;                   
        movb ra,@INWK+3(ry)             ; STA INWK+3,Y      ; = alpha * -nosev_x_hi + nosev_y
+       swpb ry                         ;                   
        movb rx,@INWK+2(ry)             ; STX INWK+2,Y      ; 
                                                            ; and store (A X) in nosev_y, so this does:
                                                            ; 
@@ -6044,16 +6144,24 @@ MVS4:
        movb rx,@P                      ; STX P             ; This instruction has no effect as MAD overwrites P,
                                                            ; but it sets P = nosev_y_lo
 
+       swpb ry                         ;                   
        movb @INWK(ry),rx               ; LDX INWK,Y        ; Set (S R) = nosev_x
+       swpb ry                         ;                   
        movb rx,@R                      ; STX R             
+       swpb ry                         ;                   
        movb @INWK+1(ry),rx             ; LDX INWK+1,Y      
+       swpb ry                         ;                   
        movb rx,@S                      ; STX S             
 
+       swpb ry                         ;                   
        movb @INWK+3(ry),ra             ; LDA INWK+3,Y      ; Set A = nosev_y_hi
+       swpb ry                         ;                   
 
        li   rtmp,MAD                   ; JSR MAD           ; Set (A X) = Q * A + (S R)
        bl   @jsr                       ;                   
+       swpb ry                         ;                   
        movb ra,@INWK+1(ry)             ; STA INWK+1,Y      ; = alpha * nosev_y_hi + nosev_x
+       swpb ry                         ;                   
        movb rx,@INWK(ry)               ; STX INWK,Y        ; 
                                                            ; and store (A X) in nosev_x, so this does:
                                                            ; 
@@ -6065,21 +6173,31 @@ MVS4:
        movb @BETA,ra                   ; LDA BETA          ; Set Q = beta (the pitch angle to rotate through)
        movb ra,@Q                      ; STA Q             
 
+       swpb ry                         ;                   
        movb @INWK+2(ry),rx             ; LDX INWK+2,Y      ; Set (S R) = nosev_y
+       swpb ry                         ;                   
        movb rx,@R                      ; STX R             
+       swpb ry                         ;                   
        movb @INWK+3(ry),rx             ; LDX INWK+3,Y      
+       swpb ry                         ;                   
        movb rx,@S                      ; STX S             
+       swpb ry                         ;                   
        movb @INWK+4(ry),rx             ; LDX INWK+4,Y      
+       swpb ry                         ;                   
 
        movb rx,@P                      ; STX P             ; This instruction has no effect as MAD overwrites P,
                                                            ; but it sets P = nosev_y
 
+       swpb ry                         ;                   
        movb @INWK+5(ry),ra             ; LDA INWK+5,Y      ; Set A = -nosev_z_hi
+       swpb ry                         ;                   
        .eoi (>80*256)                  ; EOR #%10000000    
 
        li   rtmp,MAD                   ; JSR MAD           ; Set (A X) = Q * A + (S R)
        bl   @jsr                       ;                   
+       swpb ry                         ;                   
        movb ra,@INWK+3(ry)             ; STA INWK+3,Y      ; = beta * -nosev_z_hi + nosev_y
+       swpb ry                         ;                   
        movb rx,@INWK+2(ry)             ; STX INWK+2,Y      ; 
                                                            ; and store (A X) in nosev_y, so this does:
                                                            ; 
@@ -6088,16 +6206,24 @@ MVS4:
        movb rx,@P                      ; STX P             ; This instruction has no effect as MAD overwrites P,
                                                            ; but it sets P = nosev_y_lo
 
+       swpb ry                         ;                   
        movb @INWK+4(ry),rx             ; LDX INWK+4,Y      ; Set (S R) = nosev_z
+       swpb ry                         ;                   
        movb rx,@R                      ; STX R             
+       swpb ry                         ;                   
        movb @INWK+5(ry),rx             ; LDX INWK+5,Y      
+       swpb ry                         ;                   
        movb rx,@S                      ; STX S             
 
+       swpb ry                         ;                   
        movb @INWK+3(ry),ra             ; LDA INWK+3,Y      ; Set A = nosev_y_hi
+       swpb ry                         ;                   
 
        li   rtmp,MAD                   ; JSR MAD           ; Set (A X) = Q * A + (S R)
        bl   @jsr                       ;                   
+       swpb ry                         ;                   
        movb ra,@INWK+5(ry)             ; STA INWK+5,Y      ; = beta * nosev_y_hi + nosev_z
+       swpb ry                         ;                   
        movb rx,@INWK+4(ry)             ; STX INWK+4,Y      ; 
                                                            ; and store (A X) in nosev_z, so this does:
                                                            ; 
@@ -6175,7 +6301,9 @@ MVS4:
 * ******************************************************************************
 
 MVS5:
+       swpb rx                         ;                   
        movb @INWK+1(rx),ra             ; LDA INWK+1,X      ; Fetch roofv_x_hi, clear the sign bit, divide by 2 and
+       swpb rx                         ;                   
        andi ra,>7f*256                 ; AND #%01111111    ; store in T, so:
        srl  ra,1                       ; LSR A             ; 
        movb ra,@T                      ; STA T             ; T = |roofv_x_hi| / 2
@@ -6191,25 +6319,35 @@ MVS5:
                                                            ; + roofv_x_lo / 512
                                                            ; = |roofv_x_hi| / 2
 
+       swpb rx                         ;                   
        movb @INWK(rx),ra               ; LDA INWK,X        ; Now we do the following subtraction:
+       swpb rx                         ;                   
        .sec                            ; SEC               ; 
        .sbc @T,ra                      ; SBC T             ; (S R) = (roofv_x_hi roofv_x_lo) - |roofv_x| / 512
        movb ra,@R                      ; STA R             ; = (1 - 1/512) * roofv_x
                                                            ; 
                                                            ; by doing the low bytes first
 
+       swpb rx                         ;                   
        movb @INWK+1(rx),ra             ; LDA INWK+1,X      ; And then the high bytes (the high byte of the right
+       swpb rx                         ;                   
        .sbi (>00*256)                  ; SBC #0            ; side of the subtraction being 0)
        movb ra,@S                      ; STA S             
 
+       swpb ry                         ;                   
        movb @INWK(ry),ra               ; LDA INWK,Y        ; Set P = nosev_x_lo
+       swpb ry                         ;                   
        movb ra,@P                      ; STA P             
 
+       swpb ry                         ;                   
        movb @INWK+1(ry),ra             ; LDA INWK+1,Y      ; Fetch the sign of nosev_x_hi (bit 7) and store in T
+       swpb ry                         ;                   
        andi ra,>80*256                 ; AND #%10000000    
        movb ra,@T                      ; STA T             
 
+       swpb ry                         ;                   
        movb @INWK+1(ry),ra             ; LDA INWK+1,Y      ; Fetch nosev_x_hi into A and clear the sign bit, so
+       swpb ry                         ;                   
        andi ra,>7f*256                 ; AND #%01111111    ; A = |nosev_x_hi|
 
        srl  ra,1                       ; LSR A             ; Set (A P) = (A P) / 16
@@ -6245,31 +6383,43 @@ MVS5:
 
        movb @Q,rx                      ; LDX Q             ; Restore the value of X from before the call to ADD
 
+       swpb ry                         ;                   
        movb @INWK+1(ry),ra             ; LDA INWK+1,Y      ; Fetch nosev_x_hi, clear the sign bit, divide by 2 and
+       swpb ry                         ;                   
        andi ra,>7f*256                 ; AND #%01111111    ; store in T, so:
        srl  ra,1                       ; LSR A             ; 
        movb ra,@T                      ; STA T             ; T = |nosev_x_hi| / 2
                                                            ; = |nosev_x| / 512
 
+       swpb ry                         ;                   
        movb @INWK(ry),ra               ; LDA INWK,Y        ; Now we do the following subtraction:
+       swpb ry                         ;                   
        .sec                            ; SEC               ; 
        .sbc @T,ra                      ; SBC T             ; (S R) = (nosev_x_hi nosev_x_lo) - |nosev_x| / 512
        movb ra,@R                      ; STA R             ; = (1 - 1/512) * nosev_x
                                                            ; 
                                                            ; by doing the low bytes first
 
+       swpb ry                         ;                   
        movb @INWK+1(ry),ra             ; LDA INWK+1,Y      ; And then the high bytes (the high byte of the right
+       swpb ry                         ;                   
        .sbi (>00*256)                  ; SBC #0            ; side of the subtraction being 0)
        movb ra,@S                      ; STA S             
 
+       swpb rx                         ;                   
        movb @INWK(rx),ra               ; LDA INWK,X        ; Set P = roofv_x_lo
+       swpb rx                         ;                   
        movb ra,@P                      ; STA P             
 
+       swpb rx                         ;                   
        movb @INWK+1(rx),ra             ; LDA INWK+1,X      ; Fetch the sign of roofv_x_hi (bit 7) and store in T
+       swpb rx                         ;                   
        andi ra,>80*256                 ; AND #%10000000    
        movb ra,@T                      ; STA T             
 
+       swpb rx                         ;                   
        movb @INWK+1(rx),ra             ; LDA INWK+1,X      ; Fetch roofv_x_hi into A and clear the sign bit, so
+       swpb rx                         ;                   
        andi ra,>7f*256                 ; AND #%01111111    ; A = |roofv_x_hi|
 
        srl  ra,1                       ; LSR A             ; Set (A P) = (A P) / 16
@@ -6300,15 +6450,21 @@ MVS5:
        bl   @jsr                       ;                   
                                                            ; = -/+roofv_x / 16 + (1 - 1/512) * nosev_x
 
+       swpb ry                         ;                   
        movb ra,@INWK+1(ry)             ; STA INWK+1,Y      ; Set nosev_x = (1-1/512) * nosev_x -/+ roofv_x / 16
+       swpb ry                         ;                   
        movb rx,@INWK(ry)               ; STX INWK,Y        
 
        movb @Q,rx                      ; LDX Q             ; Restore the value of X from before the call to ADD
 
        movb @K,ra                      ; LDA K             ; Set roofv_x = K(1 0)
+       swpb rx                         ;                   
        movb ra,@INWK(rx)               ; STA INWK,X        ; = (1-1/512) * roofv_x +/- nosev_x / 16
+       swpb rx                         ;                   
        movb @K+1,ra                    ; LDA K+1           
+       swpb rx                         ;                   
        movb ra,@INWK+1(rx)             ; STA INWK+1,X      
+       swpb rx                         ;                   
 
        b    @rts                       ; RTS               ; Return from the subroutine
 
@@ -6356,7 +6512,9 @@ MVS5:
 MVT6:
        movb ra,ry                      ; TAY               ; Store argument A into Y, for later use
 
+       swpb rx                         ;                   
        .eor @INWK+2(rx)                ; EOR INWK+2,X      ; Set A = A EOR x_sign
+       swpb rx                         ;                   
 
        jlt  MV50                       ; BMI MV50          ; If the sign is negative, i.e. A and x_sign have
                                                            ; different signs, jump to MV50
@@ -6366,11 +6524,15 @@ MVT6:
 
        movb @P+1,ra                    ; LDA P+1           ; First we add the low bytes:
        .clc                            ; CLC               ; 
+       swpb rx                         ;                   
        .adc @INWK(rx),ra               ; ADC INWK,X        ; P+1 = P+1 + x_lo
+       swpb rx                         ;                   
        movb ra,@P+1                    ; STA P+1           
 
        movb @P+2,ra                    ; LDA P+2           ; And then the high bytes:
+       swpb rx                         ;                   
        .adc @INWK+1(rx),ra             ; ADC INWK+1,X      ; 
+       swpb rx                         ;                   
        movb ra,@P+2                    ; STA P+2           ; P+2 = P+2 + x_hi
 
        movb ry,ra                      ; TYA               ; Restore the original A argument that we stored earlier
@@ -6379,12 +6541,16 @@ MVT6:
        b    @rts                       ; RTS               ; Return from the subroutine
 
 MV50:
+       swpb rx                         ;                   
        movb @INWK(rx),ra               ; LDA INWK,X        ; First we subtract the low bytes:
+       swpb rx                         ;                   
        .sec                            ; SEC               ; 
        .sbc @P+1,ra                    ; SBC P+1           ; P+1 = x_lo - P+1
        movb ra,@P+1                    ; STA P+1           
 
+       swpb rx                         ;                   
        movb @INWK+1(rx),ra             ; LDA INWK+1,X      ; And then the high bytes:
+       swpb rx                         ;                   
        .sbc @P+2,ra                    ; SBC P+2           ; 
        movb ra,@P+2                    ; STA P+2           ; P+2 = x_hi - P+2
 
@@ -7194,7 +7360,9 @@ LI3:
        movb ra,rx                      ; TAX               ; each pixel line in the character block is 8 pixels
                                                            ; wide)
 
+       swpb rx                         ;                   
        movb @TWOS(rx),ra               ; LDA TWOS,X        ; Fetch a 1-pixel byte from TWOS where pixel X is set,
+       swpb rx                         ;                   
        movb ra,@R                      ; STA R             ; and store it in R
 
                                                            ; The following calculates:
@@ -7510,7 +7678,9 @@ LI15:
        movb ra,rx                      ; TAX               ; each pixel line in the character block is 8 pixels
                                                            ; wide)
 
+       swpb rx                         ;                   
        movb @TWOS(rx),ra               ; LDA TWOS,X        ; Fetch a 1-pixel byte from TWOS where pixel X is set,
+       swpb rx                         ;                   
        movb ra,@R                      ; STA R             ; and store it in R
 
        movb @Y1,ra                     ; LDA Y1            ; Set Y = Y1 mod 8, which is the pixel row within the
@@ -7891,7 +8061,9 @@ HLOIN2:
        movb ry,@Y1                     ; STY Y1            ; Set Y1 = Y
 
        li   ra,>00*256                 ; LDA #0            ; Set the Y-th byte of the LSO block to 0
+       swpb ry                         ;                   
        movb ra,@LSO(ry)                ; STA LSO,Y         
+       swpb ry                         ;                   
 
                                                            ; Fall through into HLOIN to draw a horizontal line from
                                                            ; (X1, Y) to (X2, Y)
@@ -7997,7 +8169,9 @@ HL1:
        movb ra,rx                      ; TAX               ; each pixel line in the character block is 8 pixels
                                                            ; wide)
 
+       swpb rx                         ;                   
        movb @TWFR(rx),ra               ; LDA TWFR,X        ; Fetch a ready-made byte with X pixels filled in at the
+       swpb rx                         ;                   
                                                            ; right end of the byte (so the filled pixels start at
                                                            ; point X and go all the way to the end of the byte),
                                                            ; which is the shape we want for the left end of the
@@ -8042,7 +8216,9 @@ HL3:
        andi ra,>07*256                 ; AND #7            ; of the line, so set X = X2 mod 8, which is the
        movb ra,rx                      ; TAX               ; horizontal pixel number where the line ends
 
+       swpb rx                         ;                   
        movb @TWFL(rx),ra               ; LDA TWFL,X        ; Fetch a ready-made byte with X pixels filled in at the
+       swpb rx                         ;                   
                                                            ; left end of the byte (so the filled pixels start at
                                                            ; the left edge and go up to point X), which is the
                                                            ; shape we want for the right end of the line
@@ -8064,7 +8240,9 @@ HL2:
        movb ra,rx                      ; TAX               ; each pixel line in the character block is 8 pixels
                                                            ; wide)
 
+       swpb rx                         ;                   
        movb @TWFR(rx),ra               ; LDA TWFR,X        ; Fetch a ready-made byte with X pixels filled in at the
+       swpb rx                         ;                   
        movb ra,@T                      ; STA T             ; right end of the byte (so the filled pixels start at
                                                            ; point X and go all the way to the end of the byte)
 
@@ -8072,7 +8250,9 @@ HL2:
        andi ra,>07*256                 ; AND #7            ; where the line ends
        movb ra,rx                      ; TAX               
 
+       swpb rx                         ;                   
        movb @TWFL(rx),ra               ; LDA TWFL,X        ; Fetch a ready-made byte with X pixels filled in at the
+       swpb rx                         ;                   
                                                            ; left end of the byte (so the filled pixels start at
                                                            ; the left edge and go up to point X)
 
@@ -8184,7 +8364,9 @@ TWFR:
 * ******************************************************************************
 
 PX3:
+       swpb rx                         ;                   
        movb @TWOS(rx),ra               ; LDA TWOS,X        ; Fetch a 1-pixel byte from TWOS and EOR it into SC+Y
+       swpb rx                         ;                   
        .eor @SC                        ; EOR (SC),Y        
        .st_ind_y_idx @SC,ra            ; STA (SC),Y        
 
@@ -8232,7 +8414,9 @@ PIX1:
        movb ra,@YY+1                   ; STA YY+1          ; Set YY+1 to A, the high byte of the result
 
        movb rx,ra                      ; TXA               ; Set SYL+Y to X, the low byte of the result
+       swpb ry                         ;                   
        movb ra,@SYL(ry)                ; STA SYL,Y         
+       swpb ry                         ;                   
 
                                                            ; Fall through into PIX1 to draw the stardust particle
                                                            ; at (X1,Y1)
@@ -8369,7 +8553,9 @@ PIXEL:
        ci   ra,>90*256                 ; CMP #144          ; long way away, so jump to PX3 to fetch a 1-pixel point
        joc  PX3                        ; BCS PX3           ; from TWOS and EOR it into SC+Y
 
+       swpb rx                         ;                   
        movb @TWOS2(rx),ra              ; LDA TWOS2,X       ; Otherwise fetch a 2-pixel dash from TWOS2 and EOR it
+       swpb rx                         ;                   
        .eor @SC                        ; EOR (SC),Y        ; into SC+Y
        .st_ind_y_idx @SC,ra            ; STA (SC),Y        
 
@@ -8390,7 +8576,9 @@ PIXEL:
                                                            ; to the pixel row after the one we just plotted
 
 PX14:
+       swpb rx                         ;                   
        movb @TWOS2(rx),ra              ; LDA TWOS2,X       ; Fetch a 2-pixel dash from TWOS2 and EOR it into this
+       swpb rx                         ;                   
        .eor @SC                        ; EOR (SC),Y        ; second row to make a 4-pixel square
        .st_ind_y_idx @SC,ra            ; STA (SC),Y        
 
@@ -8485,11 +8673,15 @@ BL5:
                                                            ; call to BLINE that does fit on-screen
        movb @LSP,ry                    ; LDY LSP           ; If byte LSP-1 of LSY2 = &FF, jump to BL7 to tidy up
        li   ra,>ff*256                 ; LDA #&FF          ; and return from the subroutine, as the point that has
+       swpb ry                         ;                   
        cb   @LSY2-1(ry),ra             ; CMP LSY2-1,Y      ; been passed to BLINE is the start of a segment, so all
+       swpb ry                         ;                   
        jeq  BL7                        ; BEQ BL7           ; we need to do is save the coordinate in K5, without
                                                            ; moving the pointer in LSP
 
+       swpb ry                         ;                   
        movb ra,@LSY2(ry)               ; STA LSY2,Y        ; Otherwise we just tried to plot a segment but it
+       swpb ry                         ;                   
                                                            ; didn't fit on-screen, so put the &FF marker into the
                                                            ; heap for this point, so the next call to BLINE starts
                                                            ; a new segment
@@ -8550,7 +8742,9 @@ BL1:
 BL9:
        movb @LSP,ry                    ; LDY LSP           ; Set Y = LSP
 
+       swpb ry                         ;                   
        movb @LSY2-1(ry),ra             ; LDA LSY2-1,Y      ; If byte LSP-1 of LSY2 is not &FF, jump down to BL8
+       swpb ry                         ;                   
        ci   ra,>ff*256                 ; CMP #&FF          ; to skip the following (X1, Y1) code
        jne  BL8                        ; BNE BL8           
 
@@ -8558,19 +8752,27 @@ BL9:
                                                            ; need to store (X1, Y1) in the heap
 
        movb @X1,ra                     ; LDA X1            ; Store X1 in the LSP-th byte of LSX2
+       swpb ry                         ;                   
        movb ra,@LSX2(ry)               ; STA LSX2,Y        
+       swpb ry                         ;                   
 
        movb @Y1,ra                     ; LDA Y1            ; Store Y1 in the LSP-th byte of LSY2
+       swpb ry                         ;                   
        movb ra,@LSY2(ry)               ; STA LSY2,Y        
+       swpb ry                         ;                   
 
        ab   rone,ry                    ; INY               ; Increment Y to point to the next byte in LSX2/LSY2
 
 BL8:
        movb @X2,ra                     ; LDA X2            ; Store X2 in the LSP-th byte of LSX2
+       swpb ry                         ;                   
        movb ra,@LSX2(ry)               ; STA LSX2,Y        
+       swpb ry                         ;                   
 
        movb @Y2,ra                     ; LDA Y2            ; Store Y2 in the LSP-th byte of LSX2
+       swpb ry                         ;                   
        movb ra,@LSY2(ry)               ; STA LSY2,Y        
+       swpb ry                         ;                   
 
        ab   rone,ry                    ; INY               ; Increment Y to point to the next byte in LSX2/LSY2
 
@@ -8635,18 +8837,28 @@ FLIP:
                                                            ; we can use it as a counter through all the stardust
 
 FLL1:
+       swpb ry                         ;                   
        movb @SY(ry),rx                 ; LDX SY,Y          ; Copy the Y-th particle's y-coordinate from SY+Y into X
+       swpb ry                         ;                   
 
+       swpb ry                         ;                   
        movb @SX(ry),ra                 ; LDA SX,Y          ; Copy the Y-th particle's x-coordinate from SX+Y into
+       swpb ry                         ;                   
        movb ra,@Y1                     ; STA Y1            ; both Y1 and the particle's y-coordinate
+       swpb ry                         ;                   
        movb ra,@SY(ry)                 ; STA SY,Y          
+       swpb ry                         ;                   
 
        movb rx,ra                      ; TXA               ; Copy the Y-th particle's original y-coordinate into
        movb ra,@X1                     ; STA X1            ; both X1 and the particle's x-coordinate, so the x- and
+       swpb ry                         ;                   
        movb ra,@SX(ry)                 ; STA SX,Y          ; y-coordinates are now swapped and (X1, Y1) contains
+       swpb ry                         ;                   
                                                            ; the particle's new coordinates
 
+       swpb ry                         ;                   
        movb @SZ(ry),ra                 ; LDA SZ,Y          ; Fetch the Y-th particle's distance from SZ+Y into ZZ
+       swpb ry                         ;                   
        movb ra,@ZZ                     ; STA ZZ            
 
        li   rtmp,PIXEL2                ; JSR PIXEL2        ; Draw a stardust particle at (X1,Y1) with distance ZZ
@@ -8773,16 +8985,24 @@ STL1:
                                                            ; 
                                                            ; Q = 64 * speed / z_hi
 
+       swpb ry                         ;                   
        movb @SZL(ry),ra                ; LDA SZL,Y         ; We now calculate the following:
+       swpb ry                         ;                   
        .sbc @DELT4,ra                  ; SBC DELT4         ; 
+       swpb ry                         ;                   
        movb ra,@SZL(ry)                ; STA SZL,Y         ; (z_hi z_lo) = (z_hi z_lo) - DELT4(1 0)
+       swpb ry                         ;                   
                                                            ; 
                                                            ; starting with the low bytes
 
+       swpb ry                         ;                   
        movb @SZ(ry),ra                 ; LDA SZ,Y          ; And then we do the high bytes
+       swpb ry                         ;                   
        movb ra,@ZZ                     ; STA ZZ            ; 
        .sbc @DELT4+1,ra                ; SBC DELT4+1       ; We also set ZZ to the original value of z_hi, which we
+       swpb ry                         ;                   
        movb ra,@SZ(ry)                 ; STA SZ,Y          ; use below to remove the existing particle
+       swpb ry                         ;                   
                                                            ; 
                                                            ; So now we have result 2 above:
                                                            ; 
@@ -8805,7 +9025,9 @@ STL1:
 
        movb ra,@YY+1                   ; STA YY+1          ; First we do the low bytes with:
        movb @P,ra                      ; LDA P             ; 
+       swpb ry                         ;                   
        .adc @SYL(ry),ra                ; ADC SYL,Y         ; YY+1 = A
+       swpb ry                         ;                   
        movb ra,@YY                     ; STA YY            ; R = YY = P + y_lo
        movb ra,@R                      ; STA R             ; 
                                                            ; so we get this:
@@ -8824,7 +9046,9 @@ STL1:
                                                            ; which is result 3 above, and (S R) is set to the new
                                                            ; value of y
 
+       swpb ry                         ;                   
        movb @SX(ry),ra                 ; LDA SX,Y          ; Set X1 = A = x_hi
+       swpb ry                         ;                   
        movb ra,@X1                     ; STA X1            ; 
                                                            ; So X1 contains the original value of x_hi, which we
                                                            ; use below to remove the existing particle
@@ -8838,7 +9062,9 @@ STL1:
 
        movb ra,@XX+1                   ; STA XX+1          ; First we do the low bytes:
        movb @P,ra                      ; LDA P             ; 
+       swpb ry                         ;                   
        .adc @SXL(ry),ra                ; ADC SXL,Y         ; XX(1 0) = (A P) + x_lo
+       swpb ry                         ;                   
        movb ra,@XX                     ; STA XX            
 
        movb @X1,ra                     ; LDA X1            ; And then we do the high bytes:
@@ -8952,7 +9178,9 @@ STL1:
        movb ra,@XX+1                   ; STA XX+1          ; Store the high byte A in XX+1
 
        movb rx,ra                      ; TXA               ; Store the low byte X in x_lo
+       swpb ry                         ;                   
        movb ra,@SXL(ry)                ; STA SXL,Y         
+       swpb ry                         ;                   
 
                                                            ; So (XX+1 x_lo) now contains:
                                                            ; 
@@ -8997,21 +9225,27 @@ STL1:
 
        movb @XX+1,ra                   ; LDA XX+1          ; Set X1 and x_hi to the high byte of XX in XX+1, so
        movb ra,@X1                     ; STA X1            ; the new x-coordinate is in (x_hi x_lo) and the high
+       swpb ry                         ;                   
        movb ra,@SX(ry)                 ; STA SX,Y          ; byte is in X1
+       swpb ry                         ;                   
 
        andi ra,>7f*256                 ; AND #%01111111    ; If |x_hi| >= 120 then jump to KILL1 to recycle this
        ci   ra,>78*256                 ; CMP #120          ; particle, as it's gone off the side of the screen,
        joc  KILL1                      ; BCS KILL1         ; and rejoin at STC1 with the new particle
 
        movb @YY+1,ra                   ; LDA YY+1          ; Set Y1 and y_hi to the high byte of YY in YY+1, so
+       swpb ry                         ;                   
        movb ra,@SY(ry)                 ; STA SY,Y          ; the new x-coordinate is in (y_hi y_lo) and the high
+       swpb ry                         ;                   
        movb ra,@Y1                     ; STA Y1            ; byte is in Y1
 
        andi ra,>7f*256                 ; AND #%01111111    ; If |y_hi| >= 120 then jump to KILL1 to recycle this
        ci   ra,>78*256                 ; CMP #120          ; particle, as it's gone off the top or bottom of the
        joc  KILL1                      ; BCS KILL1         ; screen, and rejoin at STC1 with the new particle
 
+       swpb ry                         ;                   
        movb @SZ(ry),ra                 ; LDA SZ,Y          ; If z_hi < 16 then jump to KILL1 to recycle this
+       swpb ry                         ;                   
        ci   ra,>10*256                 ; CMP #16           ; particle, as it's so close that it's effectively gone
        jnc  KILL1                      ; BCC KILL1         ; past us, and rejoin at STC1 with the new particle
 
@@ -9044,20 +9278,26 @@ KILL1:
 
        ori  ra,>04*256                 ; ORA #4            ; Make sure A is at least 4 and store it in Y1 and y_hi,
        movb ra,@Y1                     ; STA Y1            ; so the new particle starts at least 4 pixels above or
+       swpb ry                         ;                   
        movb ra,@SY(ry)                 ; STA SY,Y          ; below the centre of the screen
+       swpb ry                         ;                   
 
        li   rtmp,DORND                 ; JSR DORND         ; Set A and X to random numbers
        bl   @jsr                       ;                   
 
        ori  ra,>08*256                 ; ORA #8            ; Make sure A is at least 8 and store it in X1 and x_hi,
        movb ra,@X1                     ; STA X1            ; so the new particle starts at least 8 pixels either
+       swpb ry                         ;                   
        movb ra,@SX(ry)                 ; STA SX,Y          ; side of the centre of the screen
+       swpb ry                         ;                   
 
        li   rtmp,DORND                 ; JSR DORND         ; Set A and X to random numbers
        bl   @jsr                       ;                   
 
        ori  ra,>90*256                 ; ORA #144          ; Make sure A is at least 144 and store it in ZZ and
+       swpb ry                         ;                   
        movb ra,@SZ(ry)                 ; STA SZ,Y          ; z_hi so the new particle starts in the far distance
+       swpb ry                         ;                   
        movb ra,@ZZ                     ; STA ZZ            
 
        movb @Y1,ra                     ; LDA Y1            ; Set A to the new value of y_hi. This has no effect as
@@ -9129,7 +9369,9 @@ STL6:
                                                            ; 
                                                            ; Q = 64 * speed / z_hi
 
+       swpb ry                         ;                   
        movb @SX(ry),ra                 ; LDA SX,Y          ; Set X1 = A = x_hi
+       swpb ry                         ;                   
        movb ra,@X1                     ; STA X1            ; 
                                                            ; So X1 contains the original value of x_hi, which we
                                                            ; use below to remove the existing particle
@@ -9142,7 +9384,9 @@ STL6:
                                                            ; XX(1 0) = x - (A P)
 
        movb ra,@XX+1                   ; STA XX+1          ; First we do the low bytes:
+       swpb ry                         ;                   
        movb @SXL(ry),ra                ; LDA SXL,Y         ; 
+       swpb ry                         ;                   
        .sbc @P,ra                      ; SBC P             ; XX(1 0) = x_lo - (A P)
        movb ra,@XX                     ; STA XX            
 
@@ -9172,7 +9416,9 @@ STL6:
                                                            ; (S R) = YY(1 0) = y - (A P)
 
        movb ra,@YY+1                   ; STA YY+1          ; First we do the low bytes with:
+       swpb ry                         ;                   
        movb @SYL(ry),ra                ; LDA SYL,Y         ; 
+       swpb ry                         ;                   
        .sbc @P,ra                      ; SBC P             ; YY+1 = A
        movb ra,@YY                     ; STA YY            ; R = YY = y_lo - P
        movb ra,@R                      ; STA R             ; 
@@ -9192,16 +9438,24 @@ STL6:
                                                            ; which is result 3 above, and (S R) is set to the new
                                                            ; value of y
 
+       swpb ry                         ;                   
        movb @SZL(ry),ra                ; LDA SZL,Y         ; We now calculate the following:
+       swpb ry                         ;                   
        .adc @DELT4,ra                  ; ADC DELT4         ; 
+       swpb ry                         ;                   
        movb ra,@SZL(ry)                ; STA SZL,Y         ; (z_hi z_lo) = (z_hi z_lo) + DELT4(1 0)
+       swpb ry                         ;                   
                                                            ; 
                                                            ; starting with the low bytes
 
+       swpb ry                         ;                   
        movb @SZ(ry),ra                 ; LDA SZ,Y          ; And then we do the high bytes
+       swpb ry                         ;                   
        movb ra,@ZZ                     ; STA ZZ            ; 
        .adc @DELT4+1,ra                ; ADC DELT4+1       ; We also set ZZ to the original value of z_hi, which we
+       swpb ry                         ;                   
        movb ra,@SZ(ry)                 ; STA SZ,Y          ; use below to remove the existing particle
+       swpb ry                         ;                   
                                                            ; 
                                                            ; So now we have result 4 above:
                                                            ; 
@@ -9308,7 +9562,9 @@ STL6:
        movb ra,@XX+1                   ; STA XX+1          ; Store the high byte A in XX+1
 
        movb rx,ra                      ; TXA               ; Store the low byte X in x_lo
+       swpb ry                         ;                   
        movb ra,@SXL(ry)                ; STA SXL,Y         
+       swpb ry                         ;                   
 
                                                            ; So (XX+1 x_lo) now contains:
                                                            ; 
@@ -9352,17 +9608,23 @@ STL6:
 
        movb @XX+1,ra                   ; LDA XX+1          ; Set X1 and x_hi to the high byte of XX in XX+1, so
        movb ra,@X1                     ; STA X1            ; the new x-coordinate is in (x_hi x_lo) and the high
+       swpb ry                         ;                   
        movb ra,@SX(ry)                 ; STA SX,Y          ; byte is in X1
+       swpb ry                         ;                   
 
        movb @YY+1,ra                   ; LDA YY+1          ; Set Y1 and y_hi to the high byte of YY in YY+1, so
+       swpb ry                         ;                   
        movb ra,@SY(ry)                 ; STA SY,Y          ; the new x-coordinate is in (y_hi y_lo) and the high
+       swpb ry                         ;                   
        movb ra,@Y1                     ; STA Y1            ; byte is in Y1
 
        andi ra,>7f*256                 ; AND #%01111111    ; If |y_hi| >= 110 then jump to KILL6 to recycle this
        ci   ra,>6e*256                 ; CMP #110          ; particle, as it's gone off the top or bottom of the
        joc  KILL6                      ; BCS KILL6         ; screen, and rejoin at STC6 with the new particle
 
+       swpb ry                         ;                   
        movb @SZ(ry),ra                 ; LDA SZ,Y          ; If z_hi >= 160 then jump to KILL6 to recycle this
+       swpb ry                         ;                   
        ci   ra,>a0*256                 ; CMP #160          ; particle, as it's so far away that it's too far to
        joc  KILL6                      ; BCS KILL6         ; see, and rejoin at STC1 with the new particle
 
@@ -9393,7 +9655,9 @@ KILL6:
        andi ra,>7f*256                 ; AND #%01111111    ; Clear the sign bit of A to get |A|
 
        .adi (>0a*256)                  ; ADC #10           ; Make sure A is at least 10 and store it in z_hi and
+       swpb ry                         ;                   
        movb ra,@SZ(ry)                 ; STA SZ,Y          ; ZZ, so the new particle starts close to us
+       swpb ry                         ;                   
        movb ra,@ZZ                     ; STA ZZ            
 
        srl  ra,1                       ; LSR A             ; Divide A by 2 and randomly set the C flag
@@ -9407,13 +9671,17 @@ KILL6:
                                                            ; the C flag rotated into its sign bit
 
        movb ra,@X1                     ; STA X1            ; Set x_hi and X1 to A, so this particle starts on
+       swpb ry                         ;                   
        movb ra,@SX(ry)                 ; STA SX,Y          ; either the left or right edge of the screen
+       swpb ry                         ;                   
 
        li   rtmp,DORND                 ; JSR DORND         ; Set A and X to random numbers
        bl   @jsr                       ;                   
 
        movb ra,@Y1                     ; STA Y1            ; Set y_hi and Y1 to random numbers, so the particle
+       swpb ry                         ;                   
        movb ra,@SY(ry)                 ; STA SY,Y          ; starts anywhere along either the left or right edge
+       swpb ry                         ;                   
 
        b    @STC6                      ; JMP STC6          ; Jump up to STC6 to draw this new particle
 
@@ -9422,7 +9690,9 @@ ST4:
        bl   @jsr                       ;                   
 
        movb ra,@X1                     ; STA X1            ; Set x_hi and X1 to random numbers, so the particle
+       swpb ry                         ;                   
        movb ra,@SX(ry)                 ; STA SX,Y          ; starts anywhere along the x-axis
+       swpb ry                         ;                   
 
        srl  ra,1                       ; LSR A             ; Randomly set the C flag
 
@@ -9431,7 +9701,9 @@ ST4:
                                                            ; the C flag rotated into its sign bit
 
        movb ra,@Y1                     ; STA Y1            ; Set y_hi and Y1 to A, so the particle starts anywhere
+       swpb ry                         ;                   
        movb ra,@SY(ry)                 ; STA SY,Y          ; along either the top or bottom edge of the screen
+       swpb ry                         ;                   
 
        jne  STC6                       ; BNE STC6          ; Jump up to STC6 to draw this new particle (this BNE is
                                                            ; effectively a JMP as A will never be zero)
@@ -9551,7 +9823,9 @@ STATUS:
        movb @MANY+AST,ry               ; LDY MANY+AST      ; Set Y to the number of asteroids in our local bubble
                                                            ; of universe
 
+       swpb ry                         ;                   
        movb @FRIN+2(ry),rx             ; LDX FRIN+2,Y      ; The ship slots at FRIN are ordered with the first two
+       swpb ry                         ;                   
                                                            ; slots reserved for the planet and sun/space station,
                                                            ; and then any ships, so if the slot at FRIN+2+Y is not
                                                            ; empty (i.e. is non-zero), then that means the number
@@ -9712,7 +9986,9 @@ B21:
 
 stqv_:
        movb ra,ry                      ; TAY               ; Fetch byte BOMB+0 through BOMB+4 for values of XX4
+       swpb ry                         ;                   
        movb @BOMB-113(ry),rx           ; LDX BOMB-113,Y    ; from 113 through 117
+       swpb ry                         ;                   
 
        jeq  B22                        ; BEQ B22           ; If it is zero then we do not own that piece of
                                                            ; equipment, so skip the next instruction
@@ -9736,7 +10012,9 @@ B22:
 st_:
        movb rx,@CNT                    ; STX CNT           ; Store the view number in CNT
 
-       movb @LASER(rx),ry              ; LDY LASER,X       ; Fetch the laser power for view X, and if we do not
+       swpb rx                         ;                   
+       movb @LASER(rx),rx              ; LDY LASER,X       ; Fetch the laser power for view X, and if we do not
+       swpb rx                         ;                   
        jeq  st1_                       ; BEQ st1           ; have a laser fitted to that view, jump to st1 to move
                                                            ; on to the next one
 
@@ -9749,7 +10027,9 @@ st_:
        li   ra,>67*256                 ; LDA #103          ; Set A to token 103 ("PULSE LASER")
 
        movb @CNT,rx                    ; LDX CNT           ; If the laser power for view X has bit 7 clear, then it
-       movb @LASER(rx),ry              ; LDY LASER,X       ; is a pulse laser, so skip the following instruction
+       swpb rx                         ;                   
+       movb @LASER(rx),rx              ; LDY LASER,X       ; is a pulse laser, so skip the following instruction
+       swpb rx                         ;                   
        jgt  B23                        ; BPL B23           
 
        li   ra,>68*256                 ; LDA #104          ; Set A to token 104 ("BEAM LASER")
@@ -10012,8 +10292,12 @@ TT35:
                                                            ; (i.e. the least significant)
 
 tt35_:
+       swpb rx                         ;                   
        movb @K(rx),ra                  ; LDA K,X           ; Copy the X-th byte of K(0 1 2 3) to the X-th byte of
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@XX15(rx)               ; STA XX15,X        ; XX15(0 1 2 3), so that XX15 will contain a copy of
+       swpb rx                         ;                   
                                                            ; K(0 1 2 3) once we've copied all four bytes
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
@@ -10057,11 +10341,17 @@ tt35_:
                                                            ; significant)
 
 tt36_:
+       swpb rx                         ;                   
        movb @K(rx),ra                  ; LDA K,X           ; Fetch the X-th byte of K into A
+       swpb rx                         ;                   
 
+       swpb rx                         ;                   
        .adc @XX15(rx),ra               ; ADC XX15,X        ; Add the X-th byte of XX15 to A, with carry
+       swpb rx                         ;                   
 
+       swpb rx                         ;                   
        movb ra,@K(rx)                  ; STA K,X           ; Store the result in the X-th byte of K
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -10099,10 +10389,16 @@ tt37_:
                                                            ; We now loop through each byte in turn to do this:
                                                            ; 
                                                            ; XX15(4 0 1 2 3) = K(S 0 1 2 3) - 100,000,000,000
+       swpb rx                         ;                   
        movb @K(rx),ra                  ; LDA K,X           ; Subtract the X-th byte of TENS (i.e. 10 billion) from
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        .sbc @TENS(rx),ra               ; SBC TENS,X        ; the X-th byte of K
+       swpb rx                         ;                   
 
+       swpb rx                         ;                   
        movb ra,@XX15(rx)               ; STA XX15,X        ; Store the result in the X-th byte of XX15
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -10123,8 +10419,12 @@ tt37_:
                                                            ; subtraction, so set up a counter for a four-byte loop
 
 tt38_:
+       swpb rx                         ;                   
        movb @XX15(rx),ra               ; LDA XX15,X        ; Copy the X-th byte of XX15(0 1 2 3) to the X-th byte
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@K(rx)                  ; STA K,X           ; of K(0 1 2 3), so that K(0 1 2 3) will contain a copy
+       swpb rx                         ;                   
                                                            ; of XX15(0 1 2 3) once we've copied all four bytes
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
@@ -10833,7 +11133,9 @@ DLL24:
                                                            ; remaining banks
 
        li   ra,>10*256                 ; LDA #16           ; Store this bank's level in XX12 as 16, as it is full,
+       swpb rx                         ;                   
        movb ra,@XX12(rx)               ; STA XX12,X        ; with XX12+3 for the bottom bank and XX12+0 for the top
+       swpb rx                         ;                   
 
        movb @Q,ra                      ; LDA Q             ; Set A to the remaining energy level again
 
@@ -10849,7 +11151,9 @@ DLL24:
 
 DLL26:
        movb @Q,ra                      ; LDA Q             ; If we get here then the bank we just checked is not
+       swpb rx                         ;                   
        movb ra,@XX12(rx)               ; STA XX12,X        ; fully charged, so store its value in XX12 (using Q,
+       swpb rx                         ;                   
                                                            ; which contains the energy of the remaining banks -
                                                            ; i.e. this one)
 
@@ -10859,7 +11163,9 @@ DLL26:
                                                            ; as a loop counter, which was set to 0 above
 
 DLL9:
+       swpb ry                         ;                   
        movb @XX12(ry),ra               ; LDA XX12,Y        ; Fetch the value of the Y-th indicator, starting from
+       swpb ry                         ;                   
                                                            ; the top
 
        movb ry,@P                      ; STY P             ; Store the indicator number in P for retrieval later
@@ -11270,7 +11576,9 @@ DLL10:
                                                            ; drawing blank characters after this one until we reach
                                                            ; the end of the indicator row
 
+       swpb rx                         ;                   
        movb @CTWOS(rx),ra              ; LDA CTWOS,X       ; CTWOS is a table of ready-made 1-pixel mode 5 bytes,
+       swpb rx                         ;                   
                                                            ; just like the TWOS and TWOS2 tables for mode 4 (see
                                                            ; the PIXEL routine for details of how they work). This
                                                            ; fetches a mode 5 1-pixel byte with the pixel position
@@ -11440,7 +11748,9 @@ LINSCN:
                                                            ; (i.e. the top part of the screen) but with no cursor
 
 VNT3:
+       swpb ry                         ;                   
        movb @TVT1+16(ry),ra            ; LDA TVT1+16,Y     ; Copy the Y-th palette byte from TVT1+16 to SHEILA &21
+       swpb ry                         ;                   
        movb ra,@VIA+>21                ; STA VIA+&21       ; to map logical to actual colours for the bottom part
                                                            ; of the screen (i.e. the dashboard)
 
@@ -11507,7 +11817,9 @@ IRQ1:
                                                            ; different colour if we have an escape pod)
 
 B31:
+       swpb ry                         ;                   
        movb @TVT1(ry),ra               ; LDA TVT1,Y        ; Copy the Y-th palette byte from TVT1 to SHEILA &21
+       swpb ry                         ;                   
        movb ra,@VIA+>21                ; STA VIA+&21       ; to map logical to actual colours for the bottom part
                                                            ; of the screen (i.e. the dashboard)
 
@@ -11528,7 +11840,9 @@ jvec_:
 VNT1:
        li   ry,>07*256                 ; LDY #7            ; Set Y as a counter for 8 bytes
 
+       swpb ry                         ;                   
        movb @TVT1+8(ry),ra             ; LDA TVT1+8,Y      ; Copy the Y-th palette byte from TVT1+8 to SHEILA &21
+       swpb ry                         ;                   
        movb ra,@VIA+>21                ; STA VIA+&21       ; to map logical to actual colours for the bottom part
                                                            ; of the screen (i.e. the dashboard)
 
@@ -11614,7 +11928,9 @@ B32:
                                                            ; in QQ20
 
 ESL2:
+       swpb rx                         ;                   
        movb ra,@QQ20(rx)               ; STA QQ20,X        ; Set the X-th byte of QQ20 to zero (as we know A = 0
+       swpb rx                         ;                   
                                                            ; from the BEQ above), so we no longer have any of item
                                                            ; type X in the cargo hold
 
@@ -11743,9 +12059,13 @@ TA18:
                                                            ; at UNIV
 
        movb ra,rx                      ; TAX               ; Copy the address of the target ship's data block from
+       swpb rx                         ;                   
        movb @UNIV(rx),ra               ; LDA UNIV,X        ; UNIV(X+1 X) to V(1 0)
+       swpb rx                         ;                   
        movb ra,@V                      ; STA V             
+       swpb rx                         ;                   
        movb @UNIV+1(rx),ra             ; LDA UNIV+1,X      
+       swpb rx                         ;                   
        movb ra,@V+1                    ; STA V+1           
 
        li   ry,>02*256                 ; LDY #2            ; K3(2 1 0) = (x_sign x_hi x_lo) - x-coordinate of
@@ -11987,8 +12307,12 @@ TA21:
                                                            ; from INWK to K3, so set up a counter for 9 bytes
 
 TAL1:
+       swpb rx                         ;                   
        movb @INWK(rx),ra               ; LDA INWK,X        ; Copy the X-th byte from INWK to the X-th byte of K3
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@K3(rx)                 ; STA K3,X          
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the counter
 
@@ -12489,14 +12813,20 @@ TAS1:
                                                            ; no effect, as Y is not used again, either here or
                                                            ; following calls to this routine
 
+       swpb rx                         ;                   
        movb ra,@K3+2(rx)               ; STA K3+2,X        ; Store K(3 2 1) in K3+X(2 1 0), starting with the sign
+       swpb rx                         ;                   
                                                            ; byte
 
        movb @K+2,ra                    ; LDA K+2           ; And then doing the high byte
+       swpb rx                         ;                   
        movb ra,@K3+1(rx)               ; STA K3+1,X        
+       swpb rx                         ;                   
 
        movb @K+1,ra                    ; LDA K+1           ; And finally the low byte
+       swpb rx                         ;                   
        movb ra,@K3(rx)                 ; STA K3,X          
+       swpb rx                         ;                   
 
        b    @rts                       ; RTS               ; Return from the subroutine
 
@@ -12727,7 +13057,9 @@ FRMIS:
        bl   @jsr                       ;                   
                                                            ; and store it in INF
 
+       swpb rx                         ;                   
        movb @FRIN(rx),ra               ; LDA FRIN,X        ; Fetch the ship type of the missile's target into A
+       swpb rx                         ;                   
 
        li   rtmp,ANGRY                 ; JSR ANGRY         ; Call ANGRY to make the target ship hostile
        bl   @jsr                       ;                   
@@ -12937,12 +13269,18 @@ SFS1:
                                                            ; a counter in Y for NI% bytes
 
 FRL2:
+       swpb ry                         ;                   
        movb @INWK(ry),ra               ; LDA INWK,Y        ; Copy the Y-th byte of INWK to the Y-th byte of
+       swpb ry                         ;                   
+       swpb ry                         ;                   
        movb ra,@XX3(ry)                ; STA XX3,Y         ; temporary memory in XX3, so we can restore it later
+       swpb ry                         ;                   
                                                            ; when returning from the subroutine
 
        .ld_ind_y_idx @INF,ra           ; LDA (INF),Y       ; Copy the Y-th byte of the parent ship's data block to
+       swpb ry                         ;                   
        movb ra,@INWK(ry)               ; STA INWK,Y        ; the Y-th byte of INWK
+       swpb ry                         ;                   
 
        sb   rone,ry                    ; DEY               ; Decrement the loop counter
 
@@ -13041,8 +13379,12 @@ NOIL:
                                                            ; XX3 above, so set a counter in X for NI% bytes
 
 FRL3:
+       swpb rx                         ;                   
        movb @XX3(rx),ra                ; LDA XX3,X         ; Copy the Y-th byte of XX3 to the Y-th byte of INWK
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@INWK(rx)               ; STA INWK,X        
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -13336,7 +13678,9 @@ STARS2:
                                                            ; we can use it as a counter through all the stardust
 
 STL2:
+       swpb ry                         ;                   
        movb @SZ(ry),ra                 ; LDA SZ,Y          ; Set A = ZZ = z_hi
+       swpb ry                         ;                   
 
        movb ra,@ZZ                     ; STA ZZ            ; We also set ZZ to the original value of z_hi, which we
                                                            ; use below to remove the existing particle
@@ -13364,9 +13708,13 @@ STL2:
                                                            ; So (S R) is the delta, signed to match the direction
                                                            ; the stardust should move in, which is result 1 above
 
+       swpb ry                         ;                   
        movb @SXL(ry),ra                ; LDA SXL,Y         ; Set (A P) = (x_hi x_lo)
+       swpb ry                         ;                   
        movb ra,@P                      ; STA P             ; = x
+       swpb ry                         ;                   
        movb @SX(ry),ra                 ; LDA SX,Y          
+       swpb ry                         ;                   
 
        movb ra,@X1                     ; STA X1            ; Set X1 = A, so X1 contains the original value of x_hi,
                                                            ; which we use below to remove the existing particle
@@ -13380,7 +13728,9 @@ STL2:
        movb ra,@S                      ; STA S             ; Set (S R) = (A X)
        movb rx,@R                      ; STX R             ; = x + delta_x
 
+       swpb ry                         ;                   
        movb @SY(ry),ra                 ; LDA SY,Y          ; Set A = y_hi
+       swpb ry                         ;                   
 
        movb ra,@Y1                     ; STA Y1            ; Set Y1 = A, so Y1 contains the original value of y_hi,
                                                            ; which we use below to remove the existing particle
@@ -13406,7 +13756,9 @@ STL2:
                                                            ; 
                                                            ; x = x + delta_x + beta * y
 
+       swpb ry                         ;                   
        movb @SYL(ry),rx                ; LDX SYL,Y         ; Set (S R) = (y_hi y_lo)
+       swpb ry                         ;                   
        movb rx,@R                      ; STX R             ; = y
        movb @Y1,rx                     ; LDX Y1            
        movb rx,@S                      ; STX S             
@@ -13460,7 +13812,9 @@ STL2:
        movb ra,@XX+1                   ; STA XX+1          ; Store the high byte A in XX+1
 
        movb rx,ra                      ; TXA               ; Store the low byte X in x_lo
+       swpb ry                         ;                   
        movb ra,@SXL(ry)                ; STA SXL,Y         
+       swpb ry                         ;                   
 
                                                            ; So (XX+1 x_lo) now contains result 5 above:
                                                            ; 
@@ -13509,7 +13863,9 @@ STL2:
                                                            ; stardust and draw that
 
        movb @XX+1,ra                   ; LDA XX+1          ; Set X1 and x_hi to the high byte of XX in XX+1, so
+       swpb ry                         ;                   
        movb ra,@SX(ry)                 ; STA SX,Y          ; the new x-coordinate is in (x_hi x_lo) and the high
+       swpb ry                         ;                   
        movb ra,@X1                     ; STA X1            ; byte is in X1
 
        andi ra,>7f*256                 ; AND #%01111111    ; If |x_hi| >= 116 then jump to KILL2 to recycle this
@@ -13517,7 +13873,9 @@ STL2:
        joc  KILL2                      ; BCS KILL2         ; and rejoin at STC2 with the new particle
 
        movb @YY+1,ra                   ; LDA YY+1          ; Set Y1 and y_hi to the high byte of YY in YY+1, so
+       swpb ry                         ;                   
        movb ra,@SY(ry)                 ; STA SY,Y          ; the new x-coordinate is in (y_hi y_lo) and the high
+       swpb ry                         ;                   
        movb ra,@Y1                     ; STA Y1            ; byte is in Y1
 
        andi ra,>7f*256                 ; AND #%01111111    ; If |y_hi| >= 116 then jump to ST5 to recycle this
@@ -13569,13 +13927,17 @@ KILL2:
        bl   @jsr                       ;                   
 
        movb ra,@Y1                     ; STA Y1            ; Set y_hi and Y1 to random numbers, so the particle
+       swpb ry                         ;                   
        movb ra,@SY(ry)                 ; STA SY,Y          ; starts anywhere along the y-axis
+       swpb ry                         ;                   
 
        li   ra,>73*256                 ; LDA #115          ; Make sure A is at least 115 and has the sign in RAT
        socb @RAT,ra                    ; ORA RAT           
 
        movb ra,@X1                     ; STA X1            ; Set x_hi and X1 to A, so this particle starts on the
+       swpb ry                         ;                   
        movb ra,@SX(ry)                 ; STA SX,Y          ; correct edge of the screen for new particles
+       swpb ry                         ;                   
 
        jne  STF1                       ; BNE STF1          ; Jump down to STF1 to set the z-coordinate (this BNE is
                                                            ; effectively a JMP as A will never be zero)
@@ -13585,13 +13947,17 @@ ST5:
        bl   @jsr                       ;                   
 
        movb ra,@X1                     ; STA X1            ; Set x_hi and X1 to random numbers, so the particle
+       swpb ry                         ;                   
        movb ra,@SX(ry)                 ; STA SX,Y          ; starts anywhere along the x-axis
+       swpb ry                         ;                   
 
        li   ra,>6e*256                 ; LDA #110          ; Make sure A is at least 110 and has the sign in AL2+1,
        socb @ALP2+1,ra                 ; ORA ALP2+1        ; the flipped sign of the roll angle alpha
 
        movb ra,@Y1                     ; STA Y1            ; Set y_hi and Y1 to A, so the particle starts at the
+       swpb ry                         ;                   
        movb ra,@SY(ry)                 ; STA SY,Y          ; top or bottom edge, depending on the current roll
+       swpb ry                         ;                   
                                                            ; angle alpha
 
 STF1:
@@ -13600,7 +13966,9 @@ STF1:
 
        ori  ra,>08*256                 ; ORA #8            ; Make sure A is at least 8 and store it in z_hi and
        movb ra,@ZZ                     ; STA ZZ            ; ZZ, so the new particle starts at any distance from
+       swpb ry                         ;                   
        movb ra,@SZ(ry)                 ; STA SZ,Y          ; us, but not too close
+       swpb ry                         ;                   
 
        jne  STC2                       ; BNE STC2          ; Jump up to STC2 to draw this new particle (this BNE is
                                                            ; effectively a JMP as A will never be zero)
@@ -14083,7 +14451,9 @@ MU1:
 * ******************************************************************************
 
 MLU1:
+       swpb ry                         ;                   
        movb @SY(ry),ra                 ; LDA SY,Y          ; Set Y1 the Y-th byte of SY
+       swpb ry                         ;                   
        movb ra,@Y1                     ; STA Y1            
 
                                                            ; Fall through into MLU2 to calculate:
@@ -14252,7 +14622,9 @@ FMLTU2:
        andi ra,>1f*256                 ; AND #%00011111    ; Restrict A to bits 0-5 (so it's in the range 0-31)
 
        movb ra,rx                      ; TAX               ; Set Q = sin(A) * 256
+       swpb rx                         ;                   
        movb @SNE(rx),ra                ; LDA SNE,X         
+       swpb rx                         ;                   
        movb ra,@Q                      ; STA Q             
 
        movb @K,ra                      ; LDA K             ; Set A to the radius in K
@@ -14704,7 +15076,9 @@ MULT12:
 * ******************************************************************************
 
 TAS3:
+       swpb ry                         ;                   
        movb @INWK(ry),rx               ; LDX INWK,Y        ; Set Q = the Y-th byte of INWK, i.e. vect_x
+       swpb ry                         ;                   
        movb rx,@Q                      ; STX Q             
 
        movb @XX15,ra                   ; LDA XX15          ; Set A = XX15
@@ -14713,7 +15087,9 @@ TAS3:
        bl   @jsr                       ;                   
                                                            ; = vect_x * XX15
 
+       swpb ry                         ;                   
        movb @INWK+2(ry),rx             ; LDX INWK+2,Y      ; Set Q = the Y+2-th byte of INWK, i.e. vect_y
+       swpb ry                         ;                   
        movb rx,@Q                      ; STX Q             
 
        movb @XX15+1,ra                 ; LDA XX15+1        ; Set A = XX15+1
@@ -14725,7 +15101,9 @@ TAS3:
        movb ra,@S                      ; STA S             ; Set (S R) = (A X)
        movb rx,@R                      ; STX R             
 
+       swpb ry                         ;                   
        movb @INWK+4(ry),rx             ; LDX INWK+4,Y      ; Set Q = the Y+2-th byte of INWK, i.e. vect_z
+       swpb ry                         ;                   
        movb rx,@Q                      ; STX Q             
 
        movb @XX15+2,ra                 ; LDA XX15+2        ; Set A = XX15+2
@@ -14991,7 +15369,9 @@ DV4:
 * ******************************************************************************
 
 DV42:
+       swpb ry                         ;                   
        movb @SZ(ry),ra                 ; LDA SZ,Y          ; Fetch the Y-th dust particle's z_hi coordinate into A
+       swpb ry                         ;                   
 
                                                            ; Fall through into DV41 to do:
                                                            ; 
@@ -15639,7 +16019,9 @@ ARS1:
        srl  ra,1                       ; LSR A             ; so X has the value t * 32 where t = A / Q, which is
        movb ra,rx                      ; TAX               ; what we need to look up values in the ACT table
 
+       swpb rx                         ;                   
        movb @ACT(rx),ra                ; LDA ACT,X         ; Fetch ACT+X from the ACT table into A, so now:
+       swpb rx                         ;                   
                                                            ; 
                                                            ; A = value in ACT + X
                                                            ; = value in ACT + (32 * A / Q)
@@ -15778,7 +16160,9 @@ WARP:
 
        .endif
 
+       swpb rx                         ;                   
        movb @FRIN+2(rx),ra             ; LDA FRIN+2,X      ; If the slot at FRIN+2+X is non-zero, then we have
+       swpb rx                         ;                   
                                                            ; something else in the vicinity besides asteroids,
                                                            ; escape pods and cargo canisters, so to check whether
                                                            ; we can jump, we first grab the slot contents into A
@@ -16174,18 +16558,30 @@ PU2:
                                                            ; If right view, flip sign of new sidev_x_hi
 
 PUS1:
+       swpb ry                         ;                   
        movb @INWK(ry),ra               ; LDA INWK,Y        ; Swap the low x and z bytes for the vector in Y:
+       swpb ry                         ;                   
+       swpb ry                         ;                   
        movb @INWK+4(ry),rx             ; LDX INWK+4,Y      ; 
+       swpb ry                         ;                   
+       swpb ry                         ;                   
        movb ra,@INWK+4(ry)             ; STA INWK+4,Y      ; * For Y =  9 swap nosev_x_lo and nosev_z_lo
+       swpb ry                         ;                   
        movb rx,@INWK(ry)               ; STX INWK,Y        ; * For Y = 15 swap roofv_x_lo and roofv_z_lo
                                                            ; * For Y = 21 swap sidev_x_lo and sidev_z_lo
 
+       swpb ry                         ;                   
        movb @INWK+1(ry),ra             ; LDA INWK+1,Y      ; Swap the high x and z bytes for the offset in Y:
+       swpb ry                         ;                   
        .eor @RAT                       ; EOR RAT           ; 
        movb ra,rx                      ; TAX               ; * If left view, flip sign of new z-coordinate
+       swpb ry                         ;                   
        movb @INWK+5(ry),ra             ; LDA INWK+5,Y      ; * If right view, flip sign of new x-coordinate
+       swpb ry                         ;                   
        .eor @RAT2                      ; EOR RAT2          
+       swpb ry                         ;                   
        movb ra,@INWK+1(ry)             ; STA INWK+1,Y      
+       swpb ry                         ;                   
        movb rx,@INWK+5(ry)             ; STX INWK+5,Y      
 
                                                            ; Fall through into LOOK1 to return from the subroutine
@@ -16278,7 +16674,9 @@ LOOK1:
 
 SIGHT:
        movb @VIEW,ry                   ; LDY VIEW          ; Fetch the laser power for our new view
+       swpb ry                         ;                   
        movb @LASER(ry),ra              ; LDA LASER,Y       
+       swpb ry                         ;                   
 
        jeq  LO2                        ; BEQ LO2           ; If it is zero (i.e. there is no laser fitted to this
                                                            ; view), jump to LO2 to return from the subroutine (as
@@ -16940,7 +17338,9 @@ SC48:
                                                            ; We can use there as the starting point for drawing the
                                                            ; stick, if there is one
 
+       swpb rx                         ;                   
        movb @CTWOS+1(rx),ra            ; LDA CTWOS+1,X     ; Load the same mode 5 1-pixel byte that we just used
+       swpb rx                         ;                   
        .and @COL                       ; AND COL           ; for the top-right pixel, and mask it with the same
        movb ra,@X1                     ; STA X1            ; colour, storing the result in X1, so we can use it as
                                                            ; the character row byte for the stick
@@ -17163,7 +17563,9 @@ Tml:
                                                            ; and add to A to see if we have enough room for A more
                                                            ; tonnes of cargo, using X as the loop counter, starting
                                                            ; with X = 12
+       swpb rx                         ;                   
        .adc @QQ20(rx),ra               ; ADC QQ20,X        ; Set A = A + the number of tonnes we have in the hold
+       swpb rx                         ;                   
                                                            ; of market item number X. Note that the first time we
                                                            ; go round this loop, the C flag is set (as we didn't
                                                            ; branch with the BCC above, so the effect of this loop
@@ -17205,7 +17607,9 @@ kg_:
                                                            ; we have enough room for A more units
        movb @QQ29,ry                   ; LDY QQ29          ; Set Y to the item number we want to add
 
+       swpb ry                         ;                   
        .adc @QQ20(ry),ra               ; ADC QQ20,Y        ; Set A = A + the number of units of this item that we
+       swpb ry                         ;                   
                                                            ; already have in the hold
 
        ci   ra,>c8*256                 ; CMP #200          ; Is the result greater than 200 (the limit on
@@ -18465,14 +18869,22 @@ TT224:
        .pha                            ; PHA               ; Store the quantity just purchased on the stack
 
        .clc                            ; CLC               ; Add the number purchased to the Y-th byte of QQ20,
+       swpb ry                         ;                   
        .adc @QQ20(ry),ra               ; ADC QQ20,Y        ; which contains the number of items of this type in
+       swpb ry                         ;                   
+       swpb ry                         ;                   
        movb ra,@QQ20(ry)               ; STA QQ20,Y        ; our hold (so this transfers the bought items into our
+       swpb ry                         ;                   
                                                            ; cargo hold)
 
+       swpb ry                         ;                   
        movb @AVL(ry),ra                ; LDA AVL,Y         ; Subtract the number of items from the Y-th byte of
+       swpb ry                         ;                   
        .sec                            ; SEC               ; AVL, which contains the number of items of this type
        .sbc @R,ra                      ; SBC R             ; that are available on the market
+       swpb ry                         ;                   
        movb ra,@AVL(ry)                ; STA AVL,Y         
+       swpb ry                         ;                   
 
        .pla                            ; PLA               ; Restore the quantity just purchased
 
@@ -18679,7 +19091,9 @@ TT210:
 TT211:
        movb ry,@QQ29                   ; STY QQ29          ; Store the current item number in QQ29
 
+       swpb ry                         ;                   
        movb @QQ20(ry),rx               ; LDX QQ20,Y        ; Fetch into X the amount of the current item that we
+       swpb ry                         ;                   
        jeq  TT212                      ; BEQ TT212         ; have in our cargo hold, which is stored in QQ20+Y,
                                                            ; and if there are no items of this type in the hold,
                                                            ; jump down to TT212 to skip to the next item
@@ -18689,7 +19103,9 @@ TT211:
        .asla                           ; ASL A             ; are four bytes per item in the table)
        movb ra,ry                      ; TAY               
 
+       swpb ry                         ;                   
        movb @QQ23+1(ry),ra             ; LDA QQ23+1,Y      ; Fetch byte #1 from the market prices table for the
+       swpb ry                         ;                   
        movb ra,@QQ19+1                 ; STA QQ19+1        ; current item and store it in QQ19+1, for use by the
                                                            ; call to TT152 below
 
@@ -18745,7 +19161,9 @@ TT211:
                                                            ; disabled printing)
 
        movb @QQ29,ry                   ; LDY QQ29          ; Set P to the amount of this item we have in our cargo
+       swpb ry                         ;                   
        movb @QQ20(ry),ra               ; LDA QQ20,Y        ; hold (which is the amount to sell)
+       swpb ry                         ;                   
        movb ra,@P                      ; STA P             
 
        movb @QQ24,ra                   ; LDA QQ24          ; Set Q to the item's price / 4
@@ -18765,7 +19183,9 @@ TT211:
 
        li   ra,>00*256                 ; LDA #0            ; We've made the sale, so set the amount
        movb @QQ29,ry                   ; LDY QQ29          
+       swpb ry                         ;                   
        movb ra,@QQ20(ry)               ; STA QQ20,Y        
+       swpb ry                         ;                   
 
        movb ra,@QQ17                   ; STA QQ17          ; Set QQ17 = 0, which enables printing again
 
@@ -19182,7 +19602,9 @@ TT23:
                                                            ; room for a label, so set a counter in X for 25 bytes
 
 EE3:
+       swpb rx                         ;                   
        movb ra,@INWK(rx)               ; STA INWK,X        ; Set the X-th byte of INWK to zero
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the counter
 
@@ -19216,10 +19638,10 @@ TT182:
 
 TT184:
        ci   ra,>14*256                 ; CMP #20           ; If the horizontal distance in A is >= 20, then this
-       joc  TT187                      ; BCS TT187         ; system is too far away from the current system to
-                                                           ; appear in the Short-range Chart, so jump to TT187 to
+       jnc  TT184A                     ; BCC TT184A        ; system is too far away from the current system to
+       b    @TT187                     ; JMP TT187         ; appear in the Short-range Chart, so jump to TT187 to
                                                            ; move on to the next system
-
+TT184A:
        movb @QQ15+1,ra                 ; LDA QQ15+1        ; Set A = s0_hi - QQ1, the vertical distance between
        .sec                            ; SEC               ; (s1_hi, s0_hi) and (QQ0, QQ1)
        .sbc @QQ1,ra                    ; SBC QQ1           
@@ -19291,19 +19713,25 @@ TT186:
                                                            ; row below... and if that's already occupied, we give
                                                            ; up and don't print a label for this system
 
+       swpb ry                         ;                   
        movb @INWK(ry),rx               ; LDX INWK,Y        ; If the value in INWK+Y is 0 (i.e. the text row
+       swpb ry                         ;                   
        jeq  EE4                        ; BEQ EE4           ; containing this system does not already have another
                                                            ; system's label on it), jump to EE4 to store this
                                                            ; system's label on this row
 
        ab   rone,ry                    ; INY               ; If the value in INWK+Y+1 is 0 (i.e. the text row below
+       swpb ry                         ;                   
        movb @INWK(ry),rx               ; LDX INWK,Y        ; the one containing this system does not already have
+       swpb ry                         ;                   
        jeq  EE4                        ; BEQ EE4           ; another system's label on it), jump to EE4 to store
                                                            ; this system's label on this row
 
        sb   rone,ry                    ; DEY               ; If the value in INWK+Y-1 is 0 (i.e. the text row above
        sb   rone,ry                    ; DEY               ; the one containing this system does not already have
+       swpb ry                         ;                   
        movb @INWK(ry),rx               ; LDX INWK,Y        ; another system's label on it), fall through into to
+       swpb ry                         ;                   
        jne  ee1_                       ; BNE ee1           ; EE4 to store this system's label on this row,
                                                            ; otherwise jump to ee1 to skip printing a label for
                                                            ; this system (as there simply isn't room)
@@ -19375,7 +19803,7 @@ TT187:
 
        ab   rone,ra                    ; INC XX20          ; Increment the counter
 
-       jeq  TT111-1                    ; BEQ TT111-1       ; If X = 0 then we have done all 256 systems, so return
+       b    @rts                       ; RTS               ; If X = 0 then we have done all 256 systems, so return
                                                            ; from the subroutine (as TT111-1 contains an RTS)
 
        b    @TT182                     ; JMP TT182         ; Otherwise jump back up to TT182 to process the next
@@ -19400,8 +19828,12 @@ TT81:
        li   rx,>05*256                 ; LDX #5            ; Set up a counter in X to copy six bytes (for three
                                                            ; 16-bit numbers)
 
+       swpb rx                         ;                   
        movb @QQ21(rx),ra               ; LDA QQ21,X        ; Copy the X-th byte in QQ21 to the X-th byte in QQ15
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@QQ15(rx)               ; STA QQ15,X        
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the counter
 
@@ -19453,6 +19885,8 @@ TT81:
 * TT111-1             Contains an RTS
 * 
 * ******************************************************************************
+
+       aorg CODE_UPPER.                                    ; TI-99/4A upper RAM code
 
 TT111:
        li   rtmp,TT81                  ; JSR TT81          ; Set the seeds in QQ15 to those of system 0 in the
@@ -19531,8 +19965,12 @@ TT134:
                                                            ; to copy six bytes (for three 16-bit numbers)
 
 TT136:
+       swpb rx                         ;                   
        movb @QQ15(rx),ra               ; LDA QQ15,X        ; Copy the X-th byte in QQ15 to the X-th byte in QQ19,
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@QQ19(rx)               ; STA QQ19,X        ; where QQ15 contains the seeds for the system we just
+       swpb rx                         ;                   
                                                            ; found to be the closest so far, and QQ19 is temporary
                                                            ; storage
 
@@ -19560,8 +19998,12 @@ TT135:
                                                            ; three 16-bit numbers)
 
 TT137:
+       swpb rx                         ;                   
        movb @QQ19(rx),ra               ; LDA QQ19,X        ; Copy the X-th byte in QQ19 to the X-th byte in QQ15
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@QQ15(rx)               ; STA QQ15,X        
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the counter
 
@@ -19948,7 +20390,9 @@ Ghy:
        movb ra,@GCNT                   ; STA GCNT          ; to the starting point in galaxy 1)
 
 G1:
+       swpb rx                         ;                   
        movb @QQ21(rx),ra               ; LDA QQ21,X        ; Load the X-th seed byte into A
+       swpb rx                         ;                   
 
        .asla                           ; ASL A             ; Set the C flag to bit 7 of the seed
 
@@ -20225,17 +20669,23 @@ TT151:
        movb ra,@XC                     ; STA XC            
 
        movb @QQ19,rx                   ; LDX QQ19          ; Fetch byte #1 from the market prices table (units and
+       swpb rx                         ;                   
        movb @QQ23+1(rx),ra             ; LDA QQ23+1,X      ; economic_factor) for this item and store in QQ19+1
+       swpb rx                         ;                   
        movb ra,@QQ19+1                 ; STA QQ19+1        
 
        movb @QQ26,ra                   ; LDA QQ26          ; Fetch the random number for this system visit and
+       swpb rx                         ;                   
        .and @QQ23+3(rx)                ; AND QQ23+3,X      ; AND with byte #3 from the market prices table (mask)
+       swpb rx                         ;                   
                                                            ; to give:
                                                            ; 
                                                            ; A = random AND mask
 
        .clc                            ; CLC               ; Add byte #0 from the market prices table (base_price),
+       swpb rx                         ;                   
        .adc @QQ23(rx),ra               ; ADC QQ23,X        ; so we now have:
+       swpb rx                         ;                   
        movb ra,@QQ24                   ; STA QQ24          ; 
                                                            ; A = base_price + (random AND mask)
 
@@ -20289,7 +20739,9 @@ TT156:
        li   ra,>05*256                 ; LDA #5            ; Set A to 5 so we can print the availability to 5
                                                            ; digits (right-padded with spaces)
 
+       swpb ry                         ;                   
        movb @AVL(ry),rx                ; LDX AVL,Y         ; Set X to the item's availability, which is given in
+       swpb ry                         ;                   
                                                            ; the AVL table
 
        movb rx,@QQ25                   ; STX QQ25          ; Store the availability in QQ25
@@ -20616,8 +21068,12 @@ hyp1_:
                                                            ; 6 bytes (for three 16-bit seeds)
 
 TT112:
+       swpb rx                         ;                   
        movb @QQ15(rx),ra               ; LDA QQ15,X        ; Copy the X-th byte in QQ15 to the X-th byte in QQ2, to
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@QQ2(rx)                ; STA QQ2,X         ; update the selected system to the new one. Note that
+       swpb rx                         ;                   
                                                            ; this approach has a minor bug associated with it: if
                                                            ; your hyperspace counter hits 0 just as you're docking,
                                                            ; then you will magically appear in the station in your
@@ -20683,7 +21139,9 @@ GVL:
                                                            ; (and X) for the market item number, starting with 0
 
 hy9_:
+       swpb rx                         ;                   
        movb @QQ23+1(rx),ra             ; LDA QQ23+1,X      ; Fetch byte #1 from the market prices table (units and
+       swpb rx                         ;                   
        movb ra,@QQ19+1                 ; STA QQ19+1        ; economic_factor) for item number X and store it in
                                                            ; QQ19+1
 
@@ -20691,14 +21149,18 @@ hy9_:
        bl   @jsr                       ;                   
                                                            ; (and set the availability of alien items to 0)
 
+       swpb rx                         ;                   
        movb @QQ23+3(rx),ra             ; LDA QQ23+3,X      ; Fetch byte #3 from the market prices table (mask) and
+       swpb rx                         ;                   
        .and @QQ26                      ; AND QQ26          ; AND with the random number for this system visit
                                                            ; to give:
                                                            ; 
                                                            ; A = random AND mask
 
        .clc                            ; CLC               ; Add byte #2 from the market prices table
+       swpb rx                         ;                   
        .adc @QQ23+2(rx),ra             ; ADC QQ23+2,X      ; (base_quantity) so we now have:
+       swpb rx                         ;                   
                                                            ; 
                                                            ; A = base_quantity + (random AND mask)
 
@@ -20733,7 +21195,9 @@ TT159:
        movb @XX4,ry                    ; LDY XX4           ; Fetch the counter (the market item number) into Y
 
        andi ra,>3f*256                 ; AND #%00111111    ; Take bits 0-5 of A, i.e. A mod 64, and store this as
+       swpb ry                         ;                   
        movb ra,@AVL(ry)                ; STA AVL,Y         ; this item's availability in the Y=th byte of AVL, so
+       swpb ry                         ;                   
                                                            ; each item has a maximum availability of 63t
 
        ab   rone,ry                    ; INY               ; Increment the counter into XX44, Y and A
@@ -20759,8 +21223,6 @@ hyR:
 * Deep dive: Fixing ship positions
 * 
 * ******************************************************************************
-
-       aorg CODE_UPPER.                                    ; TI-99/4A upper RAM code
 
 GTHG:
        li   rtmp,Ze                    ; JSR Ze            ; Call Ze to initialise INWK
@@ -21452,7 +21914,9 @@ et3_:
                                                            ; either don't need it (if we already have this laser)
                                                            ; or we set A to 4 below (if we buy it)
 
-       movb @LASER(rx),ry              ; LDY LASER,X       ; If there is no laser mounted in the chosen view (i.e.
+       swpb rx                         ;                   
+       movb @LASER(rx),rx              ; LDY LASER,X       ; If there is no laser mounted in the chosen view (i.e.
+       swpb rx                         ;                   
        jeq  ed4_                       ; BEQ ed4           ; LASER+X, which contains the laser power for view X, is
                                                            ; zero), jump to ed4 to buy a pulse laser
 
@@ -21465,7 +21929,9 @@ ed7_:
 
 ed4_:
        li   ra,(POW)*256               ; LDA #POW          ; We just bought a pulse laser for view X, so we need
+       swpb rx                         ;                   
        movb ra,@LASER(rx)              ; STA LASER,X       ; to fit it by storing the laser power for a pulse laser
+       swpb rx                         ;                   
                                                            ; (given in POW) in LASER+X
 
        li   ra,>04*256                 ; LDA #4            ; Set A to 4 as we just overwrote the original value,
@@ -21489,7 +21955,9 @@ et4_:
                                                            ; correctly so we can continue through the conditional
                                                            ; statements for all the other equipment
 
-       movb @LASER(rx),ry              ; LDY LASER,X       ; If there is no laser mounted in the chosen view (i.e.
+       swpb rx                         ;                   
+       movb @LASER(rx),rx              ; LDY LASER,X       ; If there is no laser mounted in the chosen view (i.e.
+       swpb rx                         ;                   
        jeq  ed5_                       ; BEQ ed5           ; LASER+X, which contains the laser power for view X,
                                                            ; is zero), jump to ed5 to buy a beam laser
 
@@ -21518,7 +21986,9 @@ et4_:
 ed5_:
        li   ra,(POW+128)*256           ; LDA #POW+128      ; We just bought a beam laser for view X, so we need
        movb @T1,rx                     ; LDX T1            ; to fit it by storing the laser power for a beam laser
+       swpb rx                         ;                   
        movb ra,@LASER(rx)              ; STA LASER,X       ; (given in POW+128) in LASER+X, using the view number
+       swpb rx                         ;                   
                                                            ; we stored in T1 earlier, as the call to prx will have
                                                            ; overwritten the original value in X
 
@@ -21775,9 +22245,13 @@ prx_:
        .asla                           ; ASL A             ; Set Y = A * 2, so it can act as an index into the
        movb ra,ry                      ; TAY               ; PRXS table, which has two bytes per entry
 
+       swpb ry                         ;                   
        movb @PRXS(ry),rx               ; LDX PRXS,Y        ; Fetch the low byte of the price into X
+       swpb ry                         ;                   
 
+       swpb ry                         ;                   
        movb @PRXS+1(ry),ra             ; LDA PRXS+1,Y      ; Fetch the high byte of the price into A and transfer
+       swpb ry                         ;                   
        movb ra,ry                      ; TAY               ; it to X, so the price is now in (Y X)
 
 c_:
@@ -21957,8 +22431,12 @@ cpl_:
                                                            ; 6 bytes)
 
 TT53:
+       swpb rx                         ;                   
        movb @QQ15(rx),ra               ; LDA QQ15,X        ; Copy byte X from QQ15 to QQ19
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@QQ19(rx)               ; STA QQ19,X        
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -22008,8 +22486,12 @@ B60:
                                                            ; bytes)
 
 TT56:
+       swpb rx                         ;                   
        movb @QQ19(rx),ra               ; LDA QQ19,X        ; Copy byte X from QQ19 to QQ15
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@QQ15(rx)               ; STA QQ15,X        
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -22041,7 +22523,9 @@ cmn_:
        li   ry,>00*256                 ; LDY #0            ; Set up a counter in Y, starting from 0
 
 QUL4:
+       swpb ry                         ;                   
        movb @NA.(ry),ra                ; LDA NA%,Y         ; The commander's name is stored at NA%, so load the
+       swpb ry                         ;                   
                                                            ; Y-th character from NA%
 
        ci   ra,>0d*256                 ; CMP #13           ; If we have reached the end of the name, return from
@@ -22102,9 +22586,15 @@ TT62:
                                                            ; want to swap (i.e. 6 bytes)
 
 TT78:
+       swpb rx                         ;                   
        movb @QQ15(rx),ra               ; LDA QQ15,X        ; Swap byte X between QQ2 and QQ15
-       movb @QQ2(rx),ry                ; LDY QQ2,X         
+       swpb rx                         ;                   
+       swpb rx                         ;                   
+       movb @QQ2(rx),rx                ; LDY QQ2,X         
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@QQ2(rx)                ; STA QQ2,X         
+       swpb rx                         ;                   
        movb ry,@QQ15(rx)               ; STY QQ15,X        
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
@@ -22202,8 +22692,12 @@ csh_:
                                                            ; K, so first we set up a counter in X for the 4 bytes
 
 pc1_:
+       swpb rx                         ;                   
        movb @CASH(rx),ra               ; LDA CASH,X        ; Copy byte X from CASH to K
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@K(rx)                  ; STA K,X           
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -22720,11 +23214,15 @@ TT43:
        movb ra,ry                      ; TAY               ; Transfer the token's position into Y so we can look
                                                            ; up the token using absolute indexed mode
 
+       swpb ry                         ;                   
        movb @QQ16(ry),ra               ; LDA QQ16,Y        ; Get the first letter of the token and print it
+       swpb ry                         ;                   
        li   rtmp,TT27                  ; JSR TT27          
        bl   @jsr                       ;                   
 
+       swpb ry                         ;                   
        movb @QQ16+1(ry),ra             ; LDA QQ16+1,Y      ; Get the second letter of the token
+       swpb ry                         ;                   
 
        ci   ra,('?')*256               ; CMP #'?'          ; If the second letter of the token is a question mark
        jne  FIX007                     ; BNE FIX007        ; then this is a one-letter token, so just return from
@@ -23009,7 +23507,9 @@ FIX008:
                                                            ; the ship line heap alone)
 
 EXL1:
+       swpb ry                         ;                   
        movb @XX3-7(ry),ra              ; LDA XX3-7,Y       ; Copy byte Y-7 from the XX3 heap, into the Y-th byte of
+       swpb ry                         ;                   
        .st_ind_y_idx @XX19,ra          ; STA (XX19),Y      ; the ship line heap
 
        sb   rone,ry                    ; DEY               ; Decrement the loop counter
@@ -23075,7 +23575,9 @@ EXL3:
                                                            ; from the coordinate we are copying
 
        .ld_ind_y_idx @XX19,ra          ; LDA (XX19),Y      ; Copy the Y-th byte from the ship line heap to the X-th
+       swpb rx                         ;                   
        movb ra,@K3(rx)                 ; STA K3,X          ; byte of K3
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the X index
 
@@ -23120,7 +23622,9 @@ EXL2:
        .eor @CNT                       ; EOR CNT           ; EOR with the vertex index, so the seeds are different
                                                            ; for each vertex
 
+       swpb ry                         ;                   
        movb ra,@>FFFD(ry)              ; STA &FFFD,Y       ; Y is going from 3 to 6, so this stores the four bytes
+       swpb ry                         ;                   
                                                            ; in memory locations &00, &01, &02 and &03, which are
                                                            ; the memory locations of RAND through RAND+3
 
@@ -23402,7 +23906,9 @@ SAL4:
 
        ori  ra,>08*256                 ; ORA #8            ; Set A so that it's at least 8
 
+       swpb ry                         ;                   
        movb ra,@SZ(ry)                 ; STA SZ,Y          ; Store A in the Y-th particle's z_hi coordinate at
+       swpb ry                         ;                   
                                                            ; SZ+Y, so the particle appears in front of us
 
        movb ra,@ZZ                     ; STA ZZ            ; Set ZZ to the particle's z_hi coordinate
@@ -23410,7 +23916,9 @@ SAL4:
        li   rtmp,DORND                 ; JSR DORND         ; Set A and X to random numbers
        bl   @jsr                       ;                   
 
+       swpb ry                         ;                   
        movb ra,@SX(ry)                 ; STA SX,Y          ; Store A in the Y-th particle's x_hi coordinate at
+       swpb ry                         ;                   
                                                            ; SX+Y, so the particle appears in front of us
 
        movb ra,@X1                     ; STA X1            ; Set X1 to the particle's x_hi coordinate
@@ -23418,7 +23926,9 @@ SAL4:
        li   rtmp,DORND                 ; JSR DORND         ; Set A and X to random numbers
        bl   @jsr                       ;                   
 
+       swpb ry                         ;                   
        movb ra,@SY(ry)                 ; STA SY,Y          ; Store A in the Y-th particle's y_hi coordinate at
+       swpb ry                         ;                   
                                                            ; SY+Y, so the particle appears in front of us
 
        movb ra,@Y1                     ; STA Y1            ; Set Y1 to the particle's y_hi coordinate
@@ -23454,7 +23964,9 @@ WPSHPS:
                                                            ; ship slots in FRIN
 
 WSL1:
+       swpb rx                         ;                   
        movb @FRIN(rx),ra               ; LDA FRIN,X        ; Fetch the ship type in slot X
+       swpb rx                         ;                   
 
        jeq  WS2                        ; BEQ WS2           ; If the slot contains 0 then it is empty and we have
                                                            ; checked all the slots (as they are always shuffled
@@ -23477,7 +23989,9 @@ WSL1:
 
 WSL2:
        .ld_ind_y_idx @INF,ra           ; LDA (INF),Y       ; Copy the Y-th byte from the data block pointed to by
+       swpb ry                         ;                   
        movb ra,@INWK(ry)               ; STA INWK,Y        ; INF into the Y-th byte of INWK workspace
+       swpb ry                         ;                   
 
        sb   rone,ry                    ; DEY               ; Decrement the counter to point at the next byte
 
@@ -23538,7 +24052,9 @@ FLFLLS:
        li   ra,>00*256                 ; LDA #0            ; Set A to 0 so we can zero-fill the LSO block
 
 SAL6:
+       swpb ry                         ;                   
        movb ra,@LSO(ry)                ; STA LSO,Y         ; Set the Y-th byte of the LSO block to 0
+       swpb ry                         ;                   
 
        sb   rone,ry                    ; DEY               ; Decrement the counter
 
@@ -23773,8 +24289,12 @@ SPS4:
                                                            ; data block at K% + NI% into K3
 
 SPL1:
+       swpb rx                         ;                   
        movb @K.+NI.(rx),ra             ; LDA K%+NI%,X      ; Copy the X-th byte from the station's data block at
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@K3(rx)                 ; STA K3,X          ; K% + NI% to the X-th byte of K3
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -24014,7 +24534,9 @@ CPIX2:
                                                            ; contains 4 pixels, but covers 8 screen coordinates, so
                                                            ; this effectively does the division by 2 that we need
 
+       swpb rx                         ;                   
        movb @CTWOS(rx),ra              ; LDA CTWOS,X       ; Fetch a mode 5 1-pixel byte with the pixel position
+       swpb rx                         ;                   
        .and @COL                       ; AND COL           ; at X, and AND with the colour byte so that pixel takes
                                                            ; on the colour we want to draw (i.e. A is acting as a
                                                            ; mask on the colour byte)
@@ -24023,7 +24545,9 @@ CPIX2:
        .st_ind_y_idx @SC,ra            ; STA (SC),Y        ; remove it later without ruining the background that's
                                                            ; already on-screen
 
+       swpb rx                         ;                   
        movb @CTWOS+1(rx),ra            ; LDA CTWOS+1,X     ; Fetch a mode 5 1-pixel byte with the pixel position
+       swpb rx                         ;                   
                                                            ; at X+1, so we can draw the right pixel of the dash
 
        jgt  CP1                        ; BPL CP1           ; The CTWOS table has an extra row at the end of it that
@@ -24038,7 +24562,9 @@ CPIX2:
                                                            ; along (as there are 8 bytes in a character block).
                                                            ; The C flag was cleared above, so this ADC is correct
 
+       swpb rx                         ;                   
        movb @CTWOS+1(rx),ra            ; LDA CTWOS+1,X     ; Re-fetch the mode 5 1-pixel byte, as we just overwrote
+       swpb rx                         ;                   
                                                            ; A (the byte will still be the fifth byte from the
                                                            ; table, which is correct as we want to draw the
                                                            ; leftmost pixel in the next character along as the
@@ -24187,18 +24713,28 @@ B73:
 * ******************************************************************************
 
 SPS3:
+       swpb rx                         ;                   
        movb @K.+1(rx),ra               ; LDA K%+1,X        ; Copy x_hi into K3+X
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@K3(rx)                 ; STA K3,X          
+       swpb rx                         ;                   
 
+       swpb rx                         ;                   
        movb @K.+2(rx),ra               ; LDA K%+2,X        ; Set A = Y = x_sign
+       swpb rx                         ;                   
        movb ra,ry                      ; TAY               
 
        andi ra,>7f*256                 ; AND #%01111111    ; Set K3+1 = |x_sign|
+       swpb rx                         ;                   
        movb ra,@K3+1(rx)               ; STA K3+1,X        
+       swpb rx                         ;                   
 
        movb ry,ra                      ; TYA               ; Set K3+2 = the sign of x_sign
        andi ra,>80*256                 ; AND #%10000000    
+       swpb rx                         ;                   
        movb ra,@K3+2(rx)               ; STA K3+2,X        
+       swpb rx                         ;                   
 
        b    @rts                       ; RTS               ; Return from the subroutine
 
@@ -24229,10 +24765,14 @@ GINF:
        .asla                           ; ASL A             
        movb ra,ry                      ; TAY               
 
+       swpb ry                         ;                   
        movb @UNIV(ry),ra               ; LDA UNIV,Y        ; Get the high byte of the address of the X-th ship
+       swpb ry                         ;                   
        movb ra,@INF                    ; STA INF           ; from UNIV and store it in INF
 
+       swpb ry                         ;                   
        movb @UNIV+1(ry),ra             ; LDA UNIV+1,Y      ; Get the low byte of the address of the X-th ship
+       swpb ry                         ;                   
        movb ra,@INF+1                  ; STA INF+1         ; from UNIV and store it in INF
 
        b    @rts                       ; RTS               ; Return from the subroutine
@@ -24335,7 +24875,9 @@ NWSHP:
                                                            ; map below
 
 NWL1:
+       swpb rx                         ;                   
        movb @FRIN(rx),ra               ; LDA FRIN,X        ; Load the ship type for the X-th slot
+       swpb rx                         ;                   
 
        jeq  NW1                        ; BEQ NW1           ; If it is zero, then this slot is empty and we can use
                                                            ; it for our new ship, so jump down to NW1
@@ -24382,12 +24924,16 @@ NW1:
        .asla                           ; ASL A             ; Set Y = ship type * 2
        movb ra,ry                      ; TAY               
 
+       swpb ry                         ;                   
        movb @XX21-2(ry),ra             ; LDA XX21-2,Y      ; The ship blueprints at XX21 start with a lookup
+       swpb ry                         ;                   
        movb ra,@XX0                    ; STA XX0           ; table that points to the individual ship blueprints,
                                                            ; so this fetches the low byte of this particular ship
                                                            ; type's blueprint and stores it in XX0
 
+       swpb ry                         ;                   
        movb @XX21-1(ry),ra             ; LDA XX21-1,Y      ; Fetch the high byte of this particular ship type's
+       swpb ry                         ;                   
        movb ra,@XX0+1                  ; STA XX0+1         ; blueprint and store it in XX0+1, so XX0(1 0) now
                                                            ; contains the address of this ship's blueprint
 
@@ -24510,7 +25056,9 @@ NW6:
        movb @T,ra                      ; LDA T             ; Restore the ship type we stored above
 
 NW2:
+       swpb rx                         ;                   
        movb ra,@FRIN(rx)               ; STA FRIN,X        ; Store the ship type in the X-th byte of FRIN, so the
+       swpb rx                         ;                   
                                                            ; this slot is now shown as occupied in the index table
 
        movb ra,rx                      ; TAX               ; Copy the ship type into X
@@ -24526,7 +25074,9 @@ B74:
                                                            ; in Y
 
 NWL3:
+       swpb ry                         ;                   
        movb @INWK(ry),ra               ; LDA INWK,Y        ; Load the Y-th byte of INWK and store in the Y-th byte
+       swpb ry                         ;                   
        .st_ind_y_idx @INF,ra           ; STA (INF),Y       ; of the workspace pointed to by INF
 
        sb   rone,ry                    ; DEY               ; Decrement the loop counter
@@ -24566,9 +25116,13 @@ NWL3:
 * ******************************************************************************
 
 NwS1:
+       swpb rx                         ;                   
        movb @INWK(rx),ra               ; LDA INWK,X        ; Load the X-th byte of INWK into A and flip bit 7,
+       swpb rx                         ;                   
        .eoi (>80*256)                  ; EOR #%10000000    ; storing the result back in the X-th byte of INWK
+       swpb rx                         ;                   
        movb ra,@INWK(rx)               ; STA INWK,X        
+       swpb rx                         ;                   
 
        ab   rone,rx                    ; INX               ; Add 2 to X
        ab   rone,rx                    ; INX               
@@ -25458,14 +26012,20 @@ PL26:
 * ******************************************************************************
 
 PLS1:
+       swpb rx                         ;                   
        movb @INWK(rx),ra               ; LDA INWK,X        ; Set P = nosev_x_lo
+       swpb rx                         ;                   
        movb ra,@P                      ; STA P             
 
+       swpb rx                         ;                   
        movb @INWK+1(rx),ra             ; LDA INWK+1,X      ; Set P+1 = |nosev_x_hi|
+       swpb rx                         ;                   
        andi ra,>7f*256                 ; AND #%01111111    
        movb ra,@P+1                    ; STA P+1           
 
+       swpb rx                         ;                   
        movb @INWK+1(rx),ra             ; LDA INWK+1,X      ; Set A = sign bit of nosev_x_lo
+       swpb rx                         ;                   
        andi ra,>80*256                 ; AND #%10000000    
 
        li   rtmp,DVID3B2               ; JSR DVID3B2       ; Call DVID3B2 to calculate:
@@ -25608,7 +26168,9 @@ PLL4:
                                                            ; 
                                                            ; sin(CNT2 mod 32) = |sin(CNT2)|
 
+       swpb rx                         ;                   
        movb @SNE(rx),ra                ; LDA SNE,X         ; Set Q = sin(X)
+       swpb rx                         ;                   
        movb ra,@Q                      ; STA Q             ; = sin(CNT2 mod 32)
                                                            ; = |sin(CNT2)|
 
@@ -25665,7 +26227,9 @@ PLL4:
                                                            ; 
                                                            ; sin((CNT2 + 16) mod 32) = |cos(CNT2)|
 
+       swpb rx                         ;                   
        movb @SNE(rx),ra                ; LDA SNE,X         ; Set Q = sin(X)
+       swpb rx                         ;                   
        movb ra,@Q                      ; STA Q             ; = sin((CNT2 + 16) mod 32)
                                                            ; = |cos(CNT2)|
 
@@ -26084,7 +26648,9 @@ PLFL2:
        jeq  PLFL                       ; BEQ PLFL          ; start drawing the new sun, so there is no need to
                                                            ; keep erasing the old one, so jump down to PLFL
 
+       swpb ry                         ;                   
        movb @LSO(ry),ra                ; LDA LSO,Y         ; Fetch the Y-th point from the sun line heap, which
+       swpb ry                         ;                   
                                                            ; gives us the half-width of the old sun's line on this
                                                            ; line of the screen
 
@@ -26202,10 +26768,14 @@ PLFL:
                                                            ; the sun's fringe
 
 PLF44:
+       swpb ry                         ;                   
        movb @LSO(ry),rx                ; LDX LSO,Y         ; Set X to the line heap value for the old sun's line
+       swpb ry                         ;                   
                                                            ; at row Y
 
+       swpb ry                         ;                   
        movb ra,@LSO(ry)                ; STA LSO,Y         ; Store the half-width of the new row Y line in the line
+       swpb ry                         ;                   
                                                            ; heap
 
        jeq  PLF11                      ; BEQ PLF11         ; If X = 0 then there was no sun line on pixel row Y, so
@@ -26234,7 +26804,9 @@ PLF44:
        movb @K3+1,ra                   ; LDA K3+1          
        movb ra,@YY+1                   ; STA YY+1          
 
+       swpb ry                         ;                   
        movb @LSO(ry),ra                ; LDA LSO,Y         ; Fetch the half-width of the new row Y line from the
+       swpb ry                         ;                   
                                                            ; line heap (which we stored above)
 
        li   rtmp,EDGES                 ; JSR EDGES         ; Call EDGES to calculate X1 and X2 for the horizontal
@@ -26344,7 +26916,9 @@ PLF11:
                                                            ; line and loop round for the next line up
 
        li   ra,>00*256                 ; LDA #0            ; The line is not on-screen, so set the line heap for
+       swpb ry                         ;                   
        movb ra,@LSO(ry)                ; STA LSO,Y         ; line Y to 0, which means there is no sun line here
+       swpb ry                         ;                   
 
        jeq  PLF6                       ; BEQ PLF6          ; Jump up to PLF6 to loop round for the next line up
                                                            ; (this BEQ is effectively a JMP as A is always zero)
@@ -26386,7 +26960,9 @@ PLF10:
        movb ra,@YY+1                   ; STA YY+1          
 
 PLFL3:
+       swpb ry                         ;                   
        movb @LSO(ry),ra                ; LDA LSO,Y         ; Fetch the Y-th point from the sun line heap, which
+       swpb ry                         ;                   
                                                            ; gives us the half-width of the old sun's line on this
                                                            ; line of the screen
 
@@ -26651,14 +27227,18 @@ WPL1:
                                                            ; reset the line heap, returning from the subroutine
                                                            ; using a tail call
 
+       swpb ry                         ;                   
        movb @LSY2(ry),ra               ; LDA LSY2,Y        ; Set A to the y-coordinate of the current heap entry
+       swpb ry                         ;                   
 
        ci   ra,>ff*256                 ; CMP #&FF          ; If the y-coordinate is &FF, this indicates that the
        jeq  WP2                        ; BEQ WP2           ; next point in the heap denotes the start of a line
                                                            ; segment, so jump to WP2 to put it into (X1, Y1)
 
        movb ra,@Y2                     ; STA Y2            ; Set (X2, Y2) to the x- and y-coordinates from the
+       swpb ry                         ;                   
        movb @LSX2(ry),ra               ; LDA LSX2,Y        ; heap
+       swpb ry                         ;                   
        movb ra,@X2                     ; STA X2            
 
        li   rtmp,LOIN                  ; JSR LOIN          ; Draw a line from (X1, Y1) to (X2, Y2)
@@ -26680,9 +27260,13 @@ WPL1:
 WP2:
        ab   rone,ry                    ; INY               ; Increment the loop counter to point to the next point
 
+       swpb ry                         ;                   
        movb @LSX2(ry),ra               ; LDA LSX2,Y        ; Set (X1, Y1) to the x- and y-coordinates from the
+       swpb ry                         ;                   
        movb ra,@X1                     ; STA X1            ; heap
+       swpb ry                         ;                   
        movb @LSY2(ry),ra               ; LDA LSY2,Y        
+       swpb ry                         ;                   
        movb ra,@Y1                     ; STA Y1            
 
        ab   rone,ry                    ; INY               ; Increment the loop counter to point to the next point
@@ -26749,7 +27333,9 @@ WPLS:
                                                            ; number of lines in the LSO block
 
 WPL2:
+       swpb ry                         ;                   
        movb @LSO(ry),ra                ; LDA LSO,Y         ; Fetch the Y-th point from the sun line heap, which
+       swpb ry                         ;                   
                                                            ; gives us the half-width of the sun's line on this line
                                                            ; of the screen
 
@@ -26875,7 +27461,9 @@ ED3:
 
 ED1:
        li   ra,>00*256                 ; LDA #0            ; Set the Y-th byte of the LSO block to 0
+       swpb ry                         ;                   
        movb ra,@LSO(ry)                ; STA LSO,Y         
+       swpb ry                         ;                   
 
        .sec                            ; SEC               ; The line does not fit on the screen, so set the C flag
                                                            ; to indicate this result
@@ -27483,9 +28071,13 @@ ping_:
                                                            ; copy two bytes
 
 pl1_:
+       swpb rx                         ;                   
        movb @QQ0(rx),ra                ; LDA QQ0,X         ; Load byte X from the current system in QQ0/QQ1
+       swpb rx                         ;                   
 
+       swpb rx                         ;                   
        movb ra,@QQ9(rx)                ; STA QQ9,X         ; Store byte X in the selected system in QQ9/QQ10
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -27665,7 +28257,9 @@ KSL4:
        ab   rone,rx                    ; INX               ; Increment the counter (so it starts at 0 on the first
                                                            ; iteration)
 
+       swpb rx                         ;                   
        movb @FRIN(rx),ra               ; LDA FRIN,X        ; If slot X is empty then we have worked our way through
+       swpb rx                         ;                   
        jeq  KS3                        ; BEQ KS3           ; all the slots, so jump to KS3 to stop looking
 
        ci   ra,(MSL)*256               ; CMP #MSL          ; If the slot does not contain a missile, loop back to
@@ -27677,9 +28271,13 @@ KSL4:
        movb rx,ra                      ; TXA               ; Set Y = X * 2 and fetch the Y-th address from UNIV
        .asla                           ; ASL A             ; and store it in SC and SC+1 - in other words, set
        movb ra,ry                      ; TAY               ; SC(1 0) to point to the missile's ship data block
+       swpb ry                         ;                   
        movb @UNIV(ry),ra               ; LDA UNIV,Y        
+       swpb ry                         ;                   
        movb ra,@SC                     ; STA SC            
+       swpb ry                         ;                   
        movb @UNIV+1(ry),ra             ; LDA UNIV+1,Y      
+       swpb ry                         ;                   
        movb ra,@SC+1                   ; STA SC+1          
 
        li   ry,>20*256                 ; LDY #32           ; Fetch byte #32 from the missile's ship data (AI)
@@ -27793,7 +28391,9 @@ KILLSHP:
 KS5:
        movb @XX4,ry                    ; LDY XX4           ; Restore the slot number of the ship to remove into Y
 
+       swpb ry                         ;                   
        movb @FRIN(ry),rx               ; LDX FRIN,Y        ; Fetch the contents of the slot, which contains the
+       swpb ry                         ;                   
                                                            ; ship type
 
        ci   rx,(SST)*256               ; CPX #SST          ; If this is the space station, then jump to KS4 to
@@ -27871,8 +28471,12 @@ KSL1:
                                                            ; this increment points X to the next slot - i.e. the
                                                            ; source slot we want to shuffle down
 
+       swpb rx                         ;                   
        movb @FRIN(rx),ra               ; LDA FRIN,X        ; Copy the contents of the source slot into the
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@FRIN-1(rx)             ; STA FRIN-1,X      ; destination slot
+       swpb rx                         ;                   
 
        jne  FIX009                     ; BNE FIX009        ; If the slot we just shuffled down contains 0, then
        b    @KS2                       ; JMP KS2           ; the source slot is empty and we are done shuffling,
@@ -27883,9 +28487,13 @@ FIX009:
                                                            ; index into the two-byte ship blueprint lookup table
                                                            ; at XX21 for the source ship
 
+       swpb ry                         ;                   
        movb @XX21-2(ry),ra             ; LDA XX21-2,Y      ; Set SC(0 1) to point to the blueprint data for the
+       swpb ry                         ;                   
        movb ra,@SC                     ; STA SC            ; source ship
+       swpb ry                         ;                   
        movb @XX21-1(ry),ra             ; LDA XX21-1,Y      
+       swpb ry                         ;                   
        movb ra,@SC+1                   ; STA SC+1          
 
        li   ry,>05*256                 ; LDY #5            ; Fetch blueprint byte #5 for the source ship, which
@@ -27916,9 +28524,13 @@ FIX009:
                                                            ; slot number so Y is now an index for the source ship's
                                                            ; entry in UNIV
 
+       swpb ry                         ;                   
        movb @UNIV(ry),ra               ; LDA UNIV,Y        ; Set SC(1 0) to the address of the data block for the
+       swpb ry                         ;                   
        movb ra,@SC                     ; STA SC            ; source ship
+       swpb ry                         ;                   
        movb @UNIV+1(ry),ra             ; LDA UNIV+1,Y      
+       swpb ry                         ;                   
        movb ra,@SC+1                   ; STA SC+1          
 
                                                            ; We have now set up our variables as follows:
@@ -28117,7 +28729,9 @@ RESET:
        li   rx,>06*256                 ; LDX #6            ; Set up a counter for zeroing BETA through BETA+6
 
 SAL3:
+       swpb rx                         ;                   
        movb ra,@BETA(rx)               ; STA BETA,X        ; Zero the X-th byte after BETA
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -28140,7 +28754,9 @@ RES4:
                                                            ; in X for 3 bytes
 
 REL5:
+       swpb rx                         ;                   
        movb ra,@FSH(rx)                ; STA FSH,X         ; Set the X-th byte of FSH to &FF to charge up that
+       swpb rx                         ;                   
                                                            ; shield/bank
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
@@ -28264,7 +28880,9 @@ ZINF:
        li   ra,>00*256                 ; LDA #0            ; Set A to 0 so we can zero-fill the workspace
 
 ZI1:
+       swpb ry                         ;                   
        movb ra,@INWK(ry)               ; STA INWK,Y        ; Zero the Y-th byte of the INWK workspace
+       swpb ry                         ;                   
 
        sb   rone,ry                    ; DEY               ; Decrement the loop counter
 
@@ -29665,8 +30283,12 @@ QU5:
                                                            ; for the NT% bytes that we want to copy
 
 QUL1:
+       swpb rx                         ;                   
        movb @NA.+7(rx),ra              ; LDA NA%+7,X       ; Copy the X-th byte of NA%+7 to the X-th byte of TP-1,
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@TP-1(rx)               ; STA TP-1,X        ; (the -1 is because X is counting down from NT% to 1)
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -30000,10 +30622,14 @@ CHECK:
                                                            ; count)
 
 QUL2:
+       swpb rx                         ;                   
        .adc @NA.+7(rx),ra              ; ADC NA%+7,X       ; Add the X-1-th byte of the data block to A, plus the
+       swpb rx                         ;                   
                                                            ; C flag
 
+       swpb rx                         ;                   
        .eor @NA.+8(rx)                 ; EOR NA%+8,X       ; EOR A with the X-th byte of the data block
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -30028,8 +30654,12 @@ TRNME:
                                                            ; so set up a counter in X to copy 8 characters
 
 GTL1:
+       swpb rx                         ;                   
        movb @INWK(rx),ra               ; LDA INWK,X        ; Copy the X-th byte of INWK to the X-th byte of NA%
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@NA.(rx)                ; STA NA%,X         
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -30055,8 +30685,12 @@ TR1:
                                                            ; so set up a counter in X to copy 8 characters
 
 GTL2:
+       swpb rx                         ;                   
        movb @NA.(rx),ra                ; LDA NA%,X         ; Copy the X-th byte of NA% to the X-th byte of INWK
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@INWK(rx)               ; STA INWK,X        
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -30300,9 +30934,15 @@ SVE:
                                                            ; lines heap
 
 SVL1:
+       swpb rx                         ;                   
        movb @TP(rx),ra                 ; LDA TP,X          ; Copy the X-th byte of TP to the X-th byte of &0B00
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@>0B00(rx)              ; STA &0B00,X       ; and NA%+8
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@NA.+8(rx)              ; STA NA%+8,X       
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -30486,8 +31126,12 @@ LOD:
                                                            ; in X to copy NT% bytes
 
 LOL1:
+       swpb rx                         ;                   
        movb @>0B00(rx),ra              ; LDA &0B00,X       ; Copy the X-th byte of &0B00 to the X-th byte of NA%+8
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@NA.+8(rx)              ; STA NA%+8,X       
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -31172,12 +31816,18 @@ NOS1:
 
 NOL1:
        li   ra,>00*256                 ; LDA #0            ; Set the X-th byte of XX16 to 0
+       swpb rx                         ;                   
        movb ra,@XX16(rx)               ; STA XX16,X        
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the destination byte pointer
 
+       swpb ry                         ;                   
        movb @SFX(ry),ra                ; LDA SFX,Y         ; Set the X-th byte of XX16 to the value from SFX+Y
+       swpb ry                         ;                   
+       swpb rx                         ;                   
        movb ra,@XX16(rx)               ; STA XX16,X        
+       swpb rx                         ;                   
 
        sb   rone,ry                    ; DEY               ; Decrement the source byte pointer again
 
@@ -31257,7 +31907,9 @@ KYTB:                                                      ; Point KYTB to the b
 * ******************************************************************************
 
 DKS1:
+       swpb ry                         ;                   
        movb @KYTB(ry),rx               ; LDX KYTB,Y        ; Get the internal key number from the Y-th byte of the
+       swpb ry                         ;                   
                                                            ; KYTB table above
 
        li   rtmp,DKS4                  ; JSR DKS4          ; Call DKS4, which will set A and X to a negative value
@@ -31482,9 +32134,13 @@ DKS3:
                                                            ; key for S and Q are &51 and &10, which don't fit
                                                            ; nicely into this approach)
 
+       swpb rx                         ;                   
        movb @DAMP->40(rx),ra           ; LDA DAMP-&40,X    ; Fetch the byte from DAMP + (X - &40), invert it and
+       swpb rx                         ;                   
        .eoi (>ff*256)                  ; EOR #&FF          ; put it back (0 means no and &FF means yes in the
+       swpb rx                         ;                   
        movb ra,@DAMP->40(rx)           ; STA DAMP-&40,X    ; configuration bytes, so this toggles the setting)
+       swpb rx                         ;                   
 
        li   rtmp,BELL                  ; JSR BELL          ; Make a beep sound so we know something has happened
        bl   @jsr                       ;                   
@@ -31585,7 +32241,9 @@ U.:
                                                            ; KY1 to KY19, so set a counter in Y
 
 DKL3:
+       swpb ry                         ;                   
        movb ra,@KL(ry)                 ; STA KL,Y          ; Store 0 in the Y-th byte of the key logger
+       swpb ry                         ;                   
 
        sb   rone,ry                    ; DEY               ; Decrement the counter
 
@@ -31800,7 +32458,9 @@ DK2:
                                                            ; logger for keys that are being pressed
 
 DKL1:
+       swpb ry                         ;                   
        movb @KYTB(ry),rx               ; LDX KYTB,Y        ; Get the internal key number of the Y-th flight key
+       swpb ry                         ;                   
                                                            ; the KYTB keyboard table
 
        cb   @KL,rx                     ; CPX KL            ; We stored the key that's being pressed in KL above,
@@ -31809,7 +32469,9 @@ DKL1:
 
        jne  DK1                        ; BNE DK1           ; If it is not being pressed, skip to DK1 below
 
+       swpb ry                         ;                   
        movb ra,@KL(ry)                 ; STA KL,Y          ; The Y-th flight key is being pressed, so set that
+       swpb ry                         ;                   
                                                            ; key's location in the key logger to &FF
 
 DK1:
@@ -32046,7 +32708,9 @@ OUCH:
        ci   rx,>16*256                 ; CPX #22           ; If X >= 22 (91% chance), return from the subroutine
        joc  out_                       ; BCS out           ; (as out contains an RTS)
 
+       swpb rx                         ;                   
        movb @QQ20(rx),ra               ; LDA QQ20,X        ; If we do not have any of item QQ20+X, return from the
+       swpb rx                         ;                   
        jeq  out_                       ; BEQ out           ; subroutine (as out contains an RTS). X is in the range
                                                            ; 0-21, so this not only checks for cargo, but also for
                                                            ; E.C.M., fuel scoops, energy bomb, energy unit and
@@ -32059,7 +32723,9 @@ OUCH:
        movb ry,@de_                    ; STY de            ; that when we call MESS below, " DESTROYED" is appended
                                                            ; to the in-flight message
 
+       swpb rx                         ;                   
        movb ra,@QQ20(rx)               ; STA QQ20,X        ; A is 0 (as we didn't branch with the BNE above), so
+       swpb rx                         ;                   
                                                            ; this sets QQ20+X to 0, which destroys any cargo or
                                                            ; equipment we have of that type
 
@@ -32418,7 +33084,9 @@ TI3:
                                                            ; I suspect this is in error and that X should be 16)
 
 TIL1:
+       swpb rx                         ;                   
        movb ra,@INWK+9(rx)             ; STA INWK+9,X      ; Set the low byte in byte #9+X to zero
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Set X = X - 2 to jump down to the next low byte
        sb   rone,rx                    ; DEX               
@@ -32553,19 +33221,27 @@ TI4:
 TIS3:
        movb ra,@P+2                    ; STA P+2           ; Store P+2 in A for later
 
+       swpb rx                         ;                   
        movb @INWK+10(rx),ra            ; LDA INWK+10,X     ; Set Q = nosev_x_hi (plus X)
+       swpb rx                         ;                   
        movb ra,@Q                      ; STA Q             
 
+       swpb rx                         ;                   
        movb @INWK+16(rx),ra            ; LDA INWK+16,X     ; Set A = roofv_x_hi (plus X)
+       swpb rx                         ;                   
 
        li   rtmp,MULT12                ; JSR MULT12        ; Set (S R) = Q * A
        bl   @jsr                       ;                   
                                                            ; = nosev_x_hi * roofv_x_hi
 
+       swpb ry                         ;                   
        movb @INWK+10(ry),rx            ; LDX INWK+10,Y     ; Set Q = nosev_x_hi (plus Y)
+       swpb ry                         ;                   
        movb rx,@Q                      ; STX Q             
 
+       swpb ry                         ;                   
        movb @INWK+16(ry),ra            ; LDA INWK+16,Y     ; Set A = roofv_x_hi (plus Y)
+       swpb ry                         ;                   
 
        li   rtmp,MAD                   ; JSR MAD           ; Set (A X) = Q * A + (S R)
        bl   @jsr                       ;                   
@@ -32576,7 +33252,9 @@ TIS3:
                                                            ; (A P)
 
        movb @P+2,ry                    ; LDY P+2           ; Set Q = roofv_x_hi (plus argument A)
+       swpb ry                         ;                   
        movb @INWK+10(ry),rx            ; LDX INWK+10,Y     
+       swpb ry                         ;                   
        movb rx,@Q                      ; STX Q             
 
        .eoi (>80*256)                  ; EOR #%10000000    ; Flip the sign of A
@@ -33130,20 +33808,26 @@ ll51_:
        movb @XX15,ra                   ; LDA XX15          ; Set Q = x_lo
        movb ra,@Q                      ; STA Q             
 
+       swpb rx                         ;                   
        movb @XX16(rx),ra               ; LDA XX16,X        ; Set A = |sidev_x|
+       swpb rx                         ;                   
 
        li   rtmp,FMLTU                 ; JSR FMLTU         ; Set T = A * Q / 256
        bl   @jsr                       ;                   
        movb ra,@T                      ; STA T             ; = |sidev_x| * x_lo / 256
 
        movb @XX15+1,ra                 ; LDA XX15+1        ; Set S to the sign of x_sign * sidev_x
+       swpb rx                         ;                   
        .eor @XX16+1(rx)                ; EOR XX16+1,X      
+       swpb rx                         ;                   
        movb ra,@S                      ; STA S             
 
        movb @XX15+2,ra                 ; LDA XX15+2        ; Set Q = y_lo
        movb ra,@Q                      ; STA Q             
 
+       swpb rx                         ;                   
        movb @XX16+2(rx),ra             ; LDA XX16+2,X      ; Set A = |sidev_y|
+       swpb rx                         ;                   
 
        li   rtmp,FMLTU                 ; JSR FMLTU         ; Set Q = A * Q / 256
        bl   @jsr                       ;                   
@@ -33153,7 +33837,9 @@ ll51_:
        movb ra,@R                      ; STA R             ; = |sidev_x| * x_lo / 256
 
        movb @XX15+3,ra                 ; LDA XX15+3        ; Set A to the sign of y_sign * sidev_y
+       swpb rx                         ;                   
        .eor @XX16+3(rx)                ; EOR XX16+3,X      
+       swpb rx                         ;                   
 
        li   rtmp,LL38                  ; JSR LL38          ; Set (S T) = (S R) + (A Q)
        bl   @jsr                       ;                   
@@ -33162,7 +33848,9 @@ ll51_:
        movb @XX15+4,ra                 ; LDA XX15+4        ; Set Q = z_lo
        movb ra,@Q                      ; STA Q             
 
+       swpb rx                         ;                   
        movb @XX16+4(rx),ra             ; LDA XX16+4,X      ; Set A = |sidev_z|
+       swpb rx                         ;                   
 
        li   rtmp,FMLTU                 ; JSR FMLTU         ; Set Q = A * Q / 256
        bl   @jsr                       ;                   
@@ -33172,16 +33860,22 @@ ll51_:
        movb ra,@R                      ; STA R             ; = |sidev_x| * x_lo + |sidev_y| * y_lo
 
        movb @XX15+5,ra                 ; LDA XX15+5        ; Set A to the sign of z_sign * sidev_z
+       swpb rx                         ;                   
        .eor @XX16+5(rx)                ; EOR XX16+5,X      
+       swpb rx                         ;                   
 
        li   rtmp,LL38                  ; JSR LL38          ; Set (S A) = (S R) + (A Q)
        bl   @jsr                       ;                   
                                                            ; = |sidev_x| * x_lo + |sidev_y| * y_lo
                                                            ; + |sidev_z| * z_lo
 
+       swpb ry                         ;                   
        movb ra,@XX12(ry)               ; STA XX12,Y        ; Store the result in XX12+Y(1 0)
+       swpb ry                         ;                   
        movb @S,ra                      ; LDA S             
+       swpb ry                         ;                   
        movb ra,@XX12+1(ry)             ; STA XX12+1,Y      
+       swpb ry                         ;                   
 
        ab   rone,ry                    ; INY               ; Set Y = Y + 2
        ab   rone,ry                    ; INY               
@@ -33413,8 +34107,12 @@ LL10:
        movb ra,rx                      ; TAX               ; laser
 
        li   ra,>ff*256                 ; LDA #255          ; Set bytes X and X+1 of the XX3 heap to 255. We're
+       swpb rx                         ;                   
        movb ra,@XX3(rx)                ; STA XX3,X         ; going to use XX3 to store the screen coordinates of
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@XX3+1(rx)              ; STA XX3+1,X       ; all the visible vertices of this ship, so setting the
+       swpb rx                         ;                   
                                                            ; laser vertex to 255 means that if we don't update this
                                                            ; vertex with its screen coordinates in parts 6 and 7,
                                                            ; this vertex's entry in the XX3 heap will still be 255,
@@ -33494,14 +34192,26 @@ LL17:
                                                            ; vector
 
 LL15:
+       swpb rx                         ;                   
        movb @XX1+21(rx),ra             ; LDA XX1+21,X      ; Copy the X-th byte of sidev to the X-th byte of XX16
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@XX16(rx)               ; STA XX16,X        
+       swpb rx                         ;                   
 
+       swpb rx                         ;                   
        movb @XX1+15(rx),ra             ; LDA XX1+15,X      ; Copy the X-th byte of roofv to XX16+6 to the X-th byte
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@XX16+6(rx)             ; STA XX16+6,X      ; of XX16+6
+       swpb rx                         ;                   
 
+       swpb rx                         ;                   
        movb @XX1+9(rx),ra              ; LDA XX1+9,X       ; Copy the X-th byte of nosev to XX16+12 to the X-th
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@XX16+12(rx)            ; STA XX16+12,X     ; byte of XX16+12
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the counter
 
@@ -33529,12 +34239,16 @@ LL15:
                                                            ; orientation vectors
 
 LL21:
+       swpb ry                         ;                   
        movb @XX16(ry),ra               ; LDA XX16,Y        ; Set A = the low byte of the vector coordinate, e.g.
+       swpb ry                         ;                   
                                                            ; nosev_z_lo when Y = 16
 
        .asla                           ; ASL A             ; Shift bit 7 into the C flag
 
+       swpb ry                         ;                   
        movb @XX16+1(ry),ra             ; LDA XX16+1,Y      ; Set A = the high byte of the vector coordinate, e.g.
+       swpb ry                         ;                   
                                                            ; nosev_z_hi when Y = 16
 
        bl   @rola                      ; ROL A             ; Rotate A left, incorporating the C flag, so A now
@@ -33579,8 +34293,12 @@ LL21:
                                                            ; up a counter in X for 9 bytes
 
 ll91_:
+       swpb rx                         ;                   
        movb @XX1(rx),ra                ; LDA XX1,X         ; Copy the X-th byte from XX1 to XX18
+       swpb rx                         ;                   
+       swpb rx                         ;                   
        movb ra,@XX18(rx)               ; STA XX18,X        
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -33643,7 +34361,9 @@ ll91_:
        li   ra,>ff*256                 ; LDA #255          ; Set A = 255
 
 EE30:
+       swpb rx                         ;                   
        movb ra,@XX2(rx)                ; STA XX2,X         ; Set the X-th byte of XX2 to 255
+       swpb rx                         ;                   
 
        sb   rone,rx                    ; DEX               ; Decrement the loop counter
 
@@ -33818,7 +34538,9 @@ LL86:
        movb ra,rx                      ; TAX               
 
        li   ra,>ff*256                 ; LDA #255          ; Set the X-th byte of XX2 to 255 to denote that this
+       swpb rx                         ;                   
        movb ra,@XX2(rx)                ; STA XX2,X         ; face is visible
+       swpb rx                         ;                   
 
        movb ry,ra                      ; TYA               ; Set Y = Y + 4 to point to the next face
        .adi (>04*256)                  ; ADC #4            
@@ -34097,7 +34819,9 @@ LL89:
                                                            ; can store this to mean "not visible"
 
 B112:
+       swpb rx                         ;                   
        movb ra,@XX2(rx)                ; STA XX2,X         ; Store the face's visibility in the X-th byte of XX2
+       swpb rx                         ;                   
 
        ab   rone,ry                    ; INY               ; Above we incremented Y to point to byte #3, so this
                                                            ; increments Y to point to byte #4, i.e. byte #0 of the
@@ -34286,7 +35010,9 @@ LL48:
        andi ra,>0f*256                 ; AND #%00001111    ; Extract the number of face 1 into X
        movb ra,rx                      ; TAX               
 
+       swpb rx                         ;                   
        movb @XX2(rx),ra                ; LDA XX2,X         ; If XX2+X is non-zero then we decided in part 5 that
+       swpb rx                         ;                   
        jne  LL49                       ; BNE LL49          ; face 1 is visible, so jump to LL49
 
        movb @P,ra                      ; LDA P             ; Fetch byte #4 for this vertex into A
@@ -34297,7 +35023,9 @@ LL48:
        srl  ra,1                       ; LSR A             
        movb ra,rx                      ; TAX               
 
+       swpb rx                         ;                   
        movb @XX2(rx),ra                ; LDA XX2,X         ; If XX2+X is non-zero then we decided in part 5 that
+       swpb rx                         ;                   
        jne  LL49                       ; BNE LL49          ; face 2 is visible, so jump to LL49
 
        ab   rone,ry                    ; INY               ; Increment Y to point to byte #5
@@ -34313,7 +35041,9 @@ LL48:
        andi ra,>0f*256                 ; AND #%00001111    ; Extract the number of face 1 into X
        movb ra,rx                      ; TAX               
 
+       swpb rx                         ;                   
        movb @XX2(rx),ra                ; LDA XX2,X         ; If XX2+X is non-zero then we decided in part 5 that
+       swpb rx                         ;                   
        jne  LL49                       ; BNE LL49          ; face 3 is visible, so jump to LL49
 
        movb @P,ra                      ; LDA P             ; Fetch byte #5 for this vertex into A
@@ -34324,7 +35054,9 @@ LL48:
        srl  ra,1                       ; LSR A             
        movb ra,rx                      ; TAX               
 
+       swpb rx                         ;                   
        movb @XX2(rx),ra                ; LDA XX2,X         ; If XX2+X is non-zero then we decided in part 5 that
+       swpb rx                         ;                   
        jne  LL49                       ; BNE LL49          ; face 4 is visible, so jump to LL49
 
        b    @LL50                      ; JMP LL50          ; If we get here then none of the four faces associated
@@ -34619,7 +35351,9 @@ LL62:
        .sec                            ; SEC               
        .sbc @R,ra                      ; SBC R             
 
+       swpb rx                         ;                   
        movb ra,@XX3(rx)                ; STA XX3,X         ; Store the low byte of the result in the X-th byte of
+       swpb rx                         ;                   
                                                            ; the heap at XX3
 
        ab   rone,rx                    ; INX               ; Increment the heap pointer in X to point to the next
@@ -34628,7 +35362,9 @@ LL62:
        li   ra,>00*256                 ; LDA #0            ; And then subtract the high bytes
        .sbc @U,ra                      ; SBC U             
 
+       swpb rx                         ;                   
        movb ra,@XX3(rx)                ; STA XX3,X         ; Store the low byte of the result in the X-th byte of
+       swpb rx                         ;                   
                                                            ; the heap at XX3
 
        b    @LL66                      ; JMP LL66          ; Jump down to LL66
@@ -34817,7 +35553,9 @@ LL65:
        .clc                            ; CLC               
        .adi (>80*256)                  ; ADC #128          
 
+       swpb rx                         ;                   
        movb ra,@XX3(rx)                ; STA XX3,X         ; Store the low byte of the result in the X-th byte of
+       swpb rx                         ;                   
                                                            ; the heap at XX3
 
        ab   rone,rx                    ; INX               ; Increment the heap pointer in X to point to the next
@@ -34826,7 +35564,9 @@ LL65:
        movb @U,ra                      ; LDA U             ; And then add the high bytes
        .adi (>00*256)                  ; ADC #0            
 
+       swpb rx                         ;                   
        movb ra,@XX3(rx)                ; STA XX3,X         ; Store the high byte of the result in the X-th byte of
+       swpb rx                         ;                   
                                                            ; the heap at XX3
 
 LL66:
@@ -34863,7 +35603,9 @@ LL70:
        .clc                            ; CLC               
        .adc @R,ra                      ; ADC R             
 
+       swpb rx                         ;                   
        movb ra,@XX3(rx)                ; STA XX3,X         ; Store the low byte of the result in the X-th byte of
+       swpb rx                         ;                   
                                                            ; the heap at XX3
 
        ab   rone,rx                    ; INX               ; Increment the heap pointer in X to point to the next
@@ -34872,7 +35614,9 @@ LL70:
        li   ra,>00*256                 ; LDA #0            ; And then add the high bytes
        .adc @U,ra                      ; ADC U             
 
+       swpb rx                         ;                   
        movb ra,@XX3(rx)                ; STA XX3,X         ; Store the high byte of the result in the X-th byte of
+       swpb rx                         ;                   
                                                            ; the heap at XX3
 
        b    @LL50                      ; JMP LL50          ; Jump to LL50 to move on to the next vertex
@@ -34920,7 +35664,9 @@ LL68:
        .sec                            ; SEC               
        .sbc @R,ra                      ; SBC R             
 
+       swpb rx                         ;                   
        movb ra,@XX3(rx)                ; STA XX3,X         ; Store the low byte of the result in the X-th byte of
+       swpb rx                         ;                   
                                                            ; the heap at XX3
 
        ab   rone,rx                    ; INX               ; Increment the heap pointer in X to point to the next
@@ -34929,7 +35675,9 @@ LL68:
        li   ra,>00*256                 ; LDA #0            ; And then subtract the high bytes
        .sbc @U,ra                      ; SBC U             
 
+       swpb rx                         ;                   
        movb ra,@XX3(rx)                ; STA XX3,X         ; Store the high byte of the result in the X-th byte of
+       swpb rx                         ;                   
                                                            ; the heap at XX3
 
 LL50:
@@ -35042,7 +35790,9 @@ LL74:
                                                            ; index into list of vertex screen coordinates we added
                                                            ; to the XX3 heap
 
+       swpb ry                         ;                   
        movb @XX3(ry),rx                ; LDX XX3,Y         ; Fetch the x_lo coordinate of the laser vertex from the
+       swpb ry                         ;                   
        movb rx,@XX15                   ; STX XX15          ; XX3 heap into XX15
 
        ab   rone,rx                    ; INX               ; If X = 255 then the laser vertex is not visible, as
@@ -35066,7 +35816,9 @@ LL74:
                                                            ; otherwise we would only see a flashing point of light
                                                            ; as they unleashed their attack
 
+       swpb ry                         ;                   
        movb @XX3+1(ry),rx              ; LDX XX3+1,Y       ; Fetch the x_hi coordinate of the laser vertex from the
+       swpb ry                         ;                   
        movb rx,@XX15+1                 ; STX XX15+1        ; XX3 heap into XX15+1
 
        ab   rone,rx                    ; INX               ; If X = 255 then the laser vertex is not visible, as
@@ -35074,10 +35826,14 @@ LL74:
                                                            ; a vertex calculation in part 6 and 7, so jump to LL170
                                                            ; to skip drawing the laser beam
 
+       swpb ry                         ;                   
        movb @XX3+2(ry),rx              ; LDX XX3+2,Y       ; Fetch the y_lo coordinate of the laser vertex from the
+       swpb ry                         ;                   
        movb rx,@XX15+2                 ; STX XX15+2        ; XX3 heap into XX15+2
 
+       swpb ry                         ;                   
        movb @XX3+3(ry),rx              ; LDX XX3+3,Y       ; Fetch the y_hi coordinate of the laser vertex from the
+       swpb ry                         ;                   
        movb rx,@XX15+3                 ; STX XX15+3        ; XX3 heap into XX15+3
 
        li   ra,>00*256                 ; LDA #0            ; Set XX15(5 4) = 0, so their laser beam fires to the
@@ -35199,7 +35955,9 @@ FIX011:
        andi ra,>0f*256                 ; AND #%00001111    ; Extract the number of face 1 into X
        movb ra,rx                      ; TAX               
 
+       swpb rx                         ;                   
        movb @XX2(rx),ra                ; LDA XX2,X         ; If XX2+X is non-zero then we decided in part 5 that
+       swpb rx                         ;                   
        jne  LL79                       ; BNE LL79          ; face 1 is visible, so jump to LL79
 
        movb @P,ra                      ; LDA P             ; Fetch byte #1 for this edge into A
@@ -35210,8 +35968,11 @@ FIX011:
        srl  ra,1                       ; LSR A             
        movb ra,rx                      ; TAX               
 
+       swpb rx                         ;                   
        movb @XX2(rx),ra                ; LDA XX2,X         ; If XX2+X is zero then we decided in part 5 that
-       jeq  LL78                       ; BEQ LL78          ; face 2 is hidden, so jump to LL78
+       swpb rx                         ;                   
+       jne  LL79                       ; BNE LL79          ; face 2 is hidden, so jump to LL78
+       b    @LL78                      ; JMP LL78          
 
 LL79:
                                                            ; We now build the screen line for this edge, as
@@ -35236,31 +35997,47 @@ LL79:
        .ld_ind_y_idx @V,ra             ; LDA (V),Y         ; Fetch byte #3 for this edge into Q, which contains
        movb ra,@Q                      ; STA Q             ; the number of the vertex at the end of the edge
 
+       swpb rx                         ;                   
        movb @XX3+1(rx),ra              ; LDA XX3+1,X       ; Fetch the x_hi coordinate of the edge's start vertex
+       swpb rx                         ;                   
        movb ra,@XX15+1                 ; STA XX15+1        ; from the XX3 heap into XX15+1
 
+       swpb rx                         ;                   
        movb @XX3(rx),ra                ; LDA XX3,X         ; Fetch the x_lo coordinate of the edge's start vertex
+       swpb rx                         ;                   
        movb ra,@XX15                   ; STA XX15          ; from the XX3 heap into XX15
 
+       swpb rx                         ;                   
        movb @XX3+2(rx),ra              ; LDA XX3+2,X       ; Fetch the y_lo coordinate of the edge's start vertex
+       swpb rx                         ;                   
        movb ra,@XX15+2                 ; STA XX15+2        ; from the XX3 heap into XX15+2
 
+       swpb rx                         ;                   
        movb @XX3+3(rx),ra              ; LDA XX3+3,X       ; Fetch the y_hi coordinate of the edge's start vertex
+       swpb rx                         ;                   
        movb ra,@XX15+3                 ; STA XX15+3        ; from the XX3 heap into XX15+3
 
        movb @Q,rx                      ; LDX Q             ; Set X to the number of the vertex at the end of the
                                                            ; edge, which we stored in Q
 
+       swpb rx                         ;                   
        movb @XX3(rx),ra                ; LDA XX3,X         ; Fetch the x_lo coordinate of the edge's end vertex
+       swpb rx                         ;                   
        movb ra,@XX15+4                 ; STA XX15+4        ; from the XX3 heap into XX15+4
 
+       swpb rx                         ;                   
        movb @XX3+3(rx),ra              ; LDA XX3+3,X       ; Fetch the y_hi coordinate of the edge's end vertex
+       swpb rx                         ;                   
        movb ra,@XX12+1                 ; STA XX12+1        ; from the XX3 heap into XX12+1
 
+       swpb rx                         ;                   
        movb @XX3+2(rx),ra              ; LDA XX3+2,X       ; Fetch the y_lo coordinate of the edge's end vertex
+       swpb rx                         ;                   
        movb ra,@XX12                   ; STA XX12          ; from the XX3 heap into XX12
 
+       swpb rx                         ;                   
        movb @XX3+1(rx),ra              ; LDA XX3+1,X       ; Fetch the x_hi coordinate of the edge's end vertex
+       swpb rx                         ;                   
        movb ra,@XX15+5                 ; STA XX15+5        ; from the XX3 heap into XX15+5
 
        li   rtmp,LL147                 ; JSR LL147         ; Call LL147 to see if the new line segment needs to be
